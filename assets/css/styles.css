@@ -103,6 +103,11 @@ img {
     background: rgb(255 255 255 / 15%);
 }
 
+nav.container:hover {
+    background: rgb(255 255 255 / 30%);
+    transition: ease-in-out 0.3s;
+}
+
 .nav__logo {
     font-family: var(--second-font);
     color: var(--first-color);
@@ -763,6 +768,9 @@ img {
         -webkit-backdrop-filter: initial;
         background-color: initial;
         margin: 30px;
+    }
+    nav.container:hover {
+        background: initial;
     }
     #header {
         background-color: var(--body-color);
