@@ -1,0 +1,846 @@
+/*=============== GOOGLE FONTS ===============*/
+
+@import url("https://fonts.googleapis.com/css2?family=Lemon&family=Open+Sans:wght@400;600&display=swap");
+
+/*=============== VARIABLES CSS ===============*/
+
+:root {
+    --header-height: 3.5rem;
+    /*========== Colors ==========*/
+    /*Color mode HSL(hue, saturation, lightness)*/
+    --first-color: hsl(0, 0%, 40%);
+    --first-color-alt: hsl(0, 1%, 46%);
+    --title-color: hsl(0, 0%, 99%);
+    --text-color: hsl(233, 4%, 35%);
+    --body-color: hsl(0, 0%, 8%);
+    /*========== Font and typography ==========*/
+    /*.5rem = 8px | 1rem = 16px ...*/
+    --body-font: 'Open Sans', sans-serif;
+    --second-font: 'Lemon', cursive;
+    --biggest-font-size: 2.25rem;
+    --normal-font-size: .938rem;
+}
+
+
+/* Responsive typography */
+
+@media screen and (min-width: 1024px) {
+     :root {
+        --biggest-font-size: 3.5rem;
+        --normal-font-size: 1rem;
+    }
+}
+
+
+/*=============== BASE ===============*/
+
+* {
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+}
+
+body {
+    font-family: var(--body-font);
+    font-size: var(--normal-font-size);
+    background-color: var(--body-color);
+    color: var(--text-color);
+}
+
+ul {
+    list-style: none;
+}
+
+a {
+    text-decoration: none;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+
+/*=============== REUSABLE CSS CLASSES ===============*/
+
+.container {
+    max-width: 1024px;
+    margin-right: 1.5rem;
+    margin-left: 1.5rem;
+}
+
+.main {
+    overflow: hidden;
+    /* For the animations */
+}
+
+
+/*=============== HEADER & NAV ===============*/
+
+.header {
+    position: fixed;
+    width: 100%;
+    top: 0;
+    left: 0;
+    z-index: 100;
+}
+
+.nav {
+    position: relative;
+    height: var(--header-height);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.nav.container {
+    margin: 30px auto;
+}
+
+.nav__logo {
+    font-family: var(--second-font);
+    color: var(--first-color);
+}
+
+.nav__logo span {
+    color: var(--title-color);
+}
+
+.nav__toggle {
+    display: inline-flex;
+    font-size: 1.25rem;
+    color: var(--title-color);
+    cursor: pointer;
+}
+
+@media screen and (max-width: 767px) {
+    .nav__menu {
+        position: fixed;
+        background-color: var(--body-color);
+        left: 0;
+        top: -100%;
+        box-shadow: 0 8px 24px hsla(2, 100%, 35%, .2);
+        width: 100%;
+        padding: 3.5rem 0 3rem;
+        border-radius: 0 0 2rem 2rem;
+        transition: top .4s;
+    }
+}
+
+.nav__list {
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    row-gap: 2rem;
+}
+
+.nav__link,
+.nav__close {
+    color: var(--title-color);
+}
+
+.nav__link {
+    font-weight: 600;
+    transition: color .4s;
+}
+
+.nav__link:hover {
+    color: var(--first-color);
+}
+
+.nav__close {
+    position: absolute;
+    top: 1rem;
+    right: 1.5rem;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+.nav__img {
+    width: 100px;
+    position: absolute;
+    top: -.75rem;
+    left: 1.5rem;
+}
+
+
+/* Show menu */
+
+.show-menu {
+    top: 0;
+}
+
+
+/* Active link */
+
+.active-link {
+    color: var(--first-color);
+}
+
+
+/*=============== HOME ===============*/
+
+.home,
+.home__container {
+    position: relative;
+}
+
+.home__container {
+    padding-top: 8rem;
+    display: grid;
+    row-gap: 1rem;
+}
+
+.home__title {
+    font-size: var(--biggest-font-size);
+    font-family: var(--second-font);
+    color: var(--title-color);
+    margin-bottom: .75rem;
+}
+
+.home__title span {
+    display: block;
+    color: var(--first-color);
+}
+
+.home__description,
+.home__button {
+    font-weight: 600;
+}
+
+.home__description {
+    color: var(--title-color);
+    margin-bottom: 1.5rem;
+}
+
+.home__button {
+    display: inline-block;
+    background-color: var(--first-color);
+    color: #fff;
+    padding: 1rem 2rem;
+    border-radius: 1.5rem .25rem;
+    box-shadow: 0 8px 20px hsla(0, 0%, 96%, 0.28);
+    transition: background .4s;
+}
+
+.home__button:hover {
+    background-color: var(--first-color-alt);
+}
+
+.home__images {
+    position: relative;
+    width: 325px;
+    height: 378px;
+    justify-self: center;
+}
+
+.home__images img {
+    position: absolute;
+}
+
+.home__liquid {
+    max-width: initial;
+    width: 340px;
+    left: -.5rem;
+}
+
+.home__juice {
+    width: 140px;
+    transform: rotate(15deg);
+    left: 1rem;
+    right: 0;
+    top: 1rem;
+    margin: 0 auto;
+    animation: float-juice 4s ease-in-out infinite;
+}
+
+.home__apple2 {
+    width: 90px;
+    right: 1.5rem;
+    bottom: 3.5rem;
+}
+
+.home__apple1 {
+    width: 100px;
+    transform: rotate(-25deg);
+    top: 7rem;
+    left: .65rem;
+}
+
+.home__leaf:nth-child(1),
+.home__leaf:nth-child(6) {
+    width: 50px;
+    transform: rotate(30deg);
+}
+
+.home__leaf:nth-child(2),
+.home__leaf:nth-child(4),
+.home__leaf:nth-child(5) {
+    width: 40px;
+}
+
+
+/* Move sheets into position */
+
+.home__leaf:nth-child(1) {
+    top: -7rem;
+    right: 3rem;
+}
+
+.home__leaf:nth-child(2) {
+    transform: rotate(-60deg);
+    top: 1.5rem;
+    left: 1.25rem;
+}
+
+.home__leaf:nth-child(3) {
+    width: 20px;
+    transform: rotate(-15deg);
+    top: 8rem;
+    right: 5rem;
+}
+
+.home__leaf:nth-child(4) {
+    bottom: 4rem;
+    left: 3rem;
+}
+
+.home__leaf:nth-child(5) {
+    transform: rotate(-30deg);
+    bottom: 0;
+    right: 5rem;
+}
+
+.home__leaf:nth-child(6) {
+    bottom: -5rem;
+    left: 3rem;
+}
+
+
+/* Background shapes container */
+
+.background-shapes {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.home__shape-small,
+.home__shape-big {
+    position: absolute;
+    background-color: hsl(4, 100%, 97%);
+    border-radius: 50%;
+    filter: blur(100px);
+}
+
+
+/* Create multiple shape instances with different positions */
+
+.home__shape-small {
+    width: 400px;
+    height: 400px;
+    top: 0;
+    left: -15rem;
+    animation: floatSmall 15s infinite linear;
+}
+
+.home__shape-big {
+    width: 500px;
+    height: 500px;
+    top: 30rem;
+    right: -14rem;
+    animation: floatBig 20s infinite linear;
+}
+
+
+/* Background image */
+
+.home__shape-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+@keyframes floatSmall {
+    0% {
+        transform: translate(0, 0) rotate(0deg);
+    }
+    50% {
+        transform: translate(30px, 20px) rotate(180deg);
+    }
+    100% {
+        transform: translate(0, 0) rotate(360deg);
+    }
+}
+
+@keyframes floatBig {
+    0% {
+        transform: translate(0, 0) rotate(0deg);
+    }
+    50% {
+        transform: translate(-20px, 30px) rotate(-180deg);
+    }
+    100% {
+        transform: translate(0, 0) rotate(-360deg);
+    }
+}
+
+
+/* Update existing sections to work with background */
+
+.main {
+    position: relative;
+    z-index: 2;
+}
+
+.home {
+    position: relative;
+    z-index: 2;
+}
+
+
+/* Animation juice */
+
+@keyframes float-juice {
+    0% {
+        transform: translateY(0) rotate(15deg);
+    }
+    50% {
+        transform: translateY(-1.5rem) rotate(15deg);
+    }
+    100% {
+        transform: translateY(0) rotate(15deg);
+    }
+}
+
+
+/*=============== BREAKPOINTS ===============*/
+
+
+/* For small devices */
+
+@media screen and (max-width: 330px) {
+    .container {
+        margin-left: 1rem;
+        margin-right: 1rem;
+    }
+    .home__images {
+        width: 245px;
+        height: 320px;
+    }
+    .home__liquid {
+        width: 250px;
+        left: 0;
+    }
+    .home__juice {
+        width: 100px;
+    }
+    .home__apple1,
+    .home__apple2 {
+        width: 70px;
+    }
+}
+
+
+/* For medium devices */
+
+@media screen and (min-width: 767px) {
+    .nav {
+        height: calc(var(--header-height) + 1.5rem);
+    }
+    .nav__toggle,
+    .nav__close,
+    .nav__img {
+        display: none;
+    }
+    .nav__list {
+        flex-direction: row;
+        column-gap: 3rem;
+    }
+    .home__container {
+        grid-template-columns: repeat(2, max-content);
+        justify-content: center;
+        align-items: center;
+        column-gap: 4rem;
+    }
+    .second__container {
+        padding-top: 4rem;
+    }
+}
+
+
+/* For large devices */
+
+@media screen and (min-width: 1024px) {
+    .home__images {
+        width: 530px;
+        height: 590px;
+    }
+    .home__liquid {
+        width: 530px;
+    }
+    .home__juice {
+        width: 220px;
+        left: 0;
+        top: 1.5rem;
+    }
+    .home__apple1 {
+        width: 200px;
+        top: 10rem;
+        left: -1rem;
+    }
+    .home__apple2 {
+        width: 200px;
+        right: .5rem;
+        bottom: 5.5rem;
+    }
+    .home__leaf:nth-child(1),
+    .home__leaf:nth-child(6) {
+        width: 70px;
+    }
+    .home__leaf:nth-child(2),
+    .home__leaf:nth-child(4),
+    .home__leaf:nth-child(5) {
+        width: 60px;
+    }
+    .home__leaf:nth-child(1) {
+        top: -1rem;
+        right: 2rem;
+    }
+    .home__leaf:nth-child(2) {
+        top: 2.5rem;
+        left: 2.25rem;
+    }
+    .home__leaf:nth-child(3) {
+        width: 40px;
+        top: 12rem;
+        right: 10rem;
+    }
+    .home__leaf:nth-child(4) {
+        bottom: 8rem;
+        left: 4.5rem;
+    }
+    .home__leaf:nth-child(5) {
+        right: 10rem;
+    }
+    .home__leaf:nth-child(6) {
+        bottom: 1rem;
+        left: -8rem;
+    }
+}
+
+@media screen and (min-width: 1048px) {
+    .container {
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+
+.carousel-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+    color: white;
+}
+
+.carousel {
+    position: relative;
+    overflow: hidden;
+    padding: 1rem;
+}
+
+.carousel-track {
+    display: flex;
+    gap: 2rem;
+    transform: translateX(0);
+    transition: transform 0.5s ease-in-out;
+    will-change: transform;
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+.carousel-track.dragging {
+    cursor: grabbing;
+    cursor: -webkit-grabbing;
+}
+
+.carousel-track:not(.dragging) {
+    transition: transform 0.5s ease-in-out;
+}
+
+.carousel-item {
+    flex: 0 0 calc(33.333% - 1.33rem);
+    padding: 1rem;
+    border-radius: 12px;
+    text-align: center;
+    transition: all 0.3s ease;
+    will-change: transform, opacity;
+    cursor: pointer;
+    user-select: none;
+}
+
+.carousel-item.active {
+    transform: scale(1.05);
+    opacity: 1;
+}
+
+.carousel-item:not(.active) {
+    transform: scale(0.9);
+    opacity: 0.8;
+}
+
+.textImgContainer {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    border-radius: 2rem;
+    padding: 1.5rem;
+    transition: transform 0.3s ease;
+}
+
+.carousel-item.active .textImgContainer {
+    transform: translateY(-5px);
+}
+
+.carousel-item img {
+    width: 45%;
+    margin: 0 auto 1rem;
+    transition: transform 0.3s ease;
+}
+
+.carousel-item:hover img {
+    transform: scale(1.05);
+}
+
+.carousel-item h3 {
+    margin: 0.5rem 0;
+    font-size: 1.25rem;
+    color: white;
+}
+
+.juice-ingredients {
+    color: white;
+    font-size: 0.9rem;
+    margin: 0.5rem 0;
+    line-height: 1.4;
+}
+
+.juice-price {
+    font-weight: bold;
+    font-size: 1.2rem;
+    margin: 0.5rem 0;
+}
+
+.add-to-cart {
+    margin: 20px auto 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s ease;
+}
+
+.add-to-cart:hover {
+    transform: scale(1.1);
+}
+
+.carousel-button {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    z-index: 2;
+    padding: 1rem;
+    transition: opacity 0.3s ease;
+}
+
+.carousel-button:hover {
+    opacity: 0.8;
+}
+
+.carousel-button.prev {
+    left: 0;
+}
+
+.carousel-button.next {
+    right: 0;
+}
+
+.carousel-button svg {
+    width: 24px;
+    height: 24px;
+}
+
+
+/* Desktop (3 items) */
+
+@media (min-width: 1024px) {
+    .carousel-item {
+        flex: 0 0 calc(33.333% - 1.33rem);
+        padding: 1rem;
+    }
+}
+
+
+/* Tablet (2 items) */
+
+@media (min-width: 768px) and (max-width: 1023px) {
+    .carousel-item {
+        flex: 0 0 calc(50% - 1rem);
+        padding: 0.8rem 2.5rem;
+    }
+    .carousel-track {
+        gap: 1.5rem;
+    }
+}
+
+@media (max-width: 1100px) {
+    .nav.container {
+        margin: 30px;
+    }
+    .home__shape-small {
+        width: 300px;
+        height: 300px;
+    }
+    .home__shape-big {
+        width: 400px;
+        height: 400px;
+    }
+}
+
+
+/* Mobile (1 item) */
+
+@media (max-width: 767px) {
+    .carousel-item {
+        flex: 0 0 100%;
+        padding: 0.8rem 3.5rem;
+    }
+    .carousel-track {
+        gap: 1rem;
+    }
+    .carousel-button {
+        padding: 0.5rem;
+    }
+    .textImgContainer {
+        padding: 1rem;
+    }
+    .nav__logo {
+        max-width: 70px;
+    }
+    #header {
+        background-color: var(--body-color);
+    }
+    .home__title {
+        font-size: 3rem;
+        margin-top: 1rem;
+    }
+    .home__shape-small {
+        width: 250px;
+        height: 250px;
+    }
+    .home__shape-big {
+        width: 300px;
+        height: 300px;
+    }
+    .home__data {
+        text-align: center;
+    }
+    .home__leaf:nth-child(1),
+    .home__leaf:nth-child(6) {
+        display: none;
+    }
+    .home__container {
+        height: initial;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        row-gap: 0rem;
+    }
+    .second__container {
+        padding-top: 4rem;
+    }
+    /* Target only the first container */
+    .home__container:not(.second__container) {
+        flex-direction: column-reverse;
+        padding-top: 10rem;
+    }
+}
+
+
+/*=============== PRODUCTS PAGE ===============*/
+
+.product-details {
+    min-height: 100vh;
+}
+
+.product__info {
+    padding: 2rem;
+}
+
+.ingredients-list {
+    margin: 2rem 0;
+}
+
+.ingredients-list ul {
+    list-style: none;
+    padding: 0;
+}
+
+.ingredients-list li {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    color: var(--title-color);
+    font-size: 1.5rem;
+}
+
+.ingredients-list i {
+    font-size: 1.5rem;
+}
+
+.product__price {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--title-color);
+    margin: 2rem 0;
+}
+
+
+/* Responsive adjustments */
+
+@media screen and (max-width: 767px) {
+    .product-details .home__container {
+        flex-direction: column-reverse;
+        padding-top: 2rem;
+    }
+    .product__info {
+        text-align: center;
+        padding-top: 0px;
+    }
+    .ingredients-list li {
+        justify-content: center;
+    }
+    .add-to-cart {
+        margin: 0 auto;
+    }
+}
