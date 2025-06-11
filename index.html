@@ -12,7 +12,14 @@
     <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
 
     <!--=============== CSS ===============-->
-    <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="preload" href="assets/css/styles.css" as="style" onload="this.rel='stylesheet'">
+    <noscript>
+        <link rel="stylesheet" href="assets/css/styles.css">
+    </noscript>
+
+    <!-- Preconnects for Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap');
     </style>
@@ -46,7 +53,7 @@
                         We're not lying... <br> just made with real fruits.
                     </p>
                     <button href="/juices" class="home__button">
-                            View All Juices
+                        View All Juices
                     </button>
                 </div>
 
@@ -74,7 +81,8 @@
                 <div class="home__images">
                     <img src="assets/img/splash/sweet-green-splash.svg" alt="Liquid image" class="home__liquid">
                     <div class="home__juice-animate" style="z-index: 3; position: relative;">
-                        <img src="assets/img/juices/sweet-green.png" alt="Juice image" class="home__juice" style="rotate: -20deg;">
+                        <img src="assets/img/juices/sweet-green.png" alt="Juice image" class="home__juice"
+                            style="rotate: -20deg;">
                     </div>
                     <img src="assets/img/ingredients/spinach.svg" alt="Spinach image" class="home__apple1">
                     <img src="assets/img/ingredients/kale.svg" alt="Kale image" class="home__apple2">
@@ -96,7 +104,7 @@
                         We're not lying... <br> just made with real fruits.
                     </p>
                     <button href="/about" class="home__button">
-                            Who Are We
+                        Who Are We
                     </button>
                 </div>
             </div>
@@ -107,7 +115,8 @@
                 </h1>
                 <div class="carousel">
                     <button class="carousel-button prev">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
                             <polyline points="15 18 9 12 15 6"></polyline>
                         </svg>
                     </button>
@@ -117,7 +126,8 @@
                     </div>
 
                     <button class="carousel-button next">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
                             <polyline points="9 18 15 12 9 6"></polyline>
                         </svg>
                     </button>
