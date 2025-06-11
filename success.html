@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!--=============== FAVICON ===============-->
+    <link rel="shortcut icon" href="/assets/img/favicon.png" type="image/x-icon">
+
+    <!--=============== REMIXICONS ===============-->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
+
+    <!--=============== CSS ===============-->
+    <link rel="stylesheet" href="/assets/css/styles.css">
+
+    <title>Order Success - Pressed By J & H</title>
+</head>
+
+<body>
+    <main class="main">
+        <div class="background-shapes">
+            <div class="home__shape-small"></div>
+            <div class="home__shape-big"></div>
+            <img src="/assets/img/shape-bg.png" alt="" class="home__shape-bg">
+        </div>
+
+        <section class="success-section">
+            <div class="container" style="text-align: center; padding-top: 10rem;">
+                <div class="success-content">
+                    <img src="/assets/img/success-check.svg" alt="Success" class="success-icon">
+                    <h1 class="home__title">
+                        Thank You! <span style="color: #4CAF50;">Order Confirmed</span>
+                    </h1>
+                    <p class="home__description">
+                        Your order has been successfully placed. <br> We'll send you an email with your order details.
+                    </p>
+                    <div class="success-buttons">
+                        <a href="/" class="home__button" style="background-color: #4CAF50; margin-right: 1rem;">
+                            Back to Home
+                        </a>
+                        <a href="/juices" class="home__button" style="background-color: #ff9700;">
+                            Order More
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!--=============== GSAP ===============-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.10.4/gsap.min.js"></script>
+
+    <!--=============== MAIN JS ===============-->
+    <script src="/assets/js/juices-database.js"></script>
+    <script src="/assets/js/cart.js"></script>
+    <script>
+        // GSAP animations
+        document.addEventListener('DOMContentLoaded', () => {
+            TweenMax.from('.success-icon', 1, {
+                delay: .2,
+                opacity: 0,
+                y: 20,
+                ease: Expo.easeInOut
+            });
+            TweenMax.from('.home__title', 1, {
+                delay: .3,
+                opacity: 0,
+                y: 20,
+                ease: Expo.easeInOut
+            });
+            TweenMax.from('.home__description', 1, {
+                delay: .4,
+                opacity: 0,
+                y: 20,
+                ease: Expo.easeInOut
+            });
+            TweenMax.from('.success-buttons', 1, {
+                delay: .5,
+                opacity: 0,
+                y: 20,
+                ease: Expo.easeInOut
+            });
+        });
+    </script>
+</body>
+
+</html>

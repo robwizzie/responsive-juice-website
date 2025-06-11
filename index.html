@@ -13,47 +13,19 @@
 
     <!--=============== CSS ===============-->
     <link rel="stylesheet" href="assets/css/styles.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap');
+    </style>
+
+    <!--=============== JS ===============-->
+    <script type="module" src="assets/js/main.js"></script>
 
     <title>Pressed By J & H</title>
 </head>
 
 <body>
     <!--==================== HEADER ====================-->
-    <header class="header" id="header">
-        <nav class="nav container">
-            <a href="#" class="nav__logo">
-                <img src="/assets/img/branding/logo.png" alt="J & H Logo">
-            </a>
 
-            <div class="nav__menu" id="nav-menu">
-                <ul class="nav__list">
-                    <li class="nav__item">
-                        <a href="#" class="nav__link active-link">Home</a>
-                    </li>
-                    <li class="nav__item">
-                        <a href="#" class="nav__link">About</a>
-                    </li>
-                    <li class="nav__item">
-                        <a href="#" class="nav__link">Juices</a>
-                    </li>
-                    <li class="nav__item">
-                        <a href="#" class="nav__link">Contact</a>
-                    </li>
-                </ul>
-
-                <div class="nav__close" id="nav-close">
-                    <i class="ri-close-line"></i>
-                </div>
-
-                <img src="assets/img/nav-img.png" alt="Nav image" class="nav__img">
-            </div>
-
-            <!-- Toggle button -->
-            <div class="nav__toggle" id="nav-toggle">
-                <i class="ri-menu-line"></i>
-            </div>
-        </nav>
-    </header>
 
     <!--==================== MAIN ====================-->
     <main class="main">
@@ -73,9 +45,9 @@
                     <p class="home__description">
                         We're not lying... <br> just made with real fruits.
                     </p>
-                    <a href="#" class="home__button">
+                    <button href="/juices" class="home__button">
                             View All Juices
-                        </a>
+                    </button>
                 </div>
 
                 <div class="home__images">
@@ -123,9 +95,9 @@
                     <p class="home__description">
                         We're not lying... <br> just made with real fruits.
                     </p>
-                    <a href="#" class="home__button">
+                    <button href="/about" class="home__button">
                             Who Are We
-                        </a>
+                    </button>
                 </div>
             </div>
 
@@ -141,35 +113,7 @@
                     </button>
 
                     <div class="carousel-track">
-                        <div class="carousel-item">
-                            <div class="textImgContainer sour-punch">
-                                <img src="/assets/img/juices/sour-punch.png" alt="Sour Punch">
-                                <h3>Sour Punch</h3>
-                            </div>
-                            <button class="add-to-cart">
-                                <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                            </button>
-                        </div>
-
-                        <div class="carousel-item">
-                            <div class="textImgContainer sweet-green">
-                                <img src="/assets/img/juices/sweet-green.png" alt="Sweet Green">
-                                <h3>Sweet Green</h3>
-                            </div>
-                            <button class="add-to-cart">
-                                <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                            </button>
-                        </div>
-
-                        <div class="carousel-item">
-                            <div class="textImgContainer tropical-storm">
-                                <img src="/assets/img/juices/tropical-storm.png" alt="Tropical Storm">
-                                <h3>Tropical Storm</h3>
-                            </div>
-                            <button class="add-to-cart">
-                                <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                            </button>
-                        </div>
+                        <!-- Juices will be inserted here -->
                     </div>
 
                     <button class="carousel-button next">
@@ -187,8 +131,7 @@
 
     <!--=============== MAIN JS ===============-->
     <script src="assets/js/juices-database.js"></script>
-    <script src="/assets/js/router.js"></script>
-    <script src="assets/js/main.js"></script>
+    <script src="assets/js/cart.js"></script>
 </body>
 
 </html>
