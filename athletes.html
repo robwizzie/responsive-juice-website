@@ -11,8 +11,23 @@
     <!--=============== REMIXICONS ===============-->
     <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
 
+    <!--=============== LOADER ===============-->
+    <script>
+        const loaderCss = '<style>html.page-loading body>*:not(#page-loader){visibility:hidden;opacity:0}#page-loader{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#ffffff;z-index:10000}#page-loader .spinner{width:48px;height:48px;border:5px solid #f3f3f3;border-top:5px solid #ff9700;border-radius:50%;animation:pl-spin 1s linear infinite}@keyframes pl-spin{to{transform:rotate(360deg)}}</style>';
+        document.write(loaderCss + '<div id="page-loader"><div class="spinner"></div></div>');
+        document.documentElement.classList.add('page-loading');
+    </script>
+
     <!--=============== CSS ===============-->
-    <link rel="stylesheet" href="/assets/css/styles.css">
+    <link rel="preload" href="/assets/css/styles.css" as="style" onload="this.rel='stylesheet'">
+    <noscript>
+        <link rel="stylesheet" href="/assets/css/styles.css">
+    </noscript>
+
+    <!-- Preconnects for Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap');
     </style>
@@ -56,7 +71,8 @@
                             </div>
                             <a href="/juices/tropical-storm">
                                 <div class="athlete-favorite-juice">
-                                    <img src="/assets/img/juices/tropical-storm.png" alt="Favorite Juice" class="juice-photo">
+                                    <img src="/assets/img/juices/tropical-storm.png" alt="Favorite Juice"
+                                        class="juice-photo">
                                     <span style="color: #ff8902; font-family: var(--second-font);">Tropical Storm</span>
                                 </div>
                             </a>
@@ -78,7 +94,8 @@
                                 "Pressed by J & H helps fuel my training and keeps me performing at my best."
                             </p>
                             <div class="athlete-socials">
-                                <a href="https://www.instagram.com/ryan.nutley/" class="social-link" style="color: #ff8902">
+                                <a href="https://www.instagram.com/ryan.nutley/" class="social-link"
+                                    style="color: #ff8902">
                                     <i class="ri-instagram-line"></i>
                                 </a>
                             </div>
@@ -90,11 +107,13 @@
                         <div class="athlete-image">
                             <div class="image-placeholder">
                                 <!-- Replace with actual image -->
-                                <img src="/assets/img/athletes/angelina-barrera.jpg" alt="Angelina Barrera" class="athlete-photo">
+                                <img src="/assets/img/athletes/angelina-barrera.jpg" alt="Angelina Barrera"
+                                    class="athlete-photo">
                             </div>
                             <a href="/juices/sweet-green">
                                 <div class="athlete-favorite-juice">
-                                    <img src="/assets/img/juices/sweet-green.png" alt="Favorite Juice" class="juice-photo">
+                                    <img src="/assets/img/juices/sweet-green.png" alt="Favorite Juice"
+                                        class="juice-photo">
                                     <span style="color: #969c05; font-family: var(--second-font);">Sweet Green</span>
                                 </div>
                             </a>
@@ -116,7 +135,8 @@
                                 "Natural energy that keeps me going through practice and game day."
                             </p>
                             <div class="athlete-socials">
-                                <a href="https://www.instagram.com/angbarreraa/" class="social-link" style="color: #969c05">
+                                <a href="https://www.instagram.com/angbarreraa/" class="social-link"
+                                    style="color: #969c05">
                                     <i class="ri-instagram-line"></i>
                                 </a>
                             </div>
@@ -129,7 +149,9 @@
         <!-- Partnership Section -->
         <section class="partnership-section">
             <div class="container">
-                <h2 class="section-title" style="position: relative; color: white; padding-left: 2rem; font-family: var(--second-font);">Why Athletes Choose Us</h2>
+                <h2 class="section-title"
+                    style="position: relative; color: white; padding-left: 2rem; font-family: var(--second-font);">Why
+                    Athletes Choose Us</h2>
                 <div class="benefits-grid">
                     <div class="benefit-card">
                         <i class="ri-heart-pulse-line"></i>

@@ -11,8 +11,23 @@
     <!--=============== REMIXICONS ===============-->
     <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
 
+    <!--=============== LOADER ===============-->
+    <script>
+        const loaderCss = '<style>html.page-loading body>*:not(#page-loader){visibility:hidden;opacity:0}#page-loader{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#ffffff;z-index:10000}#page-loader .spinner{width:48px;height:48px;border:5px solid #f3f3f3;border-top:5px solid #ff9700;border-radius:50%;animation:pl-spin 1s linear infinite}@keyframes pl-spin{to{transform:rotate(360deg)}}</style>';
+        document.write(loaderCss + '<div id="page-loader"><div class="spinner"></div></div>');
+        document.documentElement.classList.add('page-loading');
+    </script>
+
     <!--=============== CSS ===============-->
-    <link rel="stylesheet" href="/assets/css/styles.css">
+    <link rel="preload" href="/assets/css/styles.css" as="style" onload="this.rel='stylesheet'">
+    <noscript>
+        <link rel="stylesheet" href="/assets/css/styles.css">
+    </noscript>
+
+    <!-- Preconnects for Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap');
     </style>
@@ -36,7 +51,8 @@
             <div class="container">
                 <div class="about-header">
                     <h1 class="home__title">
-                        Meet <span style="color: #ff9700;"><img src="/assets/img/branding/logo.png" alt="Pressed By J & H" style="width: 120px; padding: 10px 0px;"></span>
+                        Meet <span style="color: #ff9700;"><img src="/assets/img/branding/logo.png"
+                                alt="Pressed By J & H" style="width: 120px; padding: 10px 0px;"></span>
                     </h1>
                     <p class="home__description">
                         A passion for health, turned into something special
@@ -51,8 +67,11 @@
                     </div>
                     <div class="story-content" style="color: white;">
                         <h2 style="font-family: var(--second-font);">Our Beginning</h2>
-                        <p style="color: white;">What started as a simple morning routine between friends has grown into something we're truly proud of. We began pressing juices in our kitchen, experimenting with different combinations and sharing them with friends and family.</p>
-                        <p style="color: white;">The response was overwhelming, and here we are today, sharing our passion for healthy, delicious juices with you.</p>
+                        <p style="color: white;">What started as a simple morning routine between friends has grown into
+                            something we're truly proud of. We began pressing juices in our kitchen, experimenting with
+                            different combinations and sharing them with friends and family.</p>
+                        <p style="color: white;">The response was overwhelming, and here we are today, sharing our
+                            passion for healthy, delicious juices with you.</p>
                     </div>
                 </div>
             </div>
@@ -61,7 +80,8 @@
         <!-- Team Section -->
         <section class="team-section">
             <div class="container">
-                <h2 class="section-title" style="position: relative; color: white; font-family: var(--second-font);">The Faces Behind Your Juice</h2>
+                <h2 class="section-title" style="position: relative; color: white; font-family: var(--second-font);">The
+                    Faces Behind Your Juice</h2>
                 <div class="team-grid">
                     <!-- J -->
                     <div class="team-member">
@@ -73,10 +93,12 @@
                         <div class="member-info">
                             <h3 style="color: black; font-weight: bold; font-family: var(--second-font);">J</h3>
                             <p class="member-title">The Juice Master</p>
-                            <p class="member-bio">With a background in nutrition and a love for experimenting with flavors, J brings the perfect balance of health and taste to every recipe.</p>
+                            <p class="member-bio">With a background in nutrition and a love for experimenting with
+                                flavors, J brings the perfect balance of health and taste to every recipe.</p>
                             <a href="/sweet-green">
                                 <div class="athlete-favorite-juice" style="bottom: initial; top: 1rem;">
-                                    <img src="/assets/img/juices/sweet-green.png" alt="Favorite Juice" class="juice-photo">
+                                    <img src="/assets/img/juices/sweet-green.png" alt="Favorite Juice"
+                                        class="juice-photo">
                                     <span style="color: #969c05; font-family: var(--second-font);">Sweet Green</span>
                                 </div>
                             </a>
@@ -93,10 +115,12 @@
                         <div class="member-info">
                             <h3 style="color: black; font-weight: bold; font-family: var(--second-font);">Hunter</h3>
                             <p class="member-title">The Creative Force</p>
-                            <p class="member-bio">Hunter's creative approach to juice combinations and dedication to quality control ensures that every bottle meets our high standards.</p>
+                            <p class="member-bio">Hunter's creative approach to juice combinations and dedication to
+                                quality control ensures that every bottle meets our high standards.</p>
                             <a href="/sour-punch">
                                 <div class="athlete-favorite-juice" style="bottom: initial; top: 1rem;">
-                                    <img src="/assets/img/juices/sour-punch.png" alt="Favorite Juice" class="juice-photo">
+                                    <img src="/assets/img/juices/sour-punch.png" alt="Favorite Juice"
+                                        class="juice-photo">
                                     <span style="color: #8b000d; font-family: var(--second-font);">Sour Punch</span>
                                 </div>
                             </a>
@@ -109,7 +133,8 @@
         <!-- Values Section -->
         <section class="values-section">
             <div class="container">
-                <h2 class="section-title" style="position: relative; color: white; font-family: var(--second-font);">What We Value</h2>
+                <h2 class="section-title" style="position: relative; color: white; font-family: var(--second-font);">
+                    What We Value</h2>
                 <div class="values-grid">
                     <div class="value-card">
                         <i class="ri-heart-line"></i>
