@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!--=============== FAVICON ===============-->
+    <link rel="shortcut icon" href="/assets/img/favicon.png" type="image/x-icon">
+
+    <!--=============== REMIXICONS ===============-->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
+
+    <!--=============== CSS ===============-->
+    <link rel="stylesheet" href="/assets/css/styles.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap');
+    </style>
+
+    <!--=============== JS ===============-->
+    <script type="module" src="/assets/js/main.js"></script>
+
+    <title>Juice Details - Pressed By J & H</title>
+</head>
+
+<body>
+    <main class="main">
+        <div class="background-shapes">
+            <div class="home__shape-small"></div>
+            <div class="home__shape-big"></div>
+            <img src="/assets/img/shape-bg.png" alt="" class="home__shape-bg">
+        </div>
+
+        <!-- Product Details -->
+        <section id="juicePage" class="product-section">
+            <div class="product-container">
+                <div class="product-image-container">
+                    <img src="" alt="" class="product-image">
+                    <div class="product-image-overlay"></div>
+                </div>
+                <div class="product-info">
+                    <h1 class="product-title"></h1>
+                    <p class="product-description"></p>
+                    <div class="ingredients-list"></div>
+                    <div class="product-price"></div>
+                    <div class="quantity-controls">
+                        <button class="decrement">-</button>
+                        <input type="number" class="quantity-input" value="1" min="1">
+                        <button class="increment">+</button>
+                    </div>
+                    <button class="add-to-cart-btn">Add to Cart</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Related Products -->
+        <section class="related-products">
+            <h2>You May Also Like</h2>
+            <div class="carousel-container">
+                <button class="carousel-button prev">
+                    <i class="ri-arrow-left-s-line"></i>
+                </button>
+                <div class="carousel-track-container">
+                    <div class="carousel-track"></div>
+                </div>
+                <button class="carousel-button next">
+                    <i class="ri-arrow-right-s-line"></i>
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <!--=============== GSAP ===============-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.10.4/gsap.min.js"></script>
+
+    <!--=============== MAIN JS ===============-->
+    <script src="/assets/js/juices-database.js"></script>
+    <script type="module" src="/assets/js/router.js"></script>
+    <script src="/assets/js/cart.js"></script>
+    <script src="/assets/js/juice.js"></script>
+</body>
+
+</html>
