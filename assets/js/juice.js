@@ -30,16 +30,20 @@ function linkAction() {
 navLink.forEach(n => n.addEventListener('click', linkAction))
 
 document.addEventListener('DOMContentLoaded', function() {
-            // Get the juice slug from the query parameter
-            const params = new URLSearchParams(window.location.search);
-            const slug = params.get('juice');
+            console.log('Juice.js loaded');
+
+            // Get the juice slug from the URL path
+            const slug = window.location.pathname.split('/').pop();
+            console.log('Current slug:', slug);
 
             if (typeof juices === 'undefined' || !juices) {
-                console.error('Juices array is not defined. Ensure juices.js is loaded.');
+                console.error('Juices array is not defined. Ensure juices-database.js is loaded.');
                 return;
             }
+            console.log('Available juices:', juices);
 
             const juice = juices.find(j => j.slug === slug);
+            console.log('Found juice:', juice);
 
             if (!juice) {
                 window.location.href = '/';
@@ -68,9 +72,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 </ul>
             </div>
             <p class="product__price">$${juice.price.toFixed(2)}</p>
-            <a href="#" class="home__button" style="transform: translate(0px, 0px); opacity: 1; background-color: ${juice.color}">
-                Add to Cart
-            </a>
+            <button class="home__button add-to-cart" data-id="${juice.id}"  style="transform: translate(0px, 0px); opacity: 1; background-color: ${juice.color}">
+                <span style="margin-right: 5px; font-size: 1rem;">Add to Cart</span> <svg viewBox="0 0 24 24" width="24" height="24" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+            </button>
         </div>
 
         <div class="home__images">
@@ -84,19 +91,85 @@ document.addEventListener('DOMContentLoaded', function() {
                     class="home__apple${index + 1}" style="z-index: 0;">
             `).join('')}
             <div>
-                <img src="assets/img/leaf.png" alt="Leaf image" class="home__leaf">
-                <img src="assets/img/leaf.png" alt="Leaf image" class="home__leaf">
-                <img src="assets/img/leaf.png" alt="Leaf image" class="home__leaf">
-                <img src="assets/img/leaf.png" alt="Leaf image" class="home__leaf">
+                <img src="/assets/img/leaf.png" alt="Leaf image" class="home__leaf">
+                <img src="/assets/img/leaf.png" alt="Leaf image" class="home__leaf">
+                <img src="/assets/img/leaf.png" alt="Leaf image" class="home__leaf">
+                <img src="/assets/img/leaf.png" alt="Leaf image" class="home__leaf">
             </div>
         </div>
     `;
+
+    // Populate nutrition section
+        const nutritionSection = document.querySelector('.nutrition-content');
+        nutritionSection.innerHTML = `
+            <div class="magnifier-container">
+                <img src="/assets/img/nutrition-facts/${juice.slug}-facts.png" 
+                    alt="${juice.name} Nutrition Facts" 
+                    class="nutrition-image"
+                    loading="lazy">
+                <div class="magnifier"></div>
+            </div>
+    `;
+
+    // Add animation for the nutrition image
+    TweenMax.from('.nutrition-image', 1, {
+        delay: 1.8,
+        opacity: 0,
+        y: 20,
+        ease: Expo.easeInOut
+    });
+
+    // Magnifier functionality for desktop only
+    if (window.innerWidth > 768) {
+        const magnifier = document.querySelector('.magnifier');
+        const image = document.querySelector('.nutrition-image');
+        const magnifierContainer = document.querySelector('.magnifier-container');
+
+        // Wait for image to load to get correct dimensions
+        image.onload = function() {
+            const imageWidth = image.offsetWidth;
+            const imageHeight = image.offsetHeight;
+            const zoom = 2; // Zoom level
+
+            // Set the background size based on actual image dimensions
+            magnifier.style.backgroundSize = `${imageWidth * zoom}px ${imageHeight * zoom}px`;
+
+            magnifierContainer.addEventListener('mousemove', function(e) {
+                const rect = this.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                // Keep magnifier inside the image boundaries
+                const magnifierRadius = 60; // Half of magnifier size
+                const boundedX = Math.min(Math.max(magnifierRadius, x), rect.width - magnifierRadius);
+                const boundedY = Math.min(Math.max(magnifierRadius, y), rect.height - magnifierRadius);
+
+                // Position the magnifier
+                magnifier.style.left = `${boundedX}px`;
+                magnifier.style.top = `${boundedY}px`;
+
+                // Calculate background position for the zoomed image
+                const bgX = (x / rect.width) * 100;
+                const bgY = (y / rect.height) * 100;
+                
+                magnifier.style.backgroundImage = `url('/assets/img/nutrition-facts/${juice.slug}-facts.png')`;
+                magnifier.style.backgroundPosition = `${bgX}% ${bgY}%`;
+            });
+
+            magnifierContainer.addEventListener('mouseenter', function() {
+                magnifier.style.opacity = '1';
+            });
+
+            magnifierContainer.addEventListener('mouseleave', function() {
+                magnifier.style.opacity = '0';
+            });
+        };
+    }
 
     // Initialize carousel with filtered juices
     initializeCarousel(slug);
 
     // Initialize GSAP animations
-    TweenMax.from('.home__title', 1, { delay: .2, opacity: 0, y: 20, ease: Expo.easeInOut });
     TweenMax.from('.ingredients-list', 1, { delay: .3, opacity: 0, y: 20, ease: Expo.easeInOut });
     TweenMax.from('.product__price', 1, { delay: .4, opacity: 0, y: 20, ease: Expo.easeInOut });
     TweenMax.from('.home__button', 1, { delay: .5, opacity: 0, y: 20, ease: Expo.easeInOut });
@@ -131,15 +204,24 @@ function initializeCarousel(currentSlug) {
     function createJuiceHTML(juice, index) {
         return `
             <div class="carousel-item" data-index="${index}">
-                <a href="/juices.html?juice=${juice.slug}" class="textImgContainer ${juice.slug}" 
+                <a href="/juices/${juice.slug}" class="textImgContainer ${juice.slug}" 
                    style="background-color: ${juice.color}10">
-                    <img src="${juice.imageUrl}" alt="${juice.name}">
-                    <h3>${juice.name}</h3>
-                    <p class="juice-description">${juice.description}</p>
+                    <img src="${juice.imageUrl}" alt="${juice.name}" class="juice-bottle">
+                    <h3 style="font-family: var(--second-font);">${juice.name}</h3>
+                    <div class="ingredients-preview">
+                            ${juice.ingredients.map(ingredient => `
+                                <span class="ingredient-tag">
+                                    <img src="/assets/img/ingredients/${ingredient.toLowerCase().replace(/ /g, '-')}.svg" 
+                                        alt="${ingredient}" 
+                                        class="ingredient-icon">
+                                       <span class="ingredient-name">${ingredient}</span>
+                                </span>
+                            `).join('')}
+                        </div>
                     <p class="juice-price">$${juice.price.toFixed(2)}</p>
                 </a>
                 <button class="add-to-cart" data-id="${juice.id}" style="background-color: ${juice.color}">
-                    <svg viewBox="0 0 24 24" width="24" height="24" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1">
+                    <span style="margin-right: 5px; font-size: 1rem;">Add to Cart</span> <svg viewBox="0 0 24 24" width="24" height="24" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1">
                         <line x1="12" y1="5" x2="12" y2="19"></line>
                         <line x1="5" y1="12" x2="19" y2="12"></line>
                     </svg>

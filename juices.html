@@ -6,64 +6,48 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!--=============== FAVICON ===============-->
-    <link rel="shortcut icon" href="assets/img/favicon.png" type="image/x-icon">
+    <link rel="shortcut icon" href="/assets/img/favicon.png" type="image/x-icon">
 
     <!--=============== REMIXICONS ===============-->
     <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
 
     <!--=============== CSS ===============-->
-    <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="stylesheet" href="/assets/css/styles.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap');
+    </style>
+
+    <!--=============== JS ===============-->
+    <script type="module" src="/assets/js/main.js"></script>
 
     <title>Product Details</title>
 </head>
 
 <body>
     <!--==================== HEADER ====================-->
-    <header class="header" id="header">
-        <nav class="nav container">
-            <a href="/" class="nav__logo">
-                <img src="/assets/img/branding/logo.png" alt="J & H Logo">
-            </a>
-
-            <div class="nav__menu" id="nav-menu">
-                <ul class="nav__list">
-                    <li class="nav__item">
-                        <a href="/" class="nav__link">Home</a>
-                    </li>
-                    <li class="nav__item">
-                        <a href="/about" class="nav__link">About</a>
-                    </li>
-                    <li class="nav__item">
-                        <a href="/juices" class="nav__link active-link">Juices</a>
-                    </li>
-                    <li class="nav__item">
-                        <a href="/contact" class="nav__link">Contact</a>
-                    </li>
-                </ul>
-
-                <div class="nav__close" id="nav-close">
-                    <i class="ri-close-line"></i>
-                </div>
-
-                <img src="assets/img/nav-img.png" alt="Nav image" class="nav__img">
-            </div>
-
-            <div class="nav__toggle" id="nav-toggle">
-                <i class="ri-menu-line"></i>
-            </div>
-        </nav>
-    </header>
 
     <main class="main">
         <div class="background-shapes">
             <div class="home__shape-small"></div>
             <div class="home__shape-big"></div>
-            <img src="assets/img/shape-bg.png" alt="" class="home__shape-bg">
+            <img src="/assets/img/shape-bg.png" alt="" class="home__shape-bg">
         </div>
 
         <section class="home product-details">
             <div class="home__container container" style="column-gap: 0rem; padding-top: 10rem; max-width: 100%; position: relative; display: flex;" id="juicePage">
                 <!-- Dynamic content will be inserted here -->
+            </div>
+        </section>
+
+        <!-- Show the specific juices nutritional facts image -->
+        <section class="nutrition-section">
+            <h3 class="home__title" style="text-align: center; padding-top: 2rem;">
+                Nutritional Facts
+            </h3>
+            <div class="container" style="max-width: 700px;">
+                <div class="nutrition-content">
+                    <!-- Content will be dynamically inserted here -->
+                </div>
             </div>
         </section>
 
@@ -98,6 +82,7 @@
 
     <!--=============== MAIN JS ===============-->
     <script src="/assets/js/juices-database.js"></script>
+    <script src="/assets/js/cart.js"></script>
     <script src="/assets/js/juice.js"></script>
 </body>
 

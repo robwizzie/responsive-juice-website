@@ -1,33 +1,21 @@
-/*=============== SHOW MENU ===============*/
-const navMenu = document.getElementById('nav-menu'),
-    navToggle = document.getElementById('nav-toggle'),
-    navClose = document.getElementById('nav-close')
+import Header from '/assets/js/components/header.js';
 
-/*===== MENU SHOW =====*/
-/* Validate if constant exists */
-if (navToggle) {
-    navToggle.addEventListener('click', () => {
-        navMenu.classList.add('show-menu')
-    })
+async function initializePage() {
+    // Render header
+    const headerContainer = document.createElement('div');
+    headerContainer.innerHTML = await Header.render();
+    document.body.prepend(headerContainer);
+
+    // Initialize header functionality
+    Header.init();
+
+    // Initialize cart after header is rendered
+    if (typeof window.cart === 'undefined') {
+        window.cart = new Cart();
+    }
 }
 
-/*===== MENU HIDDEN =====*/
-/* Validate if constant exists */
-if (navClose) {
-    navClose.addEventListener('click', () => {
-        navMenu.classList.remove('show-menu')
-    })
-}
-
-/*=============== REMOVE MENU MOBILE ===============*/
-const navLink = document.querySelectorAll('.nav__link')
-
-function linkAction() {
-    const navMenu = document.getElementById('nav-menu')
-        // When we click on each nav__link, we remove the show-menu class
-    navMenu.classList.remove('show-menu')
-}
-navLink.forEach(n => n.addEventListener('click', linkAction))
+document.addEventListener('DOMContentLoaded', initializePage);
 
 /*=============== GSAP ANIMATION ===============*/
 TweenMax.from('.home__title', 1, { delay: .2, opacity: 0, y: 20, ease: Expo.easeInOut })
@@ -45,23 +33,34 @@ TweenMax.from('.home__leaf:nth-child(5)', 2, { delay: 1.7, opacity: 0, y: -800, 
 TweenMax.from('.home__leaf:nth-child(6)', 2, { delay: 1.8, opacity: 0, y: -800, ease: Expo.easeInOut })
 
 document.addEventListener('DOMContentLoaded', function() {
-    const track = document.querySelector('.carousel-track');
-    track.innerHTML = '';
+            const track = document.querySelector('.carousel-track');
+            if (!track) return;
+            track.innerHTML = '';
 
-    let startX = 0;
-    let currentX = 0;
-    let isDragging = false;
-    let startTransform = 0;
-    let swipeThreshold = 50;
-    let isTransitioning = false;
+            let startX = 0;
+            let currentX = 0;
+            let isDragging = false;
+            let startTransform = 0;
+            let swipeThreshold = 50;
+            let isTransitioning = false;
 
-    function createJuiceHTML(juice, index) {
-        return `
+            function createJuiceHTML(juice, index) {
+                return `
             <div class="carousel-item" data-index="${index}">
-                <a href="/juices.html?juice=${juice.slug}" onclick="navigateTo('/juices.html?juice=${juice.slug}'); return false;" class="textImgContainer ${juice.slug}" style="background-color: ${juice.color}10">
-                    <img src="/assets/img/juices/${juice.slug}.png" alt="${juice.name}">
-                    <h3>${juice.name}</h3>
-                    <p class="juice-description">${juice.description}</p>
+                <a href="/juices/${juice.slug}" class="textImgContainer ${juice.slug}" 
+                   style="background-color: ${juice.color}10">
+                    <img src="${juice.imageUrl}" alt="${juice.name}" class="juice-bottle">
+                    <h3 style="font-family: var(--second-font);">${juice.name}</h3>
+                    <div class="ingredients-preview">
+                            ${juice.ingredients.map(ingredient => `
+                                <span class="ingredient-tag">
+                                    <img src="/assets/img/ingredients/${ingredient.toLowerCase().replace(/ /g, '-')}.svg" 
+                                        alt="${ingredient}" 
+                                        class="ingredient-icon">
+                                    <span class="ingredient-name">${ingredient}</span>
+                                </span>
+                            `).join('')}
+                        </div>
                     <p class="juice-price">$${juice.price.toFixed(2)}</p>
                 </a>
                 <button class="add-to-cart" data-id="${juice.id}" style="background-color: ${juice.color}">
@@ -266,17 +265,6 @@ document.addEventListener('DOMContentLoaded', function() {
     prevButton.addEventListener('click', prevSlide);
     nextButton.addEventListener('click', nextSlide);
 
-    // Add to cart functionality
-    track.addEventListener('click', (e) => {
-        const addToCartButton = e.target.closest('.add-to-cart');
-        if (addToCartButton) {
-            e.stopPropagation();
-            const juiceId = parseInt(addToCartButton.dataset.id);
-            const selectedJuice = juices.find(juice => juice.id === juiceId);
-            console.log('Added to cart:', selectedJuice);
-        }
-    });
-
     // Initial setup
     updateCarousel(true);
 
@@ -391,4 +379,11 @@ document.addEventListener('DOMContentLoaded', function() {
             updateCarousel();
         }
     });
+});
+
+// Add to main.js
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('Main.js - DOM Content Loaded');
+    console.log('Cart available:', window.cart);
+    console.log('Add to cart buttons:', document.querySelectorAll('.add-to-cart').length);
 });

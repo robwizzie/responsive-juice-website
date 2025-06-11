@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!--=============== FAVICON ===============-->
+    <link rel="shortcut icon" href="/assets/img/favicon.png" type="image/x-icon">
+
+    <!--=============== REMIXICONS ===============-->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
+
+    <!--=============== CSS ===============-->
+    <link rel="stylesheet" href="/assets/css/styles.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap');
+    </style>
+
+    <!--=============== JS ===============-->
+    <script type="module" src="assets/js/main.js"></script>
+
+    <title>About Us - Pressed By J & H</title>
+</head>
+
+<body>
+    <main class="main">
+        <div class="background-shapes">
+            <div class="home__shape-small"></div>
+            <div class="home__shape-big"></div>
+            <img src="/assets/img/shape-bg.png" alt="" class="home__shape-bg">
+        </div>
+
+        <!-- Story Section -->
+        <section class="about-section">
+            <div class="container">
+                <div class="about-header">
+                    <h1 class="home__title">
+                        Meet <span style="color: #ff9700;"><img src="/assets/img/branding/logo.png" alt="Pressed By J & H" style="width: 120px; padding: 10px 0px;"></span>
+                    </h1>
+                    <p class="home__description">
+                        A passion for health, turned into something special
+                    </p>
+                </div>
+
+                <div class="story-grid">
+                    <div class="story-image">
+                        <div class="image-placeholder">
+                            <span>Photo Coming Soon</span>
+                        </div>
+                    </div>
+                    <div class="story-content" style="color: white;">
+                        <h2 style="font-family: var(--second-font);">Our Beginning</h2>
+                        <p style="color: white;">What started as a simple morning routine between friends has grown into something we're truly proud of. We began pressing juices in our kitchen, experimenting with different combinations and sharing them with friends and family.</p>
+                        <p style="color: white;">The response was overwhelming, and here we are today, sharing our passion for healthy, delicious juices with you.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Team Section -->
+        <section class="team-section">
+            <div class="container">
+                <h2 class="section-title" style="position: relative; color: white; font-family: var(--second-font);">The Faces Behind Your Juice</h2>
+                <div class="team-grid">
+                    <!-- J -->
+                    <div class="team-member">
+                        <div class="member-photo">
+                            <div class="image-placeholder">
+                                <span>J</span>
+                            </div>
+                        </div>
+                        <div class="member-info">
+                            <h3 style="color: black; font-weight: bold; font-family: var(--second-font);">J</h3>
+                            <p class="member-title">The Juice Master</p>
+                            <p class="member-bio">With a background in nutrition and a love for experimenting with flavors, J brings the perfect balance of health and taste to every recipe.</p>
+                            <a href="/sweet-green">
+                                <div class="athlete-favorite-juice" style="bottom: initial; top: 1rem;">
+                                    <img src="/assets/img/juices/sweet-green.png" alt="Favorite Juice" class="juice-photo">
+                                    <span style="color: #969c05; font-family: var(--second-font);">Sweet Green</span>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Hunter -->
+                    <div class="team-member">
+                        <div class="member-photo">
+                            <div class="image-placeholder">
+                                <span>H</span>
+                            </div>
+                        </div>
+                        <div class="member-info">
+                            <h3 style="color: black; font-weight: bold; font-family: var(--second-font);">Hunter</h3>
+                            <p class="member-title">The Creative Force</p>
+                            <p class="member-bio">Hunter's creative approach to juice combinations and dedication to quality control ensures that every bottle meets our high standards.</p>
+                            <a href="/sour-punch">
+                                <div class="athlete-favorite-juice" style="bottom: initial; top: 1rem;">
+                                    <img src="/assets/img/juices/sour-punch.png" alt="Favorite Juice" class="juice-photo">
+                                    <span style="color: #8b000d; font-family: var(--second-font);">Sour Punch</span>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Values Section -->
+        <section class="values-section">
+            <div class="container">
+                <h2 class="section-title" style="position: relative; color: white; font-family: var(--second-font);">What We Value</h2>
+                <div class="values-grid">
+                    <div class="value-card">
+                        <i class="ri-heart-line"></i>
+                        <h3 style="color: #8b000d;">Fresh & Natural</h3>
+                        <p>Every ingredient is carefully selected and pressed fresh daily</p>
+                    </div>
+                    <div class="value-card">
+                        <i class="ri-team-line"></i>
+                        <h3 style="color: #8b000d;">Community First</h3>
+                        <p>Supporting local farmers and building healthy communities</p>
+                    </div>
+                    <div class="value-card">
+                        <i class="ri-leaf-line"></i>
+                        <h3 style="color: #8b000d;">Sustainability</h3>
+                        <p>Eco-conscious practices in every step of our process</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!--=============== GSAP ===============-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.10.4/gsap.min.js"></script>
+
+    <!--=============== MAIN JS ===============-->
+    <script src="/assets/js/juices-database.js"></script>
+    <script type="module" src="/assets/js/router.js"></script>
+    <script src="/assets/js/cart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Stagger animations
+            TweenMax.from('.about-header', 1, {
+                delay: .2,
+                opacity: 0,
+                y: 20,
+                ease: Expo.easeInOut
+            });
+            TweenMax.from('.story-image', 1, {
+                delay: .3,
+                opacity: 0,
+                x: -30,
+                ease: Expo.easeInOut
+            });
+            TweenMax.from('.story-content', 1, {
+                delay: .4,
+                opacity: 0,
+                x: 30,
+                ease: Expo.easeInOut
+            });
+
+            // Team members fade in
+            const teamMembers = document.querySelectorAll('.team-member');
+            teamMembers.forEach((member, index) => {
+                TweenMax.from(member, 1, {
+                    delay: .5 + (index * 0.2),
+                    opacity: 0,
+                    y: 30,
+                    ease: Expo.easeInOut
+                });
+            });
+
+            // Values cards stagger
+            const valueCards = document.querySelectorAll('.value-card');
+            valueCards.forEach((card, index) => {
+                TweenMax.from(card, 1, {
+                    delay: .7 + (index * 0.2),
+                    opacity: 0,
+                    y: 30,
+                    ease: Expo.easeInOut
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>
