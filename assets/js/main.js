@@ -1,39 +1,17 @@
 import Header from '/assets/js/components/header.js';
 
-async function loadScript(src) {
-	return new Promise((resolve, reject) => {
-		const script = document.createElement('script');
-		script.src = src;
-		script.onload = () => resolve();
-		script.onerror = () => reject(new Error(`Failed to load script: ${src}`));
-		document.head.appendChild(script);
-	});
-}
-
 async function initializePage() {
-	try {
-		// Load required scripts
-		await Promise.all([loadScript('/assets/js/juices-database.js'), loadScript('/assets/js/cart.js'), loadScript('/assets/js/router.js')]);
+	// Render header
+	const headerContainer = document.createElement('div');
+	headerContainer.innerHTML = await Header.render();
+	document.body.prepend(headerContainer);
 
-		// Render header
-		const headerContainer = document.createElement('div');
-		headerContainer.innerHTML = await Header.render();
-		document.body.prepend(headerContainer);
+	// Initialize header functionality
+	Header.init();
 
-		// Initialize header functionality
-		Header.init();
-
-		// Initialize cart
-		if (typeof window.cart === 'undefined') {
-			window.cart = new Cart();
-		}
-
-		// Initialize router after all scripts are loaded
-		if (typeof window.router === 'undefined') {
-			window.router = new Router();
-		}
-	} catch (error) {
-		console.error('Error initializing page:', error);
+	// Initialize cart after header is rendered
+	if (typeof window.cart === 'undefined') {
+		window.cart = new Cart();
 	}
 }
 
