@@ -413,3 +413,24 @@ document.addEventListener('DOMContentLoaded', () => {
 	console.log('Cart available:', window.cart);
 	console.log('Add to cart buttons:', document.querySelectorAll('.add-to-cart').length);
 });
+
+// Add page-loading class immediately
+if (!document.documentElement.classList.contains('page-loading')) {
+	document.documentElement.classList.add('page-loading');
+}
+
+// Create and append loader overlay if it doesn't exist
+let loader = document.getElementById('page-loader');
+if (!loader) {
+	loader = document.createElement('div');
+	loader.id = 'page-loader';
+	loader.innerHTML = '<div class="spinner"></div>';
+	document.body.prepend(loader);
+}
+
+window.addEventListener('load', () => {
+	// Remove loading class and hide loader
+	document.documentElement.classList.remove('page-loading');
+	loader.classList.add('hidden');
+	setTimeout(() => loader.remove(), 600); // clean up after fade-out
+});
