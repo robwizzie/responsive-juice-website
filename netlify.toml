@@ -1,0 +1,5 @@
+[build]
+  publish = "."
+  functions = "netlify/functions"
+
+# Redirect rules are in _redirects file for cleaner syntax 

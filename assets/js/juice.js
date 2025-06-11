@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         <li>
                             <img src="/assets/img/ingredients/${ingredient.toLowerCase().replace(/ /g, '-')}.svg" 
                                 alt="${ingredient}" 
-                                style="width: 50px; height: 50px; vertical-align: middle;">
+                                style="width: 50px; height: 50px; vertical-align: middle;" loading="lazy" decoding="async">
                             ${ingredient}
                         </li>
                     `
@@ -87,7 +87,7 @@ document.addEventListener('DOMContentLoaded', function () {
         <div class="home__images">
             <img src="/assets/img/splash/${juice.slug}-splash.svg" alt="Liquid image" class="home__liquid">
             <div class="home__juice-animate" style="z-index: 3; position: relative;">
-                <img src="${juice.imageUrl}" alt="${juice.name}" class="home__juice">
+                <img src="${juice.imageUrl}" alt="${juice.name}" class="home__juice" loading="lazy" decoding="async">
             </div>
             ${juice.ingredients
 				.slice(0, 2)
@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', function () {
 					(ingredient, index) => `
                 <img src="/assets/img/ingredients/${ingredient.toLowerCase().replace(/ /g, '-')}.svg" 
                     alt="${ingredient}" 
-                    class="home__apple${index + 1}" style="z-index: 0;">
+                    class="home__apple${index + 1}" style="z-index: 0;" loading="lazy" decoding="async">
             `
 				)
 				.join('')}
@@ -211,7 +211,7 @@ function initializeCarousel(currentSlug) {
             <div class="carousel-item" data-index="${index}">
                 <a href="/juices/${juice.slug}" class="textImgContainer ${juice.slug}" 
                    style="background-color: ${juice.color}10">
-                    <img src="${juice.imageUrl}" alt="${juice.name}" class="juice-bottle">
+                    <img src="${juice.imageUrl}" alt="${juice.name}" class="juice-bottle" loading="lazy" decoding="async">
                     <h3 style="font-family: var(--second-font);">${juice.name}</h3>
                     <div class="ingredients-preview">
                             ${juice.ingredients
@@ -220,7 +220,7 @@ function initializeCarousel(currentSlug) {
                                 <span class="ingredient-tag">
                                     <img src="/assets/img/ingredients/${ingredient.toLowerCase().replace(/ /g, '-')}.svg" 
                                         alt="${ingredient}" 
-                                        class="ingredient-icon">
+                                        class="ingredient-icon" loading="lazy" decoding="async">
                                        <span class="ingredient-name">${ingredient}</span>
                                 </span>
                             `

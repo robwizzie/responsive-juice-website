@@ -1,0 +1,17 @@
+/create-checkout-session /.netlify/functions/create-checkout-session 200
+/send-email /.netlify/functions/send-email 200
+/juices            /juices.html        200
+/juices/           /juices.html        200
+/juices/:slug      /juice-details.html 200
+/juices/*          /juices.html        200
+/about            /about.html        200
+/about/           /about.html        200
+/athletes         /athletes.html     200
+/athletes/        /athletes.html     200
+/contact          /contact.html      200
+/contact/         /contact.html      200
+/success          /success.html      200
+/success/         /success.html      200
+/cancel           /cancel.html       200
+/cancel/          /cancel.html       200
+/*                /index.html        200 

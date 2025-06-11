@@ -8,15 +8,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="juice-card-content">
                     <a href="/juices/${juice.slug}" class="juice-image-link">
                         <div class="juice-image">
-                            <img src="${juice.imageUrl}" alt="${juice.name}" class="juice-bottle">
-                            <img src="/assets/img/splash/${juice.slug}-splash.svg" alt="" class="juice-splash">
+                            <img src="${juice.imageUrl}" alt="${juice.name}" class="juice-bottle" loading="lazy" decoding="async">
+                            <img src="/assets/img/splash/${juice.slug}-splash.svg" alt="" class="juice-splash" loading="lazy" decoding="async">
                             ${juice.ingredients
 								.slice(0, 2)
 								.map(
 									(ingredient, index) => `
                                 <img src="/assets/img/ingredients/${ingredient.toLowerCase().replace(/ /g, '-')}.svg" 
                                     alt="${ingredient}" 
-                                    class="juice-ingredient ingredient-${index + 1}">
+                                    class="juice-ingredient ingredient-${index + 1}" loading="lazy" decoding="async">
                             `
 								)
 								.join('')}
@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <span class="ingredient-tag">
                                     <img src="/assets/img/ingredients/${ingredient.toLowerCase().replace(/ /g, '-')}.svg" 
                                         alt="${ingredient}" 
-                                        class="ingredient-icon">
+                                        class="ingredient-icon" loading="lazy" decoding="async">
                                     ${ingredient}
                                 </span>
                             `
@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="juice-footer">
                             <span class="juice-price" style="color: black; font-weight: bold; margin-top: 0;">$${juice.price.toFixed(2)}</span>
                             <button class="home__button add-to-cart" data-id="${juice.id}"  
-                                    style="transform: translate(0px, 0px); opacity: 1; background-color: ${juice.color}">
+                                    style="transform: translate(0px, 0px); opacity: 1; background-color: ${juice.color};">
                                 Add to Cart
                             </button>
                         </div>

@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', function () {
             <div class="carousel-item" data-index="${index}">
                 <a href="/juices/${juice.slug}" class="textImgContainer ${juice.slug}" 
                    style="background-color: ${juice.color}10">
-                    <img src="${juice.imageUrl}" alt="${juice.name}" class="juice-bottle">
+                    <img src="${juice.imageUrl}" alt="${juice.name}" class="juice-bottle" loading="lazy" decoding="async">
                     <h3 style="font-family: var(--second-font);">${juice.name}</h3>
                     <div class="ingredients-preview">
                             ${juice.ingredients
@@ -58,7 +58,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                 <span class="ingredient-tag">
                                     <img src="/assets/img/ingredients/${ingredient.toLowerCase().replace(/ /g, '-')}.svg" 
                                         alt="${ingredient}" 
-                                        class="ingredient-icon">
+                                        class="ingredient-icon" loading="lazy" decoding="async">
                                     <span class="ingredient-name">${ingredient}</span>
                                 </span>
                             `
@@ -385,6 +385,24 @@ document.addEventListener('DOMContentLoaded', function () {
 			isDragging = false;
 			track.classList.remove('dragging');
 			updateCarousel();
+		}
+	});
+
+	// Enable navigation for <button href="..."> elements (used on the hero section buttons).
+	document.addEventListener('click', event => {
+		// Look for the closest button that has an href attribute and the "home__button" class.
+		const btn = event.target.closest('button.home__button[href]');
+		if (!btn) return;
+
+		// Skip if this button is meant for cart operations or checkout.
+		if (btn.classList.contains('add-to-cart') || btn.id === 'checkoutButton' || btn.classList.contains('checkout-button')) {
+			return;
+		}
+
+		const url = btn.getAttribute('href');
+		if (url && !url.startsWith('#')) {
+			event.preventDefault();
+			window.location.assign(url);
 		}
 	});
 });

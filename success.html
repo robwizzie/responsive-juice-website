@@ -55,6 +55,14 @@
     <script src="/assets/js/juices-database.js"></script>
     <script src="/assets/js/cart.js"></script>
     <script>
+        // Clear cart after successful order
+        document.addEventListener('DOMContentLoaded', () => {
+            localStorage.removeItem('cart');
+            if (window.cart) {
+                window.cart.items = {};
+                window.cart.updateCartUI();
+            }
+        });
         // GSAP animations
         document.addEventListener('DOMContentLoaded', () => {
             TweenMax.from('.success-icon', 1, {

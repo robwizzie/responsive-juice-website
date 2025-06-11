@@ -12,7 +12,15 @@
     <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
 
     <!--=============== CSS ===============-->
-    <link rel="stylesheet" href="/assets/css/styles.css">
+    <link rel="preload" href="/assets/css/styles.css" as="style" onload="this.rel='stylesheet'">
+    <noscript>
+        <link rel="stylesheet" href="/assets/css/styles.css">
+    </noscript>
+
+    <!-- Preconnects for Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap');
     </style>
@@ -20,12 +28,10 @@
     <!--=============== JS ===============-->
     <script type="module" src="/assets/js/main.js"></script>
 
-    <title>Product Details</title>
+    <title>Our Juices - Pressed By J & H</title>
 </head>
 
 <body>
-    <!--==================== HEADER ====================-->
-
     <main class="main">
         <div class="background-shapes">
             <div class="home__shape-small"></div>
@@ -33,45 +39,49 @@
             <img src="/assets/img/shape-bg.png" alt="" class="home__shape-bg">
         </div>
 
-        <section class="home product-details">
-            <div class="home__container container" style="column-gap: 0rem; padding-top: 10rem; max-width: 100%; position: relative; display: flex;" id="juicePage">
-                <!-- Dynamic content will be inserted here -->
+        <!-- Catalog Header -->
+        <section class="catalog-header">
+            <div class="container">
+                <h1 class="home__title text-center" style="display: inline-flex; gap: 1rem;">
+                    Our <span style="color: #ff9700;">Juices</span>
+                </h1>
+                <p class="home__description text-center">
+                    Fresh pressed daily with love
+                </p>
             </div>
         </section>
 
-        <!-- Show the specific juices nutritional facts image -->
-        <section class="nutrition-section">
-            <h3 class="home__title" style="text-align: center; padding-top: 2rem;">
-                Nutritional Facts
-            </h3>
-            <div class="container" style="max-width: 700px;">
-                <div class="nutrition-content">
-                    <!-- Content will be dynamically inserted here -->
+        <!-- Juice Catalog -->
+        <section class="juice-catalog">
+            <div class="container">
+                <div class="juice-grid">
+                    <!-- Juice cards will be dynamically inserted here -->
                 </div>
             </div>
         </section>
 
-        <section class="related-products">
-            <div class="carousel-container">
-                <h1 class="home__title" style="text-align: center;">
-                    Other Juices
-                </h1>
-                <div class="carousel">
-                    <button class="carousel-button prev">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="15 18 9 12 15 6"></polyline>
-                        </svg>
-                    </button>
-
-                    <div class="carousel-track" id="relatedJuices">
-                        <!-- Related juices will be inserted here -->
+        <!-- Benefits Section -->
+        <section class="benefits-section">
+            <div class="container">
+                <h2 class="section-title"
+                    style="color: white; position: relative; padding: 0rem 2rem; font-family: var(--second-font);">Why
+                    Choose Our Juices</h2>
+                <div class="benefits-grid">
+                    <div class="benefit-card">
+                        <i class="ri-medal-line"></i>
+                        <h3 style="color: #8b000d; font-weight: bold;">Premium Quality</h3>
+                        <p>100% fresh ingredients, cold-pressed daily</p>
                     </div>
-
-                    <button class="carousel-button next">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="9 18 15 12 9 6"></polyline>
-                        </svg>
-                    </button>
+                    <div class="benefit-card">
+                        <i class="ri-health-book-line"></i>
+                        <h3 style="color: #8b000d; font-weight: bold;">Nutrient Rich</h3>
+                        <p>Maximum nutrients preserved through our process</p>
+                    </div>
+                    <div class="benefit-card">
+                        <i class="ri-timer-line"></i>
+                        <h3 style="color: #8b000d; font-weight: bold;">Fresh Daily</h3>
+                        <p>Made fresh every morning for optimal freshness</p>
+                    </div>
                 </div>
             </div>
         </section>
@@ -82,8 +92,9 @@
 
     <!--=============== MAIN JS ===============-->
     <script src="/assets/js/juices-database.js"></script>
+    <script type="module" src="/assets/js/router.js"></script>
     <script src="/assets/js/cart.js"></script>
-    <script src="/assets/js/juice.js"></script>
+    <script src="/assets/js/all-juices.js"></script>
 </body>
 
 </html>
