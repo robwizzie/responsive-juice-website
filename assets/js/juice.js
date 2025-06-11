@@ -29,121 +29,164 @@ function linkAction() {
 }
 navLink.forEach(n => n.addEventListener('click', linkAction));
 
-function initializeJuicePage() {
+document.addEventListener('DOMContentLoaded', function () {
 	console.log('Juice.js loaded');
 
 	// Get the juice slug from the URL path
 	const slug = window.location.pathname.split('/').pop();
 	console.log('Current slug:', slug);
 
-	if (typeof window.juices === 'undefined' || !window.juices) {
+	if (typeof juices === 'undefined' || !juices) {
 		console.error('Juices array is not defined. Ensure juices-database.js is loaded.');
 		return;
 	}
-	console.log('Available juices:', window.juices);
+	console.log('Available juices:', juices);
 
-	const juice = window.juices.find(j => j.slug === slug);
+	const juice = juices.find(j => j.slug === slug);
 	console.log('Found juice:', juice);
 
 	if (!juice) {
+		window.location.href = '/';
 		console.warn('Juice not found for slug:', slug);
-		window.router.navigate('/juices');
 		return;
 	}
 
 	// Populate main product details
 	const juicePage = document.getElementById('juicePage');
-	if (!juicePage) {
-		console.error('Juice page container not found');
-		return;
-	}
-
-	// Update product details
-	const productImage = juicePage.querySelector('.product-image');
-	if (productImage) {
-		productImage.src = juice.imageUrl;
-		productImage.alt = juice.name;
-	}
-
-	const productTitle = juicePage.querySelector('.product-title');
-	if (productTitle) {
-		productTitle.textContent = juice.name;
-	}
-
-	const productPrice = juicePage.querySelector('.product-price');
-	if (productPrice) {
-		productPrice.textContent = `$${juice.price.toFixed(2)}`;
-	}
-
-	const productDescription = juicePage.querySelector('.product-description');
-	if (productDescription) {
-		productDescription.textContent = juice.description;
-	}
-
-	const ingredientsList = juicePage.querySelector('.ingredients-list');
-	if (ingredientsList) {
-		ingredientsList.innerHTML = juice.ingredients
-			.map(
-				ingredient => `
-            <div class="ingredient-item">
-                <img src="/assets/img/ingredients/${ingredient.toLowerCase().replace(/ /g, '-')}.svg" 
-                     alt="${ingredient}" 
-                     class="ingredient-icon">
-                <span>${ingredient}</span>
+	juicePage.innerHTML = `
+        <div class="product__info">
+            <h1 class="home__title" style="max-width: 550px;">
+                ${juice.name} <span style="color: ${juice.color};">Details</span>
+            </h1>
+            <div class="ingredients-list">
+            <h3 style="color:${juice.color}; margin-bottom: 1rem; font-size: 2.5rem;">Ingredients:</h3>
+                <ul style="font-family: var(--second-font);">
+                    ${juice.ingredients
+						.map(
+							ingredient => `
+                        <li>
+                            <img src="/assets/img/ingredients/${ingredient.toLowerCase().replace(/ /g, '-')}.svg" 
+                                alt="${ingredient}" 
+                                style="width: 50px; height: 50px; vertical-align: middle;">
+                            ${ingredient}
+                        </li>
+                    `
+						)
+						.join('')}
+                </ul>
             </div>
-        `
-			)
-			.join('');
+            <p class="product__price">$${juice.price.toFixed(2)}</p>
+            <button class="home__button add-to-cart" data-id="${juice.id}"  style="transform: translate(0px, 0px); opacity: 1; background-color: ${juice.color}">
+                <span style="margin-right: 5px; font-size: 1rem;">Add to Cart</span> <svg viewBox="0 0 24 24" width="24" height="24" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+            </button>
+        </div>
+
+        <div class="home__images">
+            <img src="/assets/img/splash/${juice.slug}-splash.svg" alt="Liquid image" class="home__liquid">
+            <div class="home__juice-animate" style="z-index: 3; position: relative;">
+                <img src="${juice.imageUrl}" alt="${juice.name}" class="home__juice">
+            </div>
+            ${juice.ingredients
+				.slice(0, 2)
+				.map(
+					(ingredient, index) => `
+                <img src="/assets/img/ingredients/${ingredient.toLowerCase().replace(/ /g, '-')}.svg" 
+                    alt="${ingredient}" 
+                    class="home__apple${index + 1}" style="z-index: 0;">
+            `
+				)
+				.join('')}
+            <div>
+                <img src="/assets/img/leaf.png" alt="Leaf image" class="home__leaf">
+                <img src="/assets/img/leaf.png" alt="Leaf image" class="home__leaf">
+                <img src="/assets/img/leaf.png" alt="Leaf image" class="home__leaf">
+                <img src="/assets/img/leaf.png" alt="Leaf image" class="home__leaf">
+            </div>
+        </div>
+    `;
+
+	// Populate nutrition section
+	const nutritionSection = document.querySelector('.nutrition-content');
+	nutritionSection.innerHTML = `
+            <div class="magnifier-container">
+                <img src="/assets/img/nutrition-facts/${juice.slug}-facts.png" 
+                    alt="${juice.name} Nutrition Facts" 
+                    class="nutrition-image"
+                    loading="lazy">
+                <div class="magnifier"></div>
+            </div>
+    `;
+
+	// Add animation for the nutrition image
+	TweenMax.from('.nutrition-image', 1, {
+		delay: 1.8,
+		opacity: 0,
+		y: 20,
+		ease: Expo.easeInOut
+	});
+
+	// Magnifier functionality for desktop only
+	if (window.innerWidth > 768) {
+		const magnifier = document.querySelector('.magnifier');
+		const image = document.querySelector('.nutrition-image');
+		const magnifierContainer = document.querySelector('.magnifier-container');
+
+		// Wait for image to load to get correct dimensions
+		image.onload = function () {
+			const imageWidth = image.offsetWidth;
+			const imageHeight = image.offsetHeight;
+			const zoom = 2; // Zoom level
+
+			// Set the background size based on actual image dimensions
+			magnifier.style.backgroundSize = `${imageWidth * zoom}px ${imageHeight * zoom}px`;
+
+			magnifierContainer.addEventListener('mousemove', function (e) {
+				const rect = this.getBoundingClientRect();
+				const x = e.clientX - rect.left;
+				const y = e.clientY - rect.top;
+
+				// Keep magnifier inside the image boundaries
+				const magnifierRadius = 60; // Half of magnifier size
+				const boundedX = Math.min(Math.max(magnifierRadius, x), rect.width - magnifierRadius);
+				const boundedY = Math.min(Math.max(magnifierRadius, y), rect.height - magnifierRadius);
+
+				// Position the magnifier
+				magnifier.style.left = `${boundedX}px`;
+				magnifier.style.top = `${boundedY}px`;
+
+				// Calculate background position for the zoomed image
+				const bgX = (x / rect.width) * 100;
+				const bgY = (y / rect.height) * 100;
+
+				magnifier.style.backgroundImage = `url('/assets/img/nutrition-facts/${juice.slug}-facts.png')`;
+				magnifier.style.backgroundPosition = `${bgX}% ${bgY}%`;
+			});
+
+			magnifierContainer.addEventListener('mouseenter', function () {
+				magnifier.style.opacity = '1';
+			});
+
+			magnifierContainer.addEventListener('mouseleave', function () {
+				magnifier.style.opacity = '0';
+			});
+		};
 	}
 
-	// Initialize quantity controls
-	const quantityInput = juicePage.querySelector('.quantity-input');
-	const decrementBtn = juicePage.querySelector('.decrement');
-	const incrementBtn = juicePage.querySelector('.increment');
-	const addToCartBtn = juicePage.querySelector('.add-to-cart-btn');
+	// Initialize carousel with filtered juices
+	initializeCarousel(slug);
 
-	if (quantityInput && decrementBtn && incrementBtn && addToCartBtn) {
-		let quantity = 1;
-		quantityInput.value = quantity;
-
-		decrementBtn.addEventListener('click', () => {
-			if (quantity > 1) {
-				quantity--;
-				quantityInput.value = quantity;
-			}
-		});
-
-		incrementBtn.addEventListener('click', () => {
-			quantity++;
-			quantityInput.value = quantity;
-		});
-
-		quantityInput.addEventListener('change', e => {
-			const value = parseInt(e.target.value);
-			if (value < 1) {
-				quantity = 1;
-				quantityInput.value = quantity;
-			} else {
-				quantity = value;
-			}
-		});
-
-		addToCartBtn.addEventListener('click', () => {
-			if (window.cart) {
-				window.cart.addItem(juice.id, quantity);
-			}
-		});
-	}
-
-	// Initialize related products carousel
-	initializeCarousel(juice.slug);
-}
-
-// Initialize the page when loaded
-document.addEventListener('DOMContentLoaded', initializeJuicePage);
-
-// Export the initialize function for the router
-window.initializeJuicePage = initializeJuicePage;
+	// Initialize GSAP animations
+	TweenMax.from('.ingredients-list', 1, { delay: 0.3, opacity: 0, y: 20, ease: Expo.easeInOut });
+	TweenMax.from('.product__price', 1, { delay: 0.4, opacity: 0, y: 20, ease: Expo.easeInOut });
+	TweenMax.from('.home__button', 1, { delay: 0.5, opacity: 0, y: 20, ease: Expo.easeInOut });
+	TweenMax.from('.home__liquid', 1, { delay: 0.7, opacity: 0, y: 200, ease: Expo.easeInOut });
+	TweenMax.from('.home__juice-animate', 1, { delay: 1.2, opacity: 0, y: -800, ease: Expo.easeInOut });
+	TweenMax.from('.home__apple1', 1, { delay: 1.5, opacity: 0, y: -800, ease: Expo.easeInOut });
+	TweenMax.from('.home__apple2', 1, { delay: 1.6, opacity: 0, y: -800, ease: Expo.easeInOut });
+});
 
 // Carousel initialization function
 function initializeCarousel(currentSlug) {
