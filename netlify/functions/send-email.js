@@ -29,15 +29,23 @@ exports.handler = async event => {
 		};
 	}
 
-	// Set up transporter (Gmail default)
+	// Determine port and secure flag dynamically to prevent mismatches that can cause SSL errors
+	const port = Number(process.env.EMAIL_PORT) || 465;
 	const transporter = nodemailer.createTransport({
 		host: process.env.EMAIL_HOST,
-		port: Number(process.env.EMAIL_PORT) || 465,
-		secure: true, // true for 465
+		port,
+		secure: port === 465, // true for port 465 (SSL), false for 587/25 (STARTTLS)
 		auth: {
 			user: process.env.EMAIL_USER,
 			pass: process.env.EMAIL_PASS
 		}
+	});
+
+	// Optional: tiny debug to verify connection params (removed automatically when building)
+	console.log('SMTP config =>', {
+		host: process.env.EMAIL_HOST,
+		port,
+		secure: port === 465
 	});
 
 	try {

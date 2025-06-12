@@ -148,18 +148,9 @@ app.post('/create-checkout-session', async (req, res) => {
 	try {
 		// Get the base URL
 		const baseURL = `${req.protocol}://${req.get('host')}`;
-		console.log('Base URL:', baseURL);
 
 		const lineItems = req.body.items.map(item => {
 			const imageUrl = `${baseURL}${item.price_data.product_data.images[0]}`;
-			console.log('Constructed image URL:', imageUrl);
-			console.log('Full item data:', {
-				name: item.price_data.product_data.name,
-				description: item.price_data.product_data.description,
-				image: imageUrl,
-				price: item.price_data.unit_amount
-			});
-
 			return {
 				price_data: {
 					currency: 'usd',
@@ -173,8 +164,6 @@ app.post('/create-checkout-session', async (req, res) => {
 				quantity: item.quantity
 			};
 		});
-
-		console.log('Final line items:', JSON.stringify(lineItems, null, 2));
 
 		const session = await stripe.checkout.sessions.create({
 			payment_method_types: ['card'],
@@ -190,9 +179,4 @@ app.post('/create-checkout-session', async (req, res) => {
 		console.error('Error details:', error.raw);
 		res.status(500).json({ error: 'Error creating checkout session' });
 	}
-});
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-	console.log(`Server running on http://localhost:${PORT}`);
 });

@@ -1,6 +1,6 @@
 class Header {
-    static async render() {
-        const headerHTML = `
+	static async render() {
+		const headerHTML = `
             <header class="header" id="header">
                 <nav class="nav container">
                     <a href="/" class="nav__logo">
@@ -17,9 +17,6 @@ class Header {
                             </li>
                             <li class="nav__item">
                                 <a href="/juices" class="nav__link" data-page="juices">Juices</a>
-                            </li>
-                            <li class="nav__item">
-                                <a href="/athletes" class="nav__link" data-page="athletes">Athletes</a>
                             </li>
                             <li class="nav__item">
                                 <a href="/contact" class="nav__link" data-page="contact">Contact</a>
@@ -47,44 +44,44 @@ class Header {
             </header>
         `;
 
-        return headerHTML;
-    }
+		return headerHTML;
+	}
 
-    static init() {
-        const currentPage = window.location.pathname.split('/')[1] || 'home';
-        document.querySelectorAll('.nav__link').forEach(link => {
-            // Check if the current page matches the link's data-page attribute
-            if (link.dataset.page === currentPage || (currentPage === '' && link.dataset.page === 'home')) {
-                link.classList.add('active-link');
-            } else {
-                link.classList.remove('active-link');
-            }
-        });
+	static init() {
+		const currentPage = window.location.pathname.split('/')[1] || 'home';
+		document.querySelectorAll('.nav__link').forEach(link => {
+			// Check if the current page matches the link's data-page attribute
+			if (link.dataset.page === currentPage || (currentPage === '' && link.dataset.page === 'home')) {
+				link.classList.add('active-link');
+			} else {
+				link.classList.remove('active-link');
+			}
+		});
 
-        // Mobile menu functionality
-        const navMenu = document.getElementById('nav-menu');
-        const navToggle = document.getElementById('nav-toggle');
-        const navClose = document.getElementById('nav-close');
-        const navLinks = document.querySelectorAll('.nav__link');
+		// Mobile menu functionality
+		const navMenu = document.getElementById('nav-menu');
+		const navToggle = document.getElementById('nav-toggle');
+		const navClose = document.getElementById('nav-close');
+		const navLinks = document.querySelectorAll('.nav__link');
 
-        if (navToggle) {
-            navToggle.addEventListener('click', () => {
-                navMenu.classList.add('show-menu');
-            });
-        }
+		if (navToggle) {
+			navToggle.addEventListener('click', () => {
+				navMenu.classList.add('show-menu');
+			});
+		}
 
-        if (navClose) {
-            navClose.addEventListener('click', () => {
-                navMenu.classList.remove('show-menu');
-            });
-        }
+		if (navClose) {
+			navClose.addEventListener('click', () => {
+				navMenu.classList.remove('show-menu');
+			});
+		}
 
-        navLinks.forEach(link => {
-            link.addEventListener('click', () => {
-                navMenu.classList.remove('show-menu');
-            });
-        });
-    }
+		navLinks.forEach(link => {
+			link.addEventListener('click', () => {
+				navMenu.classList.remove('show-menu');
+			});
+		});
+	}
 }
 
 export default Header;
