@@ -1251,6 +1251,15 @@ img {
 	position: relative;
 }
 
+.story-video {
+	width: 100%;
+	max-height: 500px;
+	display: block;
+	border-radius: 1rem;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+	object-fit: contain;
+}
+
 .story-content {
 	padding: 2rem;
 }
@@ -1430,6 +1439,10 @@ img {
 	}
 	.juice-card {
 		padding: 0 !important;
+	}
+	.story-video {
+		width: 100%;
+		height: auto;
 	}
 }
 
