@@ -493,7 +493,7 @@ img {
 	}
 }
 
-.add-to-cart {
+.add-to-cart:not(.left-add-cart) {
 	animation: addToCart 0.3s ease-out;
 }
 
@@ -599,7 +599,7 @@ img {
 	}
 }
 
-.add-to-cart.button-pop {
+.add-to-cart.button-pop:not(.left-add-cart) {
 	animation: buttonPop 0.3s ease-out;
 }
 
