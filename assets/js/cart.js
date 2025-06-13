@@ -1,33 +1,35 @@
 // cart.js
 class Cart {
-    constructor() {
-        console.log('Cart constructor called');
-        this.items = JSON.parse(localStorage.getItem('cart')) || {};
-        this.init();
-    }
+	constructor() {
+		console.log('Cart constructor called');
+		this.items = JSON.parse(localStorage.getItem('cart')) || {};
+		this.init();
+	}
 
-    init() {
-        console.log('Initializing cart...');
-        this.addCartToDOM();
-        // Wait a bit for carousel to initialize
-        setTimeout(() => {
-            this.initializeEventListeners();
-            this.updateCartUI();
-        }, 100);
-    }
+	init() {
+		console.log('Initializing cart...');
+		this.addCartToDOM();
+		// Wait a bit for carousel to initialize
+		setTimeout(() => {
+			this.initializeEventListeners();
+			this.updateCartUI();
+		}, 100);
+	}
 
-    addCartToDOM() {
-        console.log('Adding cart elements to DOM...');
-        // Add cart button to navigation if it doesn't exist
-        const existingButton = document.querySelector('.cart-button');
-        console.log('Existing cart button:', existingButton);
+	addCartToDOM() {
+		console.log('Adding cart elements to DOM...');
+		// Add cart button to navigation if it doesn't exist
+		const existingButton = document.querySelector('.cart-button');
+		console.log('Existing cart button:', existingButton);
 
-        if (!existingButton) {
-            const navList = document.querySelector('.nav__list');
-            console.log('Nav list element:', navList);
+		if (!existingButton) {
+			const navList = document.querySelector('.nav__list');
+			console.log('Nav list element:', navList);
 
-            if (navList) {
-                navList.insertAdjacentHTML('beforeend', `
+			if (navList) {
+				navList.insertAdjacentHTML(
+					'beforeend',
+					`
                     <li class="nav__item">
                         <button class="cart-button">
                             <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" class="bi bi-cart-fill" viewBox="0 0 16 16">
@@ -35,233 +37,238 @@ class Cart {
                             </svg> <span class="cart-count" data-count="0"></span>
                         </button>
                     </li>
-                `);
-                console.log('Cart button added to navigation');
-            }
-        }
+                `
+				);
+				console.log('Cart button added to navigation');
+			}
+		}
 
-        // Add cart container to body if it doesn't exist
-        const existingOverlay = document.getElementById('cartOverlay');
-        console.log('Existing cart overlay:', existingOverlay);
+		// Add cart container to body if it doesn't exist
+		const existingOverlay = document.getElementById('cartOverlay');
+		console.log('Existing cart overlay:', existingOverlay);
 
-        if (!existingOverlay) {
-            document.body.insertAdjacentHTML('beforeend', `
+		if (!existingOverlay) {
+			document.body.insertAdjacentHTML(
+				'beforeend',
+				`
                 <div id="cartOverlay" class="cart-overlay">
                     <div id="cartContainer" class="cart-container" onclick="event.stopPropagation()">
                         <p>Your cart is empty</p>
                     </div>
                 </div>
-            `);
-            console.log('Cart overlay added to body');
-        }
-    }
+            `
+			);
+			console.log('Cart overlay added to body');
+		}
+	}
 
-    initializeEventListeners() {
-        console.log('Initializing event listeners...');
+	initializeEventListeners() {
+		console.log('Initializing event listeners...');
 
-        // Add to cart buttons
-        const addToCartButtons = document.querySelectorAll('.add-to-cart');
-        console.log('Found add-to-cart buttons:', addToCartButtons.length);
+		// Add to cart buttons
+		const addToCartButtons = document.querySelectorAll('.add-to-cart');
+		console.log('Found add-to-cart buttons:', addToCartButtons.length);
 
-        addToCartButtons.forEach(button => {
-            const juiceId = button.dataset.id;
-            console.log('Setting up listener for juice ID:', juiceId);
+		addToCartButtons.forEach(button => {
+			const juiceId = button.dataset.id;
+			console.log('Setting up listener for juice ID:', juiceId);
 
-            // Remove old listeners by cloning the button
-            const newButton = button.cloneNode(true);
-            button.parentNode.replaceChild(newButton, button);
+			// Remove old listeners by cloning the button
+			const newButton = button.cloneNode(true);
+			button.parentNode.replaceChild(newButton, button);
 
-            newButton.addEventListener('click', (e) => {
-                console.log('Add to cart button clicked');
-                e.preventDefault();
-                e.stopPropagation();
-                const id = parseInt(e.currentTarget.dataset.id);
-                console.log('Attempting to add juice ID:', id);
-                this.addItem(id);
-            });
-        });
+			newButton.addEventListener('click', e => {
+				console.log('Add to cart button clicked');
+				e.preventDefault();
+				e.stopPropagation();
+				const id = parseInt(e.currentTarget.dataset.id);
+				console.log('Attempting to add juice ID:', id);
+				this.addItem(id);
+			});
+		});
 
-        // Cart toggle
-        const cartButton = document.querySelector('.cart-button');
-        console.log('Cart toggle button:', cartButton);
+		// Cart toggle
+		const cartButton = document.querySelector('.cart-button');
+		console.log('Cart toggle button:', cartButton);
 
-        if (cartButton) {
-            // Remove old listeners by cloning
-            const newCartButton = cartButton.cloneNode(true);
-            cartButton.parentNode.replaceChild(newCartButton, cartButton);
+		if (cartButton) {
+			// Remove old listeners by cloning
+			const newCartButton = cartButton.cloneNode(true);
+			cartButton.parentNode.replaceChild(newCartButton, cartButton);
 
-            newCartButton.addEventListener('click', () => {
-                console.log('Cart button clicked');
-                this.toggleCart();
-            });
-        }
+			newCartButton.addEventListener('click', () => {
+				console.log('Cart button clicked');
+				this.toggleCart();
+			});
+		}
 
-        // Cart overlay close
-        const cartOverlay = document.getElementById('cartOverlay');
-        console.log('Cart overlay element:', cartOverlay);
+		// Cart overlay close
+		const cartOverlay = document.getElementById('cartOverlay');
+		console.log('Cart overlay element:', cartOverlay);
 
-        if (cartOverlay) {
-            cartOverlay.addEventListener('click', (e) => {
-                console.log('Cart overlay clicked');
-                if (e.target === cartOverlay) {
-                    this.toggleCart();
-                }
-            });
-        }
-    }
+		if (cartOverlay) {
+			cartOverlay.addEventListener('click', e => {
+				console.log('Cart overlay clicked');
+				if (e.target === cartOverlay) {
+					this.toggleCart();
+				}
+			});
+		}
+	}
 
-    addItem(juiceId) {
-        console.log('Adding item to cart:', juiceId);
-        console.log('Current items:', this.items);
+	addItem(juiceId) {
+		console.log('Adding item to cart:', juiceId);
+		console.log('Current items:', this.items);
 
-        if (!this.items[juiceId]) {
-            this.items[juiceId] = 0;
-        }
-        this.items[juiceId]++;
+		if (!this.items[juiceId]) {
+			this.items[juiceId] = 0;
+		}
+		this.items[juiceId]++;
 
-        console.log('Updated items:', this.items);
-        this.saveCart();
-        this.updateCartUI();
-        this.showAddedToCartFeedback(juiceId);
+		console.log('Updated items:', this.items);
+		this.saveCart();
+		this.updateCartUI();
+		this.showAddedToCartFeedback(juiceId);
 
-        // Update specific item quantity in UI if cart is open
-        this.updateItemQuantityUI(juiceId);
+		// Update specific item quantity in UI if cart is open
+		this.updateItemQuantityUI(juiceId);
 
-        // Only open cart on first add
-        this.openCart();
-    }
+		// Only open cart on first add
+		this.openCart();
+	}
 
-    removeItem(juiceId) {
-        if (this.items[juiceId]) {
-            this.items[juiceId]--;
-            if (this.items[juiceId] === 0) {
-                delete this.items[juiceId];
-            }
-            this.saveCart();
+	removeItem(juiceId) {
+		if (this.items[juiceId]) {
+			this.items[juiceId]--;
+			if (this.items[juiceId] === 0) {
+				delete this.items[juiceId];
+			}
+			this.saveCart();
 
-            // If there are no items left, update entire cart UI
-            if (Object.keys(this.items).length === 0) {
-                this.updateCartUI();
-            } else {
-                // Otherwise just update the specific item and total
-                this.updateItemQuantityUI(juiceId);
-                this.updateCartTotal();
-            }
-        }
-    }
+			// If there are no items left, update entire cart UI
+			if (Object.keys(this.items).length === 0) {
+				this.updateCartUI();
+			} else {
+				// Otherwise just update the specific item and total
+				this.updateItemQuantityUI(juiceId);
+				this.updateCartTotal();
+			}
+		}
+	}
 
-    updateItemQuantityUI(juiceId) {
-        const cartContainer = document.getElementById('cartContainer');
-        if (!cartContainer) return;
+	updateItemQuantityUI(juiceId) {
+		const cartContainer = document.getElementById('cartContainer');
+		if (!cartContainer) return;
 
-        // Update quantity display for specific item
-        const itemContainer = cartContainer.querySelector(`.cart-item[data-juice-id="${juiceId}"]`);
-        if (itemContainer) {
-            const juice = juices.find(j => j.id === parseInt(juiceId));
-            const quantity = this.items[juiceId] || 0;
+		// Update quantity display for specific item
+		const itemContainer = cartContainer.querySelector(`.cart-item[data-juice-id="${juiceId}"]`);
+		if (itemContainer) {
+			const juice = juices.find(j => j.id === parseInt(juiceId));
+			const quantity = this.items[juiceId] || 0;
 
-            if (quantity === 0) {
-                // If quantity is 0, remove the item element
-                itemContainer.remove();
-                if (Object.keys(this.items).length === 0) {
-                    this.updateCartUI(); // Update entire cart if empty
-                }
-            } else {
-                // Update quantity display
-                const quantitySpan = itemContainer.querySelector('.quantity-controls span');
-                if (quantitySpan) {
-                    quantitySpan.textContent = quantity;
-                }
-                // Update price display
-                const priceDisplay = itemContainer.querySelector('.cart-item-details p');
-                if (priceDisplay) {
-                    priceDisplay.textContent = `$${juice.price.toFixed(2)} × ${quantity}`;
-                }
-            }
-        }
+			if (quantity === 0) {
+				// If quantity is 0, remove the item element
+				itemContainer.remove();
+				if (Object.keys(this.items).length === 0) {
+					this.updateCartUI(); // Update entire cart if empty
+				}
+			} else {
+				// Update quantity display
+				const quantitySpan = itemContainer.querySelector('.quantity-controls span');
+				if (quantitySpan) {
+					quantitySpan.textContent = quantity;
+				}
+				// Update price display
+				const priceDisplay = itemContainer.querySelector('.cart-item-details p');
+				if (priceDisplay) {
+					priceDisplay.textContent = `$${juice.price.toFixed(2)} × ${quantity}`;
+				}
+			}
+		}
 
-        // Update cart button count
-        const itemsCount = Object.values(this.items).reduce((a, b) => a + b, 0);
-        const cartButton = document.querySelector('.cart-button');
-        if (cartButton) {
-            cartButton.setAttribute('data-count', itemsCount);
-        }
-    }
+		// Update cart button count
+		const itemsCount = Object.values(this.items).reduce((a, b) => a + b, 0);
+		const cartButton = document.querySelector('.cart-button');
+		if (cartButton) {
+			cartButton.setAttribute('data-count', itemsCount);
+		}
+	}
 
-    updateCartTotal() {
-        const cartContainer = document.getElementById('cartContainer');
-        if (!cartContainer) return;
+	updateCartTotal() {
+		const cartContainer = document.getElementById('cartContainer');
+		if (!cartContainer) return;
 
-        const totalElement = cartContainer.querySelector('.cart-total h3');
-        if (totalElement) {
-            totalElement.textContent = `Total: $${this.getTotal().toFixed(2)}`;
-        }
-    }
+		const totalElement = cartContainer.querySelector('.cart-total h3');
+		if (totalElement) {
+			totalElement.textContent = `Total: $${this.getTotal().toFixed(2)}`;
+		}
+	}
 
-    openCart() {
-        const overlay = document.getElementById('cartOverlay');
-        if (overlay && !overlay.classList.contains('show')) {
-            overlay.classList.add('show');
-            this.updateCartUI();
-        }
-    }
+	openCart() {
+		const overlay = document.getElementById('cartOverlay');
+		if (overlay && !overlay.classList.contains('show')) {
+			overlay.classList.add('show');
+			this.updateCartUI();
+		}
+	}
 
-    closeCart() {
-        const overlay = document.getElementById('cartOverlay');
-        if (overlay && overlay.classList.contains('show')) {
-            overlay.classList.remove('show');
-        }
-    }
+	closeCart() {
+		const overlay = document.getElementById('cartOverlay');
+		if (overlay && overlay.classList.contains('show')) {
+			overlay.classList.remove('show');
+		}
+	}
 
-    toggleCart() {
-        const overlay = document.getElementById('cartOverlay');
-        if (overlay.classList.contains('show')) {
-            this.closeCart();
-        } else {
-            this.openCart();
-        }
-    }
+	toggleCart() {
+		const overlay = document.getElementById('cartOverlay');
+		if (overlay.classList.contains('show')) {
+			this.closeCart();
+		} else {
+			this.openCart();
+		}
+	}
 
-    updateCartUI() {
-            console.log('Updating cart UI');
-            console.log('Current items:', this.items);
+	updateCartUI() {
+		console.log('Updating cart UI');
+		console.log('Current items:', this.items);
 
-            const cartContainer = document.getElementById('cartContainer');
-            if (!cartContainer) {
-                console.log('Cart container not found');
-                return;
-            }
+		const cartContainer = document.getElementById('cartContainer');
+		if (!cartContainer) {
+			console.log('Cart container not found');
+			return;
+		}
 
-            const itemsCount = Object.values(this.items).reduce((a, b) => a + b, 0);
-            console.log('Total items count:', itemsCount);
+		const itemsCount = Object.values(this.items).reduce((a, b) => a + b, 0);
+		console.log('Total items count:', itemsCount);
 
-            const cartButton = document.querySelector('.cart-button');
-            if (cartButton) {
-                cartButton.setAttribute('data-count', itemsCount);
-                console.log('Updated cart button count:', itemsCount);
-            }
+		const cartButton = document.querySelector('.cart-button');
+		if (cartButton) {
+			cartButton.setAttribute('data-count', itemsCount);
+			console.log('Updated cart button count:', itemsCount);
+		}
 
-            if (itemsCount === 0) {
-                cartContainer.innerHTML = `
+		if (itemsCount === 0) {
+			cartContainer.innerHTML = `
                 <div class="empty-cart">
                     <h2>Your Cart</h2>
                     <p>Your cart is empty</p>
                     <button onclick="cart.closeCart()" class="checkout-button home__button">Continue Shopping</button>
                 </div>
             `;
-                return;
-            }
+			return;
+		}
 
-            let cartHTML = `
+		let cartHTML = `
             <div class="cart-header">
                 <h2>Your Cart</h2>
                 <button onclick="cart.closeCart()" class="close-button">×</button>
             </div>
             <div class="cart-items">
-                ${Object.entries(this.items).map(([juiceId, quantity]) => {
-                    const juice = juices.find(j => j.id === parseInt(juiceId));
-                    if (!juice) return '';
-                    return `
+                ${Object.entries(this.items)
+					.map(([juiceId, quantity]) => {
+						const juice = juices.find(j => j.id === parseInt(juiceId));
+						if (!juice) return '';
+						return `
                         <div class="cart-item" data-juice-id="${juice.id}" style="border-left: 4px solid ${juice.color};">
                             <img src="${juice.imageUrl}" alt="${juice.name}" style="width: 80px; padding-left: 20px;">
                             <div class="cart-item-details">
@@ -275,7 +282,8 @@ class Cart {
                             </div>
                         </div>
                     `;
-                }).join('')}
+					})
+					.join('')}
             </div>
             <div class="cart-total">
                 <h3 style="margin-bottom: 0px; text-align: center; font-size: 1.4rem; font-weight: bold;">Total: $${this.getTotal().toFixed(2)}</h3>
@@ -283,110 +291,110 @@ class Cart {
             </div>
         `;
 
-        cartContainer.innerHTML = cartHTML;
-        
-        // Add checkout button listener
-        document.getElementById('checkoutButton')?.addEventListener('click', () => this.checkout());
-    }
+		cartContainer.innerHTML = cartHTML;
 
-    showAddedToCartFeedback(juiceId) {
-        const juice = juices.find(j => j.id === juiceId);
-        const button = document.querySelector(`.add-to-cart[data-id="${juiceId}"]`);
+		// Add checkout button listener
+		document.getElementById('checkoutButton')?.addEventListener('click', () => this.checkout());
+	}
 
-        if (button && juice) {
-            // Visual feedback
-            button.style.backgroundColor = '#4CAF50';
-            button.innerHTML = '✓';
-            button.style.fontSize = '20px';
+	showAddedToCartFeedback(juiceId) {
+		const juice = juices.find(j => j.id === juiceId);
+		const button = document.querySelector(`.add-to-cart[data-id="${juiceId}"]`);
 
-            // Reset after animation
-            setTimeout(() => {
-                button.style.backgroundColor = juice.color;
-                button.innerHTML = `
-                    <span style="margin-right: 5px; font-size: 1rem;">Add to Cart</span> <svg viewBox="0 0 24 24" width="24" height="24" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1">
-                        <line x1="12" y1="5" x2="12" y2="19"></line>
-                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                    </svg>
-                `;
-            }, 1000);
-        }
-    }
+		if (button && juice) {
+			// Cache original state once
+			if (!button.dataset.origHtml) {
+				button.dataset.origHtml = button.innerHTML;
+				button.dataset.origBg = button.style.backgroundColor || '#ffffff';
+			}
 
-    saveCart() {
-        localStorage.setItem('cart', JSON.stringify(this.items));
-    }
+			button.style.backgroundColor = '#4CAF50';
+			button.innerHTML = '✓';
+			button.style.fontSize = '20px';
 
-    getTotal() {
-        return Object.entries(this.items).reduce((total, [juiceId, quantity]) => {
-            const juice = juices.find(j => j.id === parseInt(juiceId));
-            return total + (juice.price * quantity);
-        }, 0);
-    }
+			setTimeout(() => {
+				button.style.backgroundColor = button.dataset.origBg;
+				button.innerHTML = button.dataset.origHtml;
+				button.style.fontSize = '';
+			}, 1000);
+		}
+	}
 
-    async checkout() {
-        try {
-            const checkoutItems = Object.entries(this.items).map(([juiceId, quantity]) => {
-                const juice = juices.find(j => j.id === parseInt(juiceId));
-                console.log('Processing juice for checkout:', {
-                    id: juice.id,
-                    name: juice.name,
-                    imageUrl: juice.imageUrl,
-                    fullData: juice
-                });
-                
-                return {
-                    price_data: {
-                        currency: 'usd',
-                        product_data: {
-                            name: juice.name,
-                            description: juice.description,
-                            images: [juice.imageUrl]
-                        },
-                        unit_amount: Math.round(juice.price * 100),
-                    },
-                    quantity: quantity
-                };
-            });
-    
-            console.log('Sending checkout items to server:', JSON.stringify(checkoutItems, null, 2));
-    
-            console.log('Checkout items:', checkoutItems);
-    
-            const response = await fetch('/create-checkout-session', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    items: checkoutItems
-                })
-            });
-    
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-    
-            const { url } = await response.json();
-            if (!url) {
-                throw new Error('No checkout URL received');
-            }
-    
-            window.location.href = url; // Use href instead of assignment
-        } catch (error) {
-            console.error('Error during checkout:', error);
-            alert('There was an error processing your checkout. Please try again.');
-        }
-    }
+	saveCart() {
+		localStorage.setItem('cart', JSON.stringify(this.items));
+	}
+
+	getTotal() {
+		return Object.entries(this.items).reduce((total, [juiceId, quantity]) => {
+			const juice = juices.find(j => j.id === parseInt(juiceId));
+			return total + juice.price * quantity;
+		}, 0);
+	}
+
+	async checkout() {
+		try {
+			const checkoutItems = Object.entries(this.items).map(([juiceId, quantity]) => {
+				const juice = juices.find(j => j.id === parseInt(juiceId));
+				console.log('Processing juice for checkout:', {
+					id: juice.id,
+					name: juice.name,
+					imageUrl: juice.imageUrl,
+					fullData: juice
+				});
+
+				return {
+					price_data: {
+						currency: 'usd',
+						product_data: {
+							name: juice.name,
+							description: juice.description,
+							images: [juice.imageUrl]
+						},
+						unit_amount: Math.round(juice.price * 100)
+					},
+					quantity: quantity
+				};
+			});
+
+			console.log('Sending checkout items to server:', JSON.stringify(checkoutItems, null, 2));
+
+			console.log('Checkout items:', checkoutItems);
+
+			const response = await fetch('/create-checkout-session', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					items: checkoutItems
+				})
+			});
+
+			if (!response.ok) {
+				throw new Error(`HTTP error! status: ${response.status}`);
+			}
+
+			const { url } = await response.json();
+			if (!url) {
+				throw new Error('No checkout URL received');
+			}
+
+			window.location.href = url; // Use href instead of assignment
+		} catch (error) {
+			console.error('Error during checkout:', error);
+			alert('There was an error processing your checkout. Please try again.');
+		}
+	}
 }
 
 // Single initialization
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM Content Loaded - Initializing Cart');
-    window.cart = new Cart();
-    console.log('Cart initialized:', window.cart);
+document.addEventListener('DOMContentLoaded', function () {
+	console.log('DOM Content Loaded - Initializing Cart');
+	window.cart = new Cart();
+	console.log('Cart initialized:', window.cart);
 });
 
 // Make cart available globally
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = Cart;
+	module.exports = Cart;
 }
