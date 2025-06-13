@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="juice-card-content">
                     <a href="/juices/${juice.slug}" class="juice-image-link">
                         <div class="juice-image">
-                            <img src="${juice.imageUrl}" alt="${juice.name}" class="juice-bottle" loading="lazy" decoding="async">
+                            <img src="${juice.imageUrl}" alt="${juice.name}" class="all-juices juice-bottle" loading="lazy" decoding="async">
                             <img src="/assets/img/splash/${juice.slug}-splash.svg" alt="" class="juice-splash" loading="lazy" decoding="async">
                             ${juice.ingredients
 								.slice(0, 2)

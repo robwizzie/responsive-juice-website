@@ -211,7 +211,7 @@ function initializeCarousel(currentSlug) {
             <div class="carousel-item" data-index="${index}">
                 <a href="/juices/${juice.slug}" class="textImgContainer ${juice.slug}" 
                    style="background-color: ${juice.color}10">
-                    <img src="${juice.imageUrl}" alt="${juice.name}" class="juice-bottle" loading="lazy" decoding="async">
+                    <img src="${juice.imageUrl}" alt="${juice.name}" class="all-juices juice-bottle" loading="lazy" decoding="async">
                     <h3 style="font-family: var(--second-font);">${juice.name}</h3>
                     <div class="ingredients-preview">
                             ${juice.ingredients

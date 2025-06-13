@@ -43,58 +43,60 @@ document.addEventListener('DOMContentLoaded', function () {
 	let startTransform = 0;
 	let swipeThreshold = 50;
 	let isTransitioning = false;
+	let activeJuice = null;
 
-	function createJuiceHTML(juice, index) {
-		return `
-            <div class="carousel-item" data-index="${index}">
-                <a href="/juices/${juice.slug}" class="textImgContainer ${juice.slug}" 
-                   style="background-color: ${juice.color}10">
-                    <img src="${juice.imageUrl}" alt="${juice.name}" class="juice-bottle" loading="lazy" decoding="async">
-                    <h3 style="font-family: var(--second-font);">${juice.name}</h3>
-                    <div class="ingredients-preview">
-                            ${juice.ingredients
-								.map(
-									ingredient => `
-                                <span class="ingredient-tag">
-                                    <img src="/assets/img/ingredients/${ingredient.toLowerCase().replace(/ /g, '-')}.svg" 
-                                        alt="${ingredient}" 
-                                        class="ingredient-icon" loading="lazy" decoding="async">
-                                    <span class="ingredient-name">${ingredient}</span>
-                                </span>
-                            `
-								)
-								.join('')}
-                        </div>
-                    <p class="juice-price">$${juice.price.toFixed(2)}</p>
-                </a>
-                <button class="add-to-cart" data-id="${juice.id}" style="background-color: ${juice.color}">
-                    <svg viewBox="0 0 24 24" width="24" height="24" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1">
-                        <line x1="12" y1="5" x2="12" y2="19"></line>
-                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                    </svg>
-                </button>
-            </div>
-        `;
+	// Create left panel
+	const carouselElement = document.querySelector('.carousel');
+	const leftPanel = document.createElement('div');
+	leftPanel.className = 'carousel-left-panel';
+	carouselElement.prepend(leftPanel);
+
+	// Build extended array for seamless looping
+	const extendedJuices = [...juices, ...juices, ...juices, ...juices, ...juices, ...juices, ...juices, ...juices, ...juices];
+
+	function renderLeftPanel(juice) {
+		leftPanel.innerHTML = `
+			<h3 class="slide-title" style="font-family: var(--second-font); color:#fff; margin-bottom:1.5rem;">${juice.name}</h3>
+			<div class="ingredients-preview">
+				${juice.ingredients.map(ing => `<span class="ingredient-tag" style="background:rgba(255,255,255,0.3);color:#fff;"><img src="/assets/img/ingredients/${ing.toLowerCase().replace(/ /g, '-')}.svg" alt="${ing}" class="ingredient-icon"> <span class="ingredient-name">${ing}</span></span>`).join('')}
+			</div>
+			<div class="button-row">
+				<a href="/juices/${juice.slug}" class="home__button left-btn" style="background-color:#fff;color:${juice.color};">View Product</a>
+				<button class="home__button left-btn add-to-cart left-add-cart" data-id="${juice.id}" style="background-color:#fff;color:${juice.color};">Add to Cart</button>
+			</div>
+		`;
+		leftPanel.style.backgroundColor = juice.color;
+
+		if (window.innerWidth <= 767) {
+			carouselElement.style.backgroundColor = juice.color;
+		} else {
+			carouselElement.style.backgroundColor = '';
+		}
+
+		// bind add-to-cart button
+		const btn = leftPanel.querySelector('.left-add-cart');
+		if (btn) {
+			btn.addEventListener('click', e => {
+				e.preventDefault();
+				window.cart.addItem(juice.id);
+			});
+		}
 	}
 
-	// Create 9 sets for extra smoothness
-	const extendedJuices = [
-		...juices,
-		...juices,
-		...juices,
-		...juices, // 4 sets before
-		...juices, // main set
-		...juices,
-		...juices,
-		...juices,
-		...juices // 4 sets after
-	];
-
+	// Clear track and recreate items with only bottle image
+	track.innerHTML = '';
 	extendedJuices.forEach((juice, index) => {
-		track.insertAdjacentHTML('beforeend', createJuiceHTML(juice, index % juices.length));
+		track.insertAdjacentHTML(
+			'beforeend',
+			`<div class="carousel-item" data-index="${index % juices.length}">
+				<a href="/juices/${juice.slug}" class="carousel-item-link" tabindex="-1">
+					<img src="${juice.imageUrl}" alt="${juice.name}" class="juice-bottle" loading="lazy" decoding="async">
+				</a>
+			</div>`
+		);
 	});
 
-	// Create elements
+	// Re-query items after rebuild
 	const items = document.querySelectorAll('.carousel-item');
 	const itemCount = juices.length;
 	const totalSets = 9;
@@ -135,7 +137,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
 	function getVisibleItems() {
 		const width = window.innerWidth;
-		if (width >= 1024) return 3;
+		if (width <= 767) return 3;
+		if (width >= 1800) return 5;
+		if (width >= 1024) return 2;
 		if (width >= 768) return 2;
 		return 1;
 	}
@@ -159,10 +163,15 @@ document.addEventListener('DOMContentLoaded', function () {
 			skipTransition = true;
 		}
 
-		// Calculate offset
 		let offset;
 		if (visibleItems === 3) {
+			// If three items visible, center the active one
 			offset = -(currentIndex - 1) * itemWidth;
+		} else if (visibleItems === 1) {
+			// When only one item is visible, center it within the carousel
+			const carouselWidth = carouselElement.offsetWidth;
+			const extraSpace = (carouselWidth - itemWidth) / 2;
+			offset = -currentIndex * itemWidth + extraSpace;
 		} else {
 			offset = -currentIndex * itemWidth;
 		}
@@ -179,21 +188,36 @@ document.addEventListener('DOMContentLoaded', function () {
 			track.style.transform = `translateX(${offset}px)`;
 		}
 
-		// Update active states
+		// Reset classes
+		items.forEach(i => i.classList.remove('prev', 'next', 'next2'));
+		const prevIdx = normalizeIndex(currentIndex - 1);
+		const nextIdx = normalizeIndex(currentIndex + 1);
+		const next2Idx = normalizeIndex(currentIndex + 2);
+
 		items.forEach((item, index) => {
-			const juiceIndex = parseInt(item.dataset.index);
 			const isActive = index === currentIndex;
 
 			if (isActive) {
 				item.classList.add('active');
-				item.querySelector('.textImgContainer').style.backgroundColor = juices[juiceIndex].color;
-				item.querySelector('a').style.pointerEvents = 'auto';
+				activeJuice = juices[parseInt(item.dataset.index)];
 			} else {
 				item.classList.remove('active');
-				item.querySelector('.textImgContainer').style.backgroundColor = `${juices[juiceIndex].color}65`;
-				item.querySelector('a').style.pointerEvents = 'none';
 			}
+
+			if (index === prevIdx) item.classList.add('prev');
+			if (index === nextIdx) item.classList.add('next');
+			if (index === next2Idx) item.classList.add('next2');
 		});
+
+		if (activeJuice) renderLeftPanel(activeJuice);
+
+		// Recenter index when far from middle to achieve infinite loop
+		const distance = Math.abs(currentIndex - middleSetIndex);
+		if (distance > itemCount * 2) {
+			currentIndex = middleSetIndex + ((currentIndex - middleSetIndex) % itemCount);
+			updateCarousel(true);
+			return; // skip rest in this iteration
+		}
 	}
 
 	// Debounce function for resize handler
@@ -326,18 +350,6 @@ document.addEventListener('DOMContentLoaded', function () {
 		track.classList.add('dragging');
 	}
 
-	function handleDragMove(e) {
-		if (!isDragging) return;
-		e.preventDefault();
-
-		currentX = e.type === 'mousemove' ? e.pageX : e.touches[0].pageX;
-		const diff = currentX - startX;
-
-		// Apply drag movement
-		track.style.transition = 'none';
-		track.style.transform = `translateX(${startTransform + diff}px)`;
-	}
-
 	function handleDragEnd(e) {
 		if (!isDragging) return;
 		isDragging = false;
@@ -366,27 +378,7 @@ document.addEventListener('DOMContentLoaded', function () {
 	// Click event listener for items
 	track.addEventListener('click', handleItemClick);
 
-	// Touch event listeners
-	track.addEventListener('touchstart', handleDragStart);
-	track.addEventListener('touchmove', handleDragMove, { passive: false });
-	track.addEventListener('touchend', handleDragEnd);
-
-	// Mouse event listeners for drag
-	track.addEventListener('mousedown', handleDragStart);
-	document.addEventListener('mousemove', handleDragMove);
-	document.addEventListener('mouseup', handleDragEnd);
-
-	// Prevent context menu on long press
-	track.addEventListener('contextmenu', e => e.preventDefault());
-
-	// Clean up function for mouse events when track is not being interacted with
-	document.addEventListener('mouseleave', () => {
-		if (isDragging) {
-			isDragging = false;
-			track.classList.remove('dragging');
-			updateCarousel();
-		}
-	});
+	// Drag interactions disabled for stability
 
 	// Enable navigation for <button href="..."> elements (used on the hero section buttons).
 	document.addEventListener('click', event => {

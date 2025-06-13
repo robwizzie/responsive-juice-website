@@ -776,6 +776,12 @@ img {
 	}
 }
 
+@media (min-width: 1024px) and (max-width: 1799px) {
+	.carousel-item {
+		flex: 0 0 50%;
+	}
+}
+
 @media screen and (min-width: 1048px) {
 	.container {
 		margin-left: auto;
@@ -784,29 +790,52 @@ img {
 }
 
 .carousel-container {
-	max-width: 1200px;
 	margin: 0 auto;
-	padding: 2rem;
+	padding: 2rem 0rem 0rem 0rem;
 	color: white;
 }
 
 .carousel {
 	position: relative;
+	height: 800px;
+	margin: 0 auto;
 	overflow: hidden;
-	padding: 1rem;
+}
+
+.carousel-left-panel {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 50%;
+	height: 100%;
+	padding: 4rem 3rem;
+	box-sizing: border-box;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	text-align: center;
+	z-index: 2;
+	color: #fff;
 }
 
 .carousel-track {
+	position: absolute;
+	right: 0;
+	width: 50%;
+	height: 100%;
+	padding-left: 2%;
 	display: flex;
-	gap: 2rem;
+	gap: 0.25rem;
 	transform: translateX(0);
 	transition: transform 0.5s ease-in-out;
 	will-change: transform;
 	cursor: grab;
 	user-select: none;
-	-webkit-user-select: none;
-	-moz-user-select: none;
-	-ms-user-select: none;
+}
+
+.slide-title {
+	font-size: 3rem;
 }
 
 .carousel-track.dragging {
@@ -819,24 +848,164 @@ img {
 }
 
 .carousel-item {
-	flex: 0 0 calc(33.333% - 1.33rem);
-	padding: 1rem;
-	border-radius: 12px;
-	text-align: center;
-	transition: all 0.3s ease;
-	will-change: transform, opacity;
-	cursor: pointer;
-	user-select: none;
+	flex: 0 0 33.333%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 
-.carousel-item.active {
-	transform: scale(1.05);
+.carousel-item img {
+	width: 100%;
+	max-width: 250px;
+	transition: transform 0.4s ease, opacity 0.4s ease;
+}
+
+.carousel-item.active img {
 	opacity: 1;
 }
 
-.carousel-item:not(.active) {
-	transform: scale(0.9);
-	opacity: 0.8;
+.carousel-item.prev img {
+	transform: scale(0.75);
+	opacity: 0.6;
+}
+
+.carousel-item.next img {
+	transform: rotate(1deg) translateX(25%) translateY(0%) scale(0.75);
+	opacity: 0.6;
+}
+
+.carousel-item.next2 img {
+	transform: rotate(1deg) translateX(50%) translateY(0%) scale(0.75);
+	opacity: 0.6;
+}
+
+.carousel-item:not(.active) img {
+	transform: scale(0.75);
+	opacity: 0.6;
+}
+
+.carousel-left {
+	flex: 0 0 50%;
+	padding: 4rem 3rem;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	color: #fff;
+}
+
+.carousel-left .slide-title {
+	font-size: 2.5rem;
+	margin-bottom: 1.5rem;
+}
+
+.carousel-left .home__button {
+	width: 220px;
+	font-size: 1.1rem;
+}
+
+.carousel-left .ingredients-preview {
+	justify-content: center;
+}
+
+.carousel-right {
+	flex: 0 0 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: #fff;
+}
+
+.carousel-right img {
+	width: 65%;
+	max-height: 80%;
+	object-fit: contain;
+}
+
+/* Responsive adjustments */
+
+@media (max-width: 1024px) {
+	.carousel-left .slide-title {
+		font-size: 2.5rem;
+	}
+	.carousel-track {
+		width: 55%;
+	}
+}
+
+@media (max-width: 767px) {
+	.carousel {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		height: auto;
+	}
+	.carousel-left-panel {
+		position: relative;
+		width: 100%;
+		padding: 2rem 1rem 1rem 1rem;
+		text-align: center;
+		min-height: auto;
+	}
+	.carousel-left-panel .button-row {
+		flex-direction: row;
+		justify-content: center;
+		gap: 0.5rem;
+		flex-wrap: nowrap;
+	}
+	.carousel-left-panel .left-btn {
+		width: 220px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		margin: 0 !important;
+		text-align: center;
+	}
+	/* Track below info */
+	.carousel-track {
+		position: relative;
+		width: 100%;
+		margin-top: 1.5rem;
+		margin-bottom: 4rem;
+		gap: 1rem;
+	}
+	.carousel-item img {
+		max-width: 160px;
+	}
+	.carousel-button.prev,
+	.carousel-button.next {
+		left: auto;
+	}
+	.carousel {
+		text-align: center;
+	}
+	.carousel-button-container {
+		display: flex;
+		position: relative;
+		justify-content: center;
+		align-items: center;
+		gap: 1rem;
+	}
+	.carousel-button.prev {
+		left: 0;
+		transform: none !important;
+		position: static;
+	}
+	.carousel-button.next {
+		left: 0;
+		transform: none !important;
+		position: static;
+	}
+	.slide-title {
+		font-size: 2rem;
+	}
+	.ingredients-preview {
+		min-height: 6rem;
+		align-items: center;
+	}
+	.ingredient-tag {
+		min-height: 44px;
+		height: fit-content;
+	}
 }
 
 .textImgContainer {
@@ -850,16 +1019,6 @@ img {
 
 .carousel-item.active .textImgContainer {
 	transform: translateY(-5px);
-}
-
-.carousel-item img {
-	width: 45%;
-	margin: 0 auto 1rem;
-	transition: transform 0.3s ease;
-}
-
-.carousel-item:hover img {
-	transform: scale(1.05);
 }
 
 .carousel-item h3 {
@@ -908,8 +1067,9 @@ img {
 
 .carousel-button {
 	position: absolute;
-	top: 50%;
-	transform: translateY(-50%);
+	bottom: 3rem;
+	top: auto;
+	transform: none;
 	background: none;
 	border: none;
 	color: white;
@@ -924,11 +1084,11 @@ img {
 }
 
 .carousel-button.prev {
-	left: 0;
+	left: 10%;
 }
 
 .carousel-button.next {
-	right: 0;
+	left: 18%;
 }
 
 .carousel-button svg {
@@ -936,21 +1096,11 @@ img {
 	height: 24px;
 }
 
-/* Desktop (3 items) */
-
-@media (min-width: 1024px) {
-	.carousel-item {
-		flex: 0 0 calc(33.333% - 1.33rem);
-		padding: 1rem;
-	}
-}
-
 /* Tablet (2 items) */
 
 @media (min-width: 768px) and (max-width: 1023px) {
 	.carousel-item {
-		flex: 0 0 calc(50% - 1rem);
-		padding: 0.8rem 2.5rem;
+		flex: 0 0 100%;
 	}
 	.carousel-track {
 		gap: 1.5rem;
@@ -978,14 +1128,10 @@ img {
 
 @media (max-width: 767px) {
 	.carousel-item {
-		flex: 0 0 100%;
-		padding: 0.8rem 3.5rem;
+		flex: 0 0 33.333%;
 	}
 	.carousel-track {
 		gap: 1rem;
-	}
-	.carousel-button {
-		padding: 0.5rem;
 	}
 	.textImgContainer {
 		padding: 1rem;
@@ -1496,11 +1642,14 @@ img {
 }
 
 .juice-bottle {
-	height: 100%;
 	width: auto;
 	object-fit: contain;
 	position: relative;
 	z-index: 2;
+}
+
+.all-juices.juice-bottle {
+	height: 350px;
 }
 
 .juice-splash {
@@ -1539,7 +1688,8 @@ img {
 	background: #f5f5f5;
 	padding: 0.25rem 0.75rem;
 	border-radius: 1rem;
-	font-size: 0.9rem;
+	font-size: 1.2rem;
+	font-family: var(--second-font);
 	color: var(--text-color);
 }
 
@@ -2189,4 +2339,115 @@ html.page-loading body > *:not(#page-loader) {
 	100% {
 		transform: rotate(360deg);
 	}
+}
+
+/* === FINAL CAROUSEL OVERRIDES === */
+
+/* .carousel-item { ... } */
+
+/* === Carousel track gap override === */
+
+/* .carousel-track { ... } */
+
+/* Button row */
+
+.carousel-left-panel .button-row {
+	display: flex;
+	gap: 1rem;
+	margin-top: 1.5rem;
+}
+
+.carousel-left-panel .left-btn {
+	width: 220px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	margin: 0 !important;
+	text-align: center;
+}
+
+.carousel-left-panel .left-btn.add-to-cart {
+	width: 220px !important;
+}
+
+/* Centered button row */
+
+.carousel-left-panel .button-row {
+	justify-content: center;
+	flex-wrap: wrap;
+}
+
+.carousel-left-panel .left-btn {
+	width: 220px;
+	background: #ffffff;
+	color: var(--text-color);
+	font-weight: 600;
+	border-radius: 1.5rem 0.25rem;
+	transition: background 0.3s ease, color 0.3s ease;
+}
+
+.carousel-left-panel .left-btn:hover {
+	background: var(--first-color);
+	color: #fff;
+}
+
+/* Arrow buttons styled */
+
+.carousel-button {
+	bottom: 1.5rem;
+	width: 48px;
+	height: 48px;
+	background: rgba(255, 255, 255, 0.15);
+	border: 2px solid #fff;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: #fff;
+}
+
+.carousel-button.prev {
+	left: 50%;
+	transform: translateX(-120%);
+}
+
+.carousel-button.next {
+	left: 50%;
+	transform: translateX(20%);
+}
+
+/* Show faded prev & next items on tablet/mobile when only 1 item is visible */
+
+@media (max-width: 1023px) {
+	.carousel-item.prev img,
+	.carousel-item.next img {
+		display: block !important;
+		/* override base rule */
+		transform: scale(0.75) !important;
+		opacity: 0.4 !important;
+	}
+	/* Remove left padding so translateX calculations align */
+	.carousel-track {
+		padding-left: 0 !important;
+	}
+}
+
+/* Override specific Add to Cart styling inside carousel left panel */
+
+.carousel-left-panel .left-btn,
+.carousel-left-panel .left-btn.add-to-cart {
+	font-size: 1rem;
+	font-family: var(--body-font);
+}
+
+/* Remove hover transform for Add to Cart buttons */
+
+.add-to-cart:hover,
+.carousel-left-panel .left-btn.add-to-cart:hover {
+	transform: none !important;
+}
+
+.carousel-item-link {
+	display: block;
+	text-decoration: none;
 }
