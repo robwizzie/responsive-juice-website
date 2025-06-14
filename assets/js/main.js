@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', initializePage);
 /*=============== GSAP ANIMATION ===============*/
 TweenMax.from('.home__title', 1, { delay: 0.2, opacity: 0, y: 20, ease: Expo.easeInOut });
 TweenMax.from('.home__description', 1, { delay: 0.3, opacity: 0, y: 20, ease: Expo.easeInOut });
-TweenMax.from('.home__button', 1, { delay: 0.4, opacity: 0, y: 20, ease: Expo.easeInOut });
+TweenMax.from('.home__button:not(.add-to-cart)', 1, { delay: 0.4, opacity: 0, y: 20, ease: Expo.easeInOut });
 TweenMax.from('.home__liquid', 1, { delay: 0.7, opacity: 0, y: 200, ease: Expo.easeInOut });
 TweenMax.from('.home__juice-animate', 1, { delay: 1.2, opacity: 0, y: -800, ease: Expo.easeInOut });
 TweenMax.from('.home__apple1', 1, { delay: 1.5, opacity: 0, y: -800, ease: Expo.easeInOut });
