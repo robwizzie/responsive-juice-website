@@ -227,6 +227,12 @@ function initializeCarousel(currentSlug) {
 	function createCarouselItems() {
 		track.innerHTML = '';
 
+		// Safety check: if no juices to show, exit early
+		if (filteredJuices.length === 0) {
+			track.innerHTML = '<div class="no-juices">No other juices available</div>';
+			return;
+		}
+
 		const visibleItems = getVisibleItems();
 		// Create enough clones to handle any click-to-jump scenario
 		const clonesNeeded = Math.max(visibleItems * 2, filteredJuices.length);
@@ -235,6 +241,7 @@ function initializeCarousel(currentSlug) {
 		for (let i = 0; i < clonesNeeded; i++) {
 			const juiceIndex = (filteredJuices.length - clonesNeeded + i + filteredJuices.length) % filteredJuices.length;
 			const juice = filteredJuices[juiceIndex];
+			if (!juice) continue; // Safety check
 			track.insertAdjacentHTML(
 				'beforeend',
 				`<div class="carousel-item clone-start" data-original-index="${juiceIndex}">
@@ -247,6 +254,7 @@ function initializeCarousel(currentSlug) {
 
 		// Add original items
 		filteredJuices.forEach((juice, index) => {
+			if (!juice) return; // Safety check
 			track.insertAdjacentHTML(
 				'beforeend',
 				`<div class="carousel-item original" data-original-index="${index}">
@@ -261,6 +269,7 @@ function initializeCarousel(currentSlug) {
 		for (let i = 0; i < clonesNeeded; i++) {
 			const juiceIndex = i % filteredJuices.length;
 			const juice = filteredJuices[juiceIndex];
+			if (!juice) continue; // Safety check
 			track.insertAdjacentHTML(
 				'beforeend',
 				`<div class="carousel-item clone-end" data-original-index="${juiceIndex}">

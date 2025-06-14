@@ -2451,3 +2451,15 @@ html.page-loading body > *:not(#page-loader) {
 	display: block;
 	text-decoration: none;
 }
+
+/* No juices message */
+
+.no-juices {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: 300px;
+	color: var(--title-color);
+	font-size: 1.2rem;
+	text-align: center;
+}
