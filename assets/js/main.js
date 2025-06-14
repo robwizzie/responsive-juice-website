@@ -135,6 +135,12 @@ document.addEventListener('DOMContentLoaded', function () {
 			carouselElement.style.backgroundColor = '';
 		}
 
+		// Update "Find Your Juice" title color
+		const juiceWord = document.getElementById('dynamic-juice-word');
+		if (juiceWord) {
+			juiceWord.style.color = juice.color;
+		}
+
 		// Bind add-to-cart button
 		const btn = leftPanel.querySelector('.left-add-cart');
 		if (btn) {

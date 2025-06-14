@@ -304,6 +304,12 @@ function initializeCarousel(currentSlug) {
 			carouselElement.style.backgroundColor = '';
 		}
 
+		// Update "Other Juices" title color
+		const otherJuicesWord = document.getElementById('dynamic-other-juices-word');
+		if (otherJuicesWord) {
+			otherJuicesWord.style.color = juice.color;
+		}
+
 		// Bind add-to-cart button
 		const btn = leftPanel.querySelector('.left-add-cart');
 		if (btn) {
