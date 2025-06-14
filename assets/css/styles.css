@@ -2463,3 +2463,12 @@ html.page-loading body > *:not(#page-loader) {
 	font-size: 1.2rem;
 	text-align: center;
 }
+
+/* Dynamic colored text alignment */
+
+#dynamic-juice-word,
+#dynamic-other-juices-word {
+	display: inline;
+	vertical-align: baseline;
+	line-height: inherit;
+}
