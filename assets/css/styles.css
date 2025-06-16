@@ -2481,3 +2481,58 @@ html.page-loading body > *:not(#page-loader) {
 	vertical-align: baseline;
 	line-height: inherit;
 }
+
+/* Out of stock styles */
+
+.out-of-stock {
+	position: relative;
+	opacity: 0.6;
+}
+
+.out-of-stock::before {
+	content: 'OUT OF STOCK';
+	position: absolute;
+	top: 33%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	background: rgba(255, 255, 255, 0.9);
+	color: #333;
+	padding: 0.5rem 1rem;
+	border-radius: 4px;
+	font-weight: bold;
+	font-size: 0.9rem;
+	z-index: 5;
+	white-space: nowrap;
+}
+
+.out-of-stock img {
+	filter: grayscale(50%);
+}
+
+.juice-card.out-of-stock {
+	pointer-events: none;
+}
+
+.juice-card.out-of-stock:hover {
+	transform: none;
+}
+
+.carousel-item.out-of-stock {
+	opacity: 0.5;
+}
+
+.carousel-item.out-of-stock img {
+	filter: grayscale(70%);
+}
+
+.add-to-cart:disabled {
+	background-color: #ccc !important;
+	color: #666 !important;
+	cursor: not-allowed !important;
+	opacity: 0.6;
+}
+
+.add-to-cart:disabled:hover {
+	transform: none !important;
+	background-color: #ccc !important;
+}

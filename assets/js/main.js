@@ -67,17 +67,25 @@ document.addEventListener('DOMContentLoaded', function () {
 	function createCarouselItems() {
 		track.innerHTML = '';
 
+		// Sort juices to show in-stock items first
+		const sortedJuices = [...juices].sort((a, b) => {
+			if (a.inStock && !b.inStock) return -1;
+			if (!a.inStock && b.inStock) return 1;
+			return 0;
+		});
+
 		const visibleItems = getVisibleItems();
 		// Create enough clones to handle any click-to-jump scenario
-		const clonesNeeded = Math.max(visibleItems * 2, juices.length);
+		const clonesNeeded = Math.max(visibleItems * 2, sortedJuices.length);
 
 		// Add clones of LAST items at the beginning
 		for (let i = 0; i < clonesNeeded; i++) {
-			const juiceIndex = (juices.length - clonesNeeded + i + juices.length) % juices.length;
-			const juice = juices[juiceIndex];
+			const juiceIndex = (sortedJuices.length - clonesNeeded + i + sortedJuices.length) % sortedJuices.length;
+			const juice = sortedJuices[juiceIndex];
+			const outOfStockClass = juice.inStock ? '' : ' out-of-stock';
 			track.insertAdjacentHTML(
 				'beforeend',
-				`<div class="carousel-item clone-start" data-original-index="${juiceIndex}">
+				`<div class="carousel-item clone-start${outOfStockClass}" data-original-index="${juiceIndex}">
 					<a href="/juices/${juice.slug}" class="carousel-item-link" tabindex="-1">
 						<img src="${juice.imageUrl}" alt="${juice.name}" class="juice-bottle" loading="lazy" decoding="async">
 					</a>
@@ -86,10 +94,11 @@ document.addEventListener('DOMContentLoaded', function () {
 		}
 
 		// Add original items
-		juices.forEach((juice, index) => {
+		sortedJuices.forEach((juice, index) => {
+			const outOfStockClass = juice.inStock ? '' : ' out-of-stock';
 			track.insertAdjacentHTML(
 				'beforeend',
-				`<div class="carousel-item original" data-original-index="${index}">
+				`<div class="carousel-item original${outOfStockClass}" data-original-index="${index}">
 					<a href="/juices/${juice.slug}" class="carousel-item-link" tabindex="-1">
 						<img src="${juice.imageUrl}" alt="${juice.name}" class="juice-bottle" loading="lazy" decoding="async">
 					</a>
@@ -99,11 +108,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
 		// Add clones of FIRST items at the end
 		for (let i = 0; i < clonesNeeded; i++) {
-			const juiceIndex = i % juices.length;
-			const juice = juices[juiceIndex];
+			const juiceIndex = i % sortedJuices.length;
+			const juice = sortedJuices[juiceIndex];
+			const outOfStockClass = juice.inStock ? '' : ' out-of-stock';
 			track.insertAdjacentHTML(
 				'beforeend',
-				`<div class="carousel-item clone-end" data-original-index="${juiceIndex}">
+				`<div class="carousel-item clone-end${outOfStockClass}" data-original-index="${juiceIndex}">
 					<a href="/juices/${juice.slug}" class="carousel-item-link" tabindex="-1">
 						<img src="${juice.imageUrl}" alt="${juice.name}" class="juice-bottle" loading="lazy" decoding="async">
 					</a>
@@ -117,6 +127,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
 	// Render left panel content
 	function renderLeftPanel(juice) {
+		const addToCartButton = juice.inStock ? `<button class="home__button left-btn add-to-cart left-add-cart" data-id="${juice.id}" style="background-color:#fff;color:${juice.color};">Add to Cart</button>` : `<button class="home__button left-btn add-to-cart left-add-cart" data-id="${juice.id}" style="background-color:#ccc;color:#666;" disabled>Out of Stock</button>`;
+
 		leftPanel.innerHTML = `
 			<h3 class="slide-title" style="font-family: var(--second-font); color:#fff; margin-bottom:1.5rem;">${juice.name}</h3>
 			<div class="ingredients-preview">
@@ -124,7 +136,7 @@ document.addEventListener('DOMContentLoaded', function () {
 			</div>
 			<div class="button-row">
 				<a href="/juices/${juice.slug}" class="home__button left-btn" style="background-color:#fff;color:${juice.color};">View Product</a>
-				<button class="home__button left-btn add-to-cart left-add-cart" data-id="${juice.id}" style="background-color:#fff;color:${juice.color};">Add to Cart</button>
+				${addToCartButton}
 			</div>
 		`;
 		leftPanel.style.backgroundColor = juice.color;
@@ -141,9 +153,9 @@ document.addEventListener('DOMContentLoaded', function () {
 			juiceWord.style.color = juice.color;
 		}
 
-		// Bind add-to-cart button
+		// Bind add-to-cart button (only if in stock)
 		const btn = leftPanel.querySelector('.left-add-cart');
-		if (btn) {
+		if (btn && juice.inStock) {
 			btn.addEventListener('click', e => {
 				e.preventDefault();
 				window.cart.addItem(juice.id);
@@ -193,6 +205,13 @@ document.addEventListener('DOMContentLoaded', function () {
 			const isClonePosition = currentIndex < originalStart || currentIndex > originalEnd;
 
 			if (!isClonePosition) {
+				// Sort juices to match carousel order
+				const sortedJuices = [...juices].sort((a, b) => {
+					if (a.inStock && !b.inStock) return -1;
+					if (!a.inStock && b.inStock) return 1;
+					return 0;
+				});
+
 				// Update item classes and active juice only for originals
 				items.forEach((item, index) => {
 					item.classList.remove('active', 'prev', 'next', 'next2');
@@ -200,7 +219,7 @@ document.addEventListener('DOMContentLoaded', function () {
 					if (index === currentIndex) {
 						item.classList.add('active');
 						const originalIndex = parseInt(item.dataset.originalIndex);
-						activeJuice = juices[originalIndex];
+						activeJuice = sortedJuices[originalIndex];
 					} else if (index === currentIndex - 1) {
 						item.classList.add('prev');
 					} else if (index === currentIndex + 1) {
@@ -228,10 +247,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
 		// After animation, check if we need to invisibly jump
 		setTimeout(() => {
+			const sortedJuices = [...juices].sort((a, b) => {
+				if (a.inStock && !b.inStock) return -1;
+				if (!a.inStock && b.inStock) return 1;
+				return 0;
+			});
 			const visibleItems = getVisibleItems();
-			const clonesNeeded = Math.max(visibleItems * 2, juices.length);
+			const clonesNeeded = Math.max(visibleItems * 2, sortedJuices.length);
 			const originalStart = clonesNeeded;
-			const originalEnd = originalStart + juices.length - 1;
+			const originalEnd = originalStart + sortedJuices.length - 1;
 
 			// If we animated to an end clone, jump to the corresponding original
 			if (currentIndex > originalEnd) {
@@ -263,7 +287,7 @@ document.addEventListener('DOMContentLoaded', function () {
 					if (index === currentIndex) {
 						item.classList.add('active');
 						const originalIndex = parseInt(item.dataset.originalIndex);
-						activeJuice = juices[originalIndex];
+						activeJuice = sortedJuices[originalIndex];
 					} else if (index === currentIndex - 1) {
 						item.classList.add('prev');
 					} else if (index === currentIndex + 1) {
@@ -296,10 +320,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
 		// After animation, check if we need to invisibly jump
 		setTimeout(() => {
+			const sortedJuices = [...juices].sort((a, b) => {
+				if (a.inStock && !b.inStock) return -1;
+				if (!a.inStock && b.inStock) return 1;
+				return 0;
+			});
 			const visibleItems = getVisibleItems();
-			const clonesNeeded = Math.max(visibleItems * 2, juices.length);
+			const clonesNeeded = Math.max(visibleItems * 2, sortedJuices.length);
 			const originalStart = clonesNeeded;
-			const originalEnd = originalStart + juices.length - 1;
+			const originalEnd = originalStart + sortedJuices.length - 1;
 
 			// If we animated to a start clone, jump to the corresponding original
 			if (currentIndex < originalStart) {
@@ -331,7 +360,7 @@ document.addEventListener('DOMContentLoaded', function () {
 					if (index === currentIndex) {
 						item.classList.add('active');
 						const originalIndex = parseInt(item.dataset.originalIndex);
-						activeJuice = juices[originalIndex];
+						activeJuice = sortedJuices[originalIndex];
 					} else if (index === currentIndex - 1) {
 						item.classList.add('prev');
 					} else if (index === currentIndex + 1) {
@@ -390,10 +419,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
 		// After animation, check if we need to invisibly jump (same logic as navigation)
 		setTimeout(() => {
+			const sortedJuices = [...juices].sort((a, b) => {
+				if (a.inStock && !b.inStock) return -1;
+				if (!a.inStock && b.inStock) return 1;
+				return 0;
+			});
 			const visibleItems = getVisibleItems();
-			const clonesNeeded = Math.max(visibleItems * 2, juices.length);
+			const clonesNeeded = Math.max(visibleItems * 2, sortedJuices.length);
 			const originalStart = clonesNeeded;
-			const originalEnd = originalStart + juices.length - 1;
+			const originalEnd = originalStart + sortedJuices.length - 1;
 
 			// If we moved to a clone, jump to the corresponding original
 			if (currentIndex > originalEnd) {
@@ -425,7 +459,7 @@ document.addEventListener('DOMContentLoaded', function () {
 					if (index === currentIndex) {
 						item.classList.add('active');
 						const originalIndex = parseInt(item.dataset.originalIndex);
-						activeJuice = juices[originalIndex];
+						activeJuice = sortedJuices[originalIndex];
 					} else if (index === currentIndex - 1) {
 						item.classList.add('prev');
 					} else if (index === currentIndex + 1) {
@@ -471,7 +505,7 @@ document.addEventListener('DOMContentLoaded', function () {
 					if (index === currentIndex) {
 						item.classList.add('active');
 						const originalIndex = parseInt(item.dataset.originalIndex);
-						activeJuice = juices[originalIndex];
+						activeJuice = sortedJuices[originalIndex];
 					} else if (index === currentIndex - 1) {
 						item.classList.add('prev');
 					} else if (index === currentIndex + 1) {

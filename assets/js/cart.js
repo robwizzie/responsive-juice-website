@@ -118,6 +118,14 @@ class Cart {
 
 	addItem(juiceId) {
 		console.log('Adding item to cart:', juiceId);
+
+		// Check if juice is in stock
+		const juice = juices.find(j => j.id === parseInt(juiceId));
+		if (!juice || !juice.inStock) {
+			console.log('Item out of stock, cannot add to cart');
+			return;
+		}
+
 		console.log('Current items:', this.items);
 
 		if (!this.items[juiceId]) {
