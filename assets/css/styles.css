@@ -246,15 +246,11 @@ img {
 	color: var(--first-color);
 }
 
-.home__description,
-.home__button {
-	font-weight: 600;
-}
-
 .home__description {
 	color: var(--title-color);
 	margin-bottom: 1.5rem;
 	font-size: 1.3rem;
+	font-weight: 600;
 }
 
 .home__button {
@@ -268,6 +264,9 @@ img {
 	border: 0;
 	width: 100%;
 	cursor: pointer;
+	font-size: 1rem;
+	font-family: var(--second-font);
+	font-weight: 600;
 }
 
 .home__button:hover {
@@ -975,6 +974,8 @@ img {
 		justify-content: center;
 		margin: 0 !important;
 		text-align: center;
+		font-family: var(--second-font);
+		font-size: 1rem;
 	}
 	/* Track below info */
 	.carousel-track {
@@ -1079,7 +1080,6 @@ img {
 	width: 100% !important;
 	height: initial !important;
 	border-radius: 1.5rem 0.25rem !important;
-	font-size: 1.2rem;
 }
 
 .carousel-button {
@@ -2439,14 +2439,6 @@ html.page-loading body > *:not(#page-loader) {
 	.carousel-track {
 		padding-left: 0 !important;
 	}
-}
-
-/* Override specific Add to Cart styling inside carousel left panel */
-
-.carousel-left-panel .left-btn,
-.carousel-left-panel .left-btn.add-to-cart {
-	font-size: 1rem;
-	font-family: var(--body-font);
 }
 
 /* Remove hover transform for Add to Cart buttons */
