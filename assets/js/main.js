@@ -56,6 +56,8 @@ document.addEventListener('DOMContentLoaded', function () {
 	let touchStartX = 0;
 	let touchStartY = 0;
 	let isDragging = false;
+	let dragOffset = 0;
+	let baseTransformX = 0;
 
 	// Get number of visible items based on screen size
 	function getVisibleItems() {
@@ -82,11 +84,11 @@ document.addEventListener('DOMContentLoaded', function () {
 		return sortedJuices[normalizedIndex];
 	}
 
-	// Create carousel items - simpler approach
+	// Create initial carousel items
 	function createCarouselItems() {
 		track.innerHTML = '';
 		const visibleItems = getVisibleItems();
-		const totalItems = Math.max(visibleItems + 4, 7); // Always render enough items
+		const totalItems = Math.max(visibleItems + 4, 7);
 
 		// Create items centered around current index
 		for (let i = 0; i < totalItems; i++) {
@@ -94,15 +96,45 @@ document.addEventListener('DOMContentLoaded', function () {
 			const juice = getJuiceByIndex(logicalIndex);
 			const outOfStockClass = juice.inStock ? '' : ' out-of-stock';
 
-			track.insertAdjacentHTML(
-				'beforeend',
-				`<div class="carousel-item${outOfStockClass}" data-logical-index="${logicalIndex}">
-					<a href="/juices/${juice.slug}" class="carousel-item-link" tabindex="-1">
-						<img src="${juice.imageUrl}" alt="${juice.name}" class="juice-bottle" loading="lazy" decoding="async">
-					</a>
-				</div>`
-			);
+			const item = document.createElement('div');
+			item.className = `carousel-item${outOfStockClass}`;
+			item.dataset.logicalIndex = logicalIndex;
+			item.innerHTML = `
+				<a href="/juices/${juice.slug}" class="carousel-item-link" tabindex="-1">
+					<img src="${juice.imageUrl}" alt="${juice.name}" class="juice-bottle" loading="lazy" decoding="async">
+				</a>
+			`;
+			track.appendChild(item);
 		}
+	}
+
+	// Update existing items without recreating DOM - smooth transitions
+	function updateCarouselContent() {
+		const items = document.querySelectorAll('.carousel-item');
+		const visibleItems = getVisibleItems();
+		const totalItems = Math.max(visibleItems + 4, 7);
+
+		// Update each existing item
+		items.forEach((item, i) => {
+			const logicalIndex = currentIndex - Math.floor(totalItems / 2) + i;
+			const juice = getJuiceByIndex(logicalIndex);
+
+			// Update data attribute
+			item.dataset.logicalIndex = logicalIndex;
+
+			// Update out of stock class
+			item.classList.toggle('out-of-stock', !juice.inStock);
+
+			// Update content only if needed to avoid unnecessary reflows
+			const link = item.querySelector('.carousel-item-link');
+			const img = item.querySelector('.juice-bottle');
+
+			if (link.href !== window.location.origin + `/juices/${juice.slug}`) {
+				link.href = `/juices/${juice.slug}`;
+				img.src = juice.imageUrl;
+				img.alt = juice.name;
+			}
+		});
 	}
 
 	// Render left panel content
@@ -152,7 +184,7 @@ document.addEventListener('DOMContentLoaded', function () {
 	}
 
 	// Update carousel position and styling
-	function updateCarousel(instant = false) {
+	function updateCarousel(instant = false, includeDragOffset = false) {
 		const items = document.querySelectorAll('.carousel-item');
 		if (items.length === 0) return;
 
@@ -160,48 +192,52 @@ document.addEventListener('DOMContentLoaded', function () {
 		const visibleItems = getVisibleItems();
 		const centerIndex = Math.floor(items.length / 2);
 
-		// Calculate offset to center the middle item
-		let offset;
+		// Calculate base offset to center the middle item
 		if (visibleItems === 3) {
-			offset = -(centerIndex - 1) * itemWidth;
+			baseTransformX = -(centerIndex - 1) * itemWidth;
 		} else if (visibleItems === 1) {
 			const carouselWidth = carouselElement.offsetWidth;
 			const extraSpace = (carouselWidth - itemWidth) / 2;
-			offset = -centerIndex * itemWidth + extraSpace;
+			baseTransformX = -centerIndex * itemWidth + extraSpace;
 		} else {
-			offset = -centerIndex * itemWidth;
+			baseTransformX = -centerIndex * itemWidth;
 		}
+
+		// Include drag offset if dragging
+		const finalOffset = baseTransformX + (includeDragOffset ? dragOffset : 0);
 
 		// Apply transform
 		if (instant) {
 			track.style.transition = 'none';
-			track.style.transform = `translateX(${offset}px)`;
+			track.style.transform = `translateX(${finalOffset}px)`;
 			track.offsetHeight; // Force reflow
 			track.style.transition = 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
 		} else {
-			track.style.transition = 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-			track.style.transform = `translateX(${offset}px)`;
+			track.style.transition = isDragging ? 'none' : 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+			track.style.transform = `translateX(${finalOffset}px)`;
 		}
 
-		// Update item classes
-		items.forEach((item, index) => {
-			item.classList.remove('active', 'prev', 'next', 'next2');
+		// Update item classes only if not actively dragging
+		if (!isDragging || !includeDragOffset) {
+			items.forEach((item, index) => {
+				item.classList.remove('active', 'prev', 'next', 'next2');
 
-			if (index === centerIndex) {
-				item.classList.add('active');
-				const logicalIndex = parseInt(item.dataset.logicalIndex);
-				activeJuice = getJuiceByIndex(logicalIndex);
-			} else if (index === centerIndex - 1) {
-				item.classList.add('prev');
-			} else if (index === centerIndex + 1) {
-				item.classList.add('next');
-			} else if (index === centerIndex + 2) {
-				item.classList.add('next2');
+				if (index === centerIndex) {
+					item.classList.add('active');
+					const logicalIndex = parseInt(item.dataset.logicalIndex);
+					activeJuice = getJuiceByIndex(logicalIndex);
+				} else if (index === centerIndex - 1) {
+					item.classList.add('prev');
+				} else if (index === centerIndex + 1) {
+					item.classList.add('next');
+				} else if (index === centerIndex + 2) {
+					item.classList.add('next2');
+				}
+			});
+
+			if (activeJuice) {
+				renderLeftPanel(activeJuice);
 			}
-		});
-
-		if (activeJuice) {
-			renderLeftPanel(activeJuice);
 		}
 	}
 
@@ -210,7 +246,7 @@ document.addEventListener('DOMContentLoaded', function () {
 		if (isTransitioning) return;
 		isTransitioning = true;
 		currentIndex++;
-		createCarouselItems();
+		updateCarouselContent(); // Update content without DOM recreation
 		updateCarousel();
 		setTimeout(() => {
 			isTransitioning = false;
@@ -222,7 +258,7 @@ document.addEventListener('DOMContentLoaded', function () {
 		if (isTransitioning) return;
 		isTransitioning = true;
 		currentIndex--;
-		createCarouselItems();
+		updateCarouselContent(); // Update content without DOM recreation
 		updateCarousel();
 		setTimeout(() => {
 			isTransitioning = false;
@@ -234,7 +270,7 @@ document.addEventListener('DOMContentLoaded', function () {
 		if (isTransitioning) return;
 		isTransitioning = true;
 		currentIndex = targetLogicalIndex;
-		createCarouselItems();
+		updateCarouselContent(); // Update content without DOM recreation
 		updateCarousel();
 		setTimeout(() => {
 			isTransitioning = false;
@@ -254,49 +290,70 @@ document.addEventListener('DOMContentLoaded', function () {
 		}
 	}
 
-	// Touch event handlers for mobile swiping
+	// Enhanced touch event handlers for mobile dragging/swiping
 	function handleTouchStart(e) {
+		if (isTransitioning) return;
+
 		touchStartX = e.touches[0].clientX;
 		touchStartY = e.touches[0].clientY;
 		isDragging = false;
+		dragOffset = 0;
+
+		// Stop any ongoing transitions
+		track.style.transition = 'none';
 	}
 
 	function handleTouchMove(e) {
-		if (!touchStartX) return;
+		if (!touchStartX || isTransitioning) return;
 
 		const touchCurrentX = e.touches[0].clientX;
 		const touchCurrentY = e.touches[0].clientY;
 		const diffX = touchStartX - touchCurrentX;
 		const diffY = touchStartY - touchCurrentY;
 
-		// Only consider horizontal swipes
-		if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 10) {
+		// Start dragging if horizontal movement is dominant
+		if (!isDragging && Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 5) {
 			isDragging = true;
 			e.preventDefault(); // Prevent scrolling
+		}
+
+		// Update drag offset and apply real-time visual feedback
+		if (isDragging) {
+			e.preventDefault();
+			dragOffset = -diffX; // Negative because we want drag to follow finger
+			updateCarousel(false, true); // Update with drag offset
 		}
 	}
 
 	function handleTouchEnd(e) {
-		if (!touchStartX || !isDragging) {
-			touchStartX = 0;
-			isDragging = false;
-			return;
-		}
+		if (!touchStartX) return;
 
 		const touchEndX = e.changedTouches[0].clientX;
 		const diffX = touchStartX - touchEndX;
 		const threshold = 50;
+		const velocity = Math.abs(diffX) / 100; // Simple velocity calculation
 
-		if (Math.abs(diffX) > threshold) {
-			if (diffX > 0) {
-				nextSlide(); // Swipe left - go to next
+		// Reset drag state
+		const wasDragging = isDragging;
+		isDragging = false;
+		dragOffset = 0;
+
+		if (wasDragging) {
+			// Determine if we should navigate based on drag distance or velocity
+			if (Math.abs(diffX) > threshold || velocity > 0.5) {
+				if (diffX > 0) {
+					nextSlide(); // Swipe left - go to next
+				} else {
+					prevSlide(); // Swipe right - go to previous
+				}
 			} else {
-				prevSlide(); // Swipe right - go to previous
+				// Snap back to current position
+				updateCarousel(false, false);
 			}
 		}
 
 		touchStartX = 0;
-		isDragging = false;
+		touchStartY = 0;
 	}
 
 	// Debounce function for resize
@@ -314,7 +371,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
 	// Handle window resize
 	const handleResize = debounce(() => {
-		createCarouselItems();
+		// Only recreate items if screen size category changes significantly
+		const items = document.querySelectorAll('.carousel-item');
+		if (items.length === 0) {
+			createCarouselItems();
+		} else {
+			updateCarouselContent();
+		}
 		updateCarousel(true);
 	}, 250);
 
