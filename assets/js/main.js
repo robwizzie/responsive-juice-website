@@ -339,16 +339,49 @@ document.addEventListener('DOMContentLoaded', function () {
 		dragOffset = 0;
 
 		if (wasDragging) {
-			// Determine if we should navigate based on drag distance or velocity
-			if (Math.abs(diffX) > threshold || velocity > 0.5) {
-				if (diffX > 0) {
-					nextSlide(); // Swipe left - go to next
-				} else {
-					prevSlide(); // Swipe right - go to previous
-				}
+			// Calculate how many items to skip based on drag distance
+			const itemWidth = document.querySelector('.carousel-item')?.offsetWidth || 200;
+			const dragDistance = Math.abs(diffX);
+			let itemsToSkip = 1;
+
+			// Multi-item swiping: skip more items for longer swipes
+			if (dragDistance > itemWidth * 0.8) {
+				itemsToSkip = Math.min(Math.floor(dragDistance / (itemWidth * 0.6)), 3); // Max 3 items
+			} else if (dragDistance > threshold || velocity > 0.5) {
+				itemsToSkip = 1;
 			} else {
 				// Snap back to current position
 				updateCarousel(false, false);
+				touchStartX = 0;
+				touchStartY = 0;
+				return;
+			}
+
+			// Navigate multiple items
+			if (diffX > 0) {
+				// Swipe left - go to next items
+				for (let i = 0; i < itemsToSkip; i++) {
+					setTimeout(() => {
+						if (i === itemsToSkip - 1) {
+							nextSlide(); // Final slide with animation
+						} else {
+							currentIndex++;
+							updateCarouselContent();
+						}
+					}, i * 100); // Stagger for smooth multi-skip
+				}
+			} else {
+				// Swipe right - go to previous items
+				for (let i = 0; i < itemsToSkip; i++) {
+					setTimeout(() => {
+						if (i === itemsToSkip - 1) {
+							prevSlide(); // Final slide with animation
+						} else {
+							currentIndex--;
+							updateCarouselContent();
+						}
+					}, i * 100); // Stagger for smooth multi-skip
+				}
 			}
 		}
 
