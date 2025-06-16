@@ -52,6 +52,10 @@ document.addEventListener('DOMContentLoaded', function () {
 	let currentIndex = 0;
 	let isTransitioning = false;
 	let activeJuice = null;
+	let sortedJuices = [];
+	let touchStartX = 0;
+	let touchStartY = 0;
+	let isDragging = false;
 
 	// Get number of visible items based on screen size
 	function getVisibleItems() {
@@ -63,66 +67,42 @@ document.addEventListener('DOMContentLoaded', function () {
 		return 1;
 	}
 
-	// Create carousel items with enough clones to prevent empty slots
-	function createCarouselItems() {
-		track.innerHTML = '';
-
-		// Sort juices to show in-stock items first
-		const sortedJuices = [...juices].sort((a, b) => {
+	// Initialize sorted juices
+	function initializeSortedJuices() {
+		sortedJuices = [...juices].sort((a, b) => {
 			if (a.inStock && !b.inStock) return -1;
 			if (!a.inStock && b.inStock) return 1;
 			return 0;
 		});
+	}
 
+	// Get juice by logical index (handles wrapping)
+	function getJuiceByIndex(index) {
+		const normalizedIndex = ((index % sortedJuices.length) + sortedJuices.length) % sortedJuices.length;
+		return sortedJuices[normalizedIndex];
+	}
+
+	// Create carousel items - simpler approach
+	function createCarouselItems() {
+		track.innerHTML = '';
 		const visibleItems = getVisibleItems();
-		// Create enough clones to handle any click-to-jump scenario
-		const clonesNeeded = Math.max(visibleItems * 2, sortedJuices.length);
+		const totalItems = Math.max(visibleItems + 4, 7); // Always render enough items
 
-		// Add clones of LAST items at the beginning
-		for (let i = 0; i < clonesNeeded; i++) {
-			const juiceIndex = (sortedJuices.length - clonesNeeded + i + sortedJuices.length) % sortedJuices.length;
-			const juice = sortedJuices[juiceIndex];
+		// Create items centered around current index
+		for (let i = 0; i < totalItems; i++) {
+			const logicalIndex = currentIndex - Math.floor(totalItems / 2) + i;
+			const juice = getJuiceByIndex(logicalIndex);
 			const outOfStockClass = juice.inStock ? '' : ' out-of-stock';
+
 			track.insertAdjacentHTML(
 				'beforeend',
-				`<div class="carousel-item clone-start${outOfStockClass}" data-original-index="${juiceIndex}">
+				`<div class="carousel-item${outOfStockClass}" data-logical-index="${logicalIndex}">
 					<a href="/juices/${juice.slug}" class="carousel-item-link" tabindex="-1">
 						<img src="${juice.imageUrl}" alt="${juice.name}" class="juice-bottle" loading="lazy" decoding="async">
 					</a>
 				</div>`
 			);
 		}
-
-		// Add original items
-		sortedJuices.forEach((juice, index) => {
-			const outOfStockClass = juice.inStock ? '' : ' out-of-stock';
-			track.insertAdjacentHTML(
-				'beforeend',
-				`<div class="carousel-item original${outOfStockClass}" data-original-index="${index}">
-					<a href="/juices/${juice.slug}" class="carousel-item-link" tabindex="-1">
-						<img src="${juice.imageUrl}" alt="${juice.name}" class="juice-bottle" loading="lazy" decoding="async">
-					</a>
-				</div>`
-			);
-		});
-
-		// Add clones of FIRST items at the end
-		for (let i = 0; i < clonesNeeded; i++) {
-			const juiceIndex = i % sortedJuices.length;
-			const juice = sortedJuices[juiceIndex];
-			const outOfStockClass = juice.inStock ? '' : ' out-of-stock';
-			track.insertAdjacentHTML(
-				'beforeend',
-				`<div class="carousel-item clone-end${outOfStockClass}" data-original-index="${juiceIndex}">
-					<a href="/juices/${juice.slug}" class="carousel-item-link" tabindex="-1">
-						<img src="${juice.imageUrl}" alt="${juice.name}" class="juice-bottle" loading="lazy" decoding="async">
-					</a>
-				</div>`
-			);
-		}
-
-		// Set initial position to first original item
-		currentIndex = clonesNeeded;
 	}
 
 	// Render left panel content
@@ -132,7 +112,15 @@ document.addEventListener('DOMContentLoaded', function () {
 		leftPanel.innerHTML = `
 			<h3 class="slide-title" style="font-family: var(--second-font); color:#fff; margin-bottom:1.5rem;">${juice.name}</h3>
 			<div class="ingredients-preview">
-				${juice.ingredients.map(ing => `<span class="ingredient-tag" style="background:rgba(255,255,255,0.3);color:#fff;"><img src="/assets/img/ingredients/${ing.toLowerCase().replace(/ /g, '-')}.svg" alt="${ing}" class="ingredient-icon"> <span class="ingredient-name">${ing}</span></span>`).join('')}
+				${juice.ingredients
+					.map(
+						ing =>
+							`<span class="ingredient-tag" style="background:rgba(255,255,255,0.3);color:#fff;">
+						<img src="/assets/img/ingredients/${ing.toLowerCase().replace(/ /g, '-')}.svg" alt="${ing}" class="ingredient-icon"> 
+						<span class="ingredient-name">${ing}</span>
+					</span>`
+					)
+					.join('')}
 			</div>
 			<div class="button-row">
 				<a href="/juices/${juice.slug}" class="home__button left-btn" style="background-color:#fff;color:${juice.color};">View Product</a>
@@ -164,223 +152,93 @@ document.addEventListener('DOMContentLoaded', function () {
 	}
 
 	// Update carousel position and styling
-	function updateCarousel(skipTransition = false, skipActiveUpdate = false) {
+	function updateCarousel(instant = false) {
 		const items = document.querySelectorAll('.carousel-item');
+		if (items.length === 0) return;
+
 		const itemWidth = items[0].offsetWidth + parseInt(window.getComputedStyle(track).gap || '0');
 		const visibleItems = getVisibleItems();
+		const centerIndex = Math.floor(items.length / 2);
 
-		// Calculate offset
+		// Calculate offset to center the middle item
 		let offset;
 		if (visibleItems === 3) {
-			// Center the middle item when 3 are visible
-			offset = -(currentIndex - 1) * itemWidth;
+			offset = -(centerIndex - 1) * itemWidth;
 		} else if (visibleItems === 1) {
-			// Center single item
 			const carouselWidth = carouselElement.offsetWidth;
 			const extraSpace = (carouselWidth - itemWidth) / 2;
-			offset = -currentIndex * itemWidth + extraSpace;
+			offset = -centerIndex * itemWidth + extraSpace;
 		} else {
-			offset = -currentIndex * itemWidth;
+			offset = -centerIndex * itemWidth;
 		}
 
 		// Apply transform
-		if (skipTransition) {
+		if (instant) {
 			track.style.transition = 'none';
 			track.style.transform = `translateX(${offset}px)`;
-			// Force reflow then restore transition
-			track.offsetHeight;
-			track.style.transition = 'transform 0.5s ease-in-out';
+			track.offsetHeight; // Force reflow
+			track.style.transition = 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
 		} else {
-			track.style.transition = 'transform 0.5s ease-in-out';
+			track.style.transition = 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
 			track.style.transform = `translateX(${offset}px)`;
 		}
 
-		// Only update active classes if not skipping (prevents clone flicker)
-		if (!skipActiveUpdate) {
-			const clonesNeeded = Math.max(visibleItems * 2, juices.length);
-			const originalStart = clonesNeeded;
-			const originalEnd = originalStart + juices.length - 1;
+		// Update item classes
+		items.forEach((item, index) => {
+			item.classList.remove('active', 'prev', 'next', 'next2');
 
-			// Don't update active classes if we're at a clone position
-			const isClonePosition = currentIndex < originalStart || currentIndex > originalEnd;
-
-			if (!isClonePosition) {
-				// Sort juices to match carousel order
-				const sortedJuices = [...juices].sort((a, b) => {
-					if (a.inStock && !b.inStock) return -1;
-					if (!a.inStock && b.inStock) return 1;
-					return 0;
-				});
-
-				// Update item classes and active juice only for originals
-				items.forEach((item, index) => {
-					item.classList.remove('active', 'prev', 'next', 'next2');
-
-					if (index === currentIndex) {
-						item.classList.add('active');
-						const originalIndex = parseInt(item.dataset.originalIndex);
-						activeJuice = sortedJuices[originalIndex];
-					} else if (index === currentIndex - 1) {
-						item.classList.add('prev');
-					} else if (index === currentIndex + 1) {
-						item.classList.add('next');
-					} else if (index === currentIndex + 2) {
-						item.classList.add('next2');
-					}
-				});
-
-				if (activeJuice) {
-					renderLeftPanel(activeJuice);
-				}
+			if (index === centerIndex) {
+				item.classList.add('active');
+				const logicalIndex = parseInt(item.dataset.logicalIndex);
+				activeJuice = getJuiceByIndex(logicalIndex);
+			} else if (index === centerIndex - 1) {
+				item.classList.add('prev');
+			} else if (index === centerIndex + 1) {
+				item.classList.add('next');
+			} else if (index === centerIndex + 2) {
+				item.classList.add('next2');
 			}
+		});
+
+		if (activeJuice) {
+			renderLeftPanel(activeJuice);
 		}
 	}
 
-	// Navigation functions - true infinite feel using clones
+	// Navigate to next item
 	function nextSlide() {
 		if (isTransitioning) return;
 		isTransitioning = true;
 		currentIndex++;
-
-		// Animate to the new position (might be a clone)
+		createCarouselItems();
 		updateCarousel();
-
-		// After animation, check if we need to invisibly jump
 		setTimeout(() => {
-			const sortedJuices = [...juices].sort((a, b) => {
-				if (a.inStock && !b.inStock) return -1;
-				if (!a.inStock && b.inStock) return 1;
-				return 0;
-			});
-			const visibleItems = getVisibleItems();
-			const clonesNeeded = Math.max(visibleItems * 2, sortedJuices.length);
-			const originalStart = clonesNeeded;
-			const originalEnd = originalStart + sortedJuices.length - 1;
-
-			// If we animated to an end clone, jump to the corresponding original
-			if (currentIndex > originalEnd) {
-				const clonePosition = currentIndex - originalEnd - 1;
-				currentIndex = originalStart + clonePosition;
-				// Jump instantly without transition and update active classes
-				track.style.transition = 'none';
-				const items = document.querySelectorAll('.carousel-item');
-				const itemWidth = items[0].offsetWidth + parseInt(window.getComputedStyle(track).gap || '0');
-				const visibleItems = getVisibleItems();
-
-				let offset;
-				if (visibleItems === 3) {
-					offset = -(currentIndex - 1) * itemWidth;
-				} else if (visibleItems === 1) {
-					const carouselWidth = carouselElement.offsetWidth;
-					const extraSpace = (carouselWidth - itemWidth) / 2;
-					offset = -currentIndex * itemWidth + extraSpace;
-				} else {
-					offset = -currentIndex * itemWidth;
-				}
-
-				track.style.transform = `translateX(${offset}px)`;
-
-				// Update active classes to match new position
-				items.forEach((item, index) => {
-					item.classList.remove('active', 'prev', 'next', 'next2');
-
-					if (index === currentIndex) {
-						item.classList.add('active');
-						const originalIndex = parseInt(item.dataset.originalIndex);
-						activeJuice = sortedJuices[originalIndex];
-					} else if (index === currentIndex - 1) {
-						item.classList.add('prev');
-					} else if (index === currentIndex + 1) {
-						item.classList.add('next');
-					} else if (index === currentIndex + 2) {
-						item.classList.add('next2');
-					}
-				});
-
-				// Update left panel with same juice (invisible to user)
-				if (activeJuice) {
-					renderLeftPanel(activeJuice);
-				}
-
-				track.offsetHeight; // Force reflow
-				track.style.transition = 'transform 0.5s ease-in-out';
-			}
-
 			isTransitioning = false;
-		}, 500);
+		}, 400);
 	}
 
+	// Navigate to previous item
 	function prevSlide() {
 		if (isTransitioning) return;
 		isTransitioning = true;
 		currentIndex--;
-
-		// Animate to the new position (might be a clone)
+		createCarouselItems();
 		updateCarousel();
-
-		// After animation, check if we need to invisibly jump
 		setTimeout(() => {
-			const sortedJuices = [...juices].sort((a, b) => {
-				if (a.inStock && !b.inStock) return -1;
-				if (!a.inStock && b.inStock) return 1;
-				return 0;
-			});
-			const visibleItems = getVisibleItems();
-			const clonesNeeded = Math.max(visibleItems * 2, sortedJuices.length);
-			const originalStart = clonesNeeded;
-			const originalEnd = originalStart + sortedJuices.length - 1;
-
-			// If we animated to a start clone, jump to the corresponding original
-			if (currentIndex < originalStart) {
-				const clonePosition = originalStart - currentIndex - 1;
-				currentIndex = originalEnd - clonePosition;
-				// Jump instantly without transition and update active classes
-				track.style.transition = 'none';
-				const items = document.querySelectorAll('.carousel-item');
-				const itemWidth = items[0].offsetWidth + parseInt(window.getComputedStyle(track).gap || '0');
-				const visibleItems = getVisibleItems();
-
-				let offset;
-				if (visibleItems === 3) {
-					offset = -(currentIndex - 1) * itemWidth;
-				} else if (visibleItems === 1) {
-					const carouselWidth = carouselElement.offsetWidth;
-					const extraSpace = (carouselWidth - itemWidth) / 2;
-					offset = -currentIndex * itemWidth + extraSpace;
-				} else {
-					offset = -currentIndex * itemWidth;
-				}
-
-				track.style.transform = `translateX(${offset}px)`;
-
-				// Update active classes to match new position
-				items.forEach((item, index) => {
-					item.classList.remove('active', 'prev', 'next', 'next2');
-
-					if (index === currentIndex) {
-						item.classList.add('active');
-						const originalIndex = parseInt(item.dataset.originalIndex);
-						activeJuice = sortedJuices[originalIndex];
-					} else if (index === currentIndex - 1) {
-						item.classList.add('prev');
-					} else if (index === currentIndex + 1) {
-						item.classList.add('next');
-					} else if (index === currentIndex + 2) {
-						item.classList.add('next2');
-					}
-				});
-
-				// Update left panel with same juice (invisible to user)
-				if (activeJuice) {
-					renderLeftPanel(activeJuice);
-				}
-
-				track.offsetHeight; // Force reflow
-				track.style.transition = 'transform 0.5s ease-in-out';
-			}
-
 			isTransitioning = false;
-		}, 500);
+		}, 400);
+	}
+
+	// Navigate to specific item
+	function goToSlide(targetLogicalIndex) {
+		if (isTransitioning) return;
+		isTransitioning = true;
+		currentIndex = targetLogicalIndex;
+		createCarouselItems();
+		updateCarousel();
+		setTimeout(() => {
+			isTransitioning = false;
+		}, 400);
 	}
 
 	// Handle item clicks
@@ -391,141 +249,54 @@ document.addEventListener('DOMContentLoaded', function () {
 		// If clicking inactive item, navigate to it instead of following link
 		if (!clickedItem.classList.contains('active')) {
 			e.preventDefault();
-			const items = Array.from(document.querySelectorAll('.carousel-item'));
-			const clickedIndex = items.indexOf(clickedItem);
-			const difference = clickedIndex - currentIndex;
-
-			// Handle any distance, but prefer shortest path for efficiency
-			if (difference !== 0) {
-				if (Math.abs(difference) === 1) {
-					// Adjacent item - single step
-					difference > 0 ? nextSlide() : prevSlide();
-				} else {
-					// Multiple steps - animate to target
-					moveToIndex(clickedIndex);
-				}
-			}
+			const logicalIndex = parseInt(clickedItem.dataset.logicalIndex);
+			goToSlide(logicalIndex);
 		}
 	}
 
-	// Move directly to a specific index
-	function moveToIndex(targetIndex) {
-		if (isTransitioning) return;
-		isTransitioning = true;
-		currentIndex = targetIndex;
+	// Touch event handlers for mobile swiping
+	function handleTouchStart(e) {
+		touchStartX = e.touches[0].clientX;
+		touchStartY = e.touches[0].clientY;
+		isDragging = false;
+	}
 
-		// Animate to the target position
-		updateCarousel();
+	function handleTouchMove(e) {
+		if (!touchStartX) return;
 
-		// After animation, check if we need to invisibly jump (same logic as navigation)
-		setTimeout(() => {
-			const sortedJuices = [...juices].sort((a, b) => {
-				if (a.inStock && !b.inStock) return -1;
-				if (!a.inStock && b.inStock) return 1;
-				return 0;
-			});
-			const visibleItems = getVisibleItems();
-			const clonesNeeded = Math.max(visibleItems * 2, sortedJuices.length);
-			const originalStart = clonesNeeded;
-			const originalEnd = originalStart + sortedJuices.length - 1;
+		const touchCurrentX = e.touches[0].clientX;
+		const touchCurrentY = e.touches[0].clientY;
+		const diffX = touchStartX - touchCurrentX;
+		const diffY = touchStartY - touchCurrentY;
 
-			// If we moved to a clone, jump to the corresponding original
-			if (currentIndex > originalEnd) {
-				const clonePosition = currentIndex - originalEnd - 1;
-				currentIndex = originalStart + clonePosition;
-				// Jump instantly without transition and update active classes
-				track.style.transition = 'none';
-				const items = document.querySelectorAll('.carousel-item');
-				const itemWidth = items[0].offsetWidth + parseInt(window.getComputedStyle(track).gap || '0');
-				const visibleItems = getVisibleItems();
+		// Only consider horizontal swipes
+		if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 10) {
+			isDragging = true;
+			e.preventDefault(); // Prevent scrolling
+		}
+	}
 
-				let offset;
-				if (visibleItems === 3) {
-					offset = -(currentIndex - 1) * itemWidth;
-				} else if (visibleItems === 1) {
-					const carouselWidth = carouselElement.offsetWidth;
-					const extraSpace = (carouselWidth - itemWidth) / 2;
-					offset = -currentIndex * itemWidth + extraSpace;
-				} else {
-					offset = -currentIndex * itemWidth;
-				}
+	function handleTouchEnd(e) {
+		if (!touchStartX || !isDragging) {
+			touchStartX = 0;
+			isDragging = false;
+			return;
+		}
 
-				track.style.transform = `translateX(${offset}px)`;
+		const touchEndX = e.changedTouches[0].clientX;
+		const diffX = touchStartX - touchEndX;
+		const threshold = 50;
 
-				// Update active classes to match new position
-				items.forEach((item, index) => {
-					item.classList.remove('active', 'prev', 'next', 'next2');
-
-					if (index === currentIndex) {
-						item.classList.add('active');
-						const originalIndex = parseInt(item.dataset.originalIndex);
-						activeJuice = sortedJuices[originalIndex];
-					} else if (index === currentIndex - 1) {
-						item.classList.add('prev');
-					} else if (index === currentIndex + 1) {
-						item.classList.add('next');
-					} else if (index === currentIndex + 2) {
-						item.classList.add('next2');
-					}
-				});
-
-				// Update left panel with same juice
-				if (activeJuice) {
-					renderLeftPanel(activeJuice);
-				}
-
-				track.offsetHeight; // Force reflow
-				track.style.transition = 'transform 0.5s ease-in-out';
-			} else if (currentIndex < originalStart) {
-				const clonePosition = originalStart - currentIndex - 1;
-				currentIndex = originalEnd - clonePosition;
-				// Jump instantly without transition and update active classes
-				track.style.transition = 'none';
-				const items = document.querySelectorAll('.carousel-item');
-				const itemWidth = items[0].offsetWidth + parseInt(window.getComputedStyle(track).gap || '0');
-				const visibleItems = getVisibleItems();
-
-				let offset;
-				if (visibleItems === 3) {
-					offset = -(currentIndex - 1) * itemWidth;
-				} else if (visibleItems === 1) {
-					const carouselWidth = carouselElement.offsetWidth;
-					const extraSpace = (carouselWidth - itemWidth) / 2;
-					offset = -currentIndex * itemWidth + extraSpace;
-				} else {
-					offset = -currentIndex * itemWidth;
-				}
-
-				track.style.transform = `translateX(${offset}px)`;
-
-				// Update active classes to match new position
-				items.forEach((item, index) => {
-					item.classList.remove('active', 'prev', 'next', 'next2');
-
-					if (index === currentIndex) {
-						item.classList.add('active');
-						const originalIndex = parseInt(item.dataset.originalIndex);
-						activeJuice = sortedJuices[originalIndex];
-					} else if (index === currentIndex - 1) {
-						item.classList.add('prev');
-					} else if (index === currentIndex + 1) {
-						item.classList.add('next');
-					} else if (index === currentIndex + 2) {
-						item.classList.add('next2');
-					}
-				});
-
-				// Update left panel with same juice
-				if (activeJuice) {
-					renderLeftPanel(activeJuice);
-				}
-
-				track.offsetHeight; // Force reflow
-				track.style.transition = 'transform 0.5s ease-in-out';
+		if (Math.abs(diffX) > threshold) {
+			if (diffX > 0) {
+				nextSlide(); // Swipe left - go to next
+			} else {
+				prevSlide(); // Swipe right - go to previous
 			}
+		}
 
-			isTransitioning = false;
-		}, 500);
+		touchStartX = 0;
+		isDragging = false;
 	}
 
 	// Debounce function for resize
@@ -551,9 +322,13 @@ document.addEventListener('DOMContentLoaded', function () {
 	prevButton.addEventListener('click', prevSlide);
 	nextButton.addEventListener('click', nextSlide);
 	track.addEventListener('click', handleItemClick);
+	track.addEventListener('touchstart', handleTouchStart, { passive: false });
+	track.addEventListener('touchmove', handleTouchMove, { passive: false });
+	track.addEventListener('touchend', handleTouchEnd, { passive: false });
 	window.addEventListener('resize', handleResize);
 
 	// Initialize carousel
+	initializeSortedJuices();
 	createCarouselItems();
 	updateCarousel(true);
 });
