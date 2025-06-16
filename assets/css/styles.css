@@ -2313,6 +2313,14 @@ img {
 	.contact-form-container {
 		padding: 1.5rem;
 	}
+	.slide-title {
+		min-height: 84px;
+		align-content: center;
+	}
+	.ingredients-preview {
+		min-height: 148px;
+		align-content: center;
+	}
 }
 
 /* Page loading overlay */
