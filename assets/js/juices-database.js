@@ -7,7 +7,8 @@ const juices = [
 		imageUrl: '/assets/img/juices/tropical-storm.png',
 		ingredients: ['Pineapple', 'Carrot', 'Mango', 'Orange', 'Ginger', 'Tumeric'],
 		price: 7,
-		color: '#ff8902'
+		color: '#ff8902',
+		inStock: true
 	},
 	{
 		id: 2,
@@ -17,7 +18,8 @@ const juices = [
 		imageUrl: '/assets/img/juices/sweet-green.png',
 		ingredients: ['Kale', 'Spinach', 'Kiwi', 'Orange', 'Pineapple', 'Banana'],
 		price: 7,
-		color: '#969c05'
+		color: '#969c05',
+		inStock: true
 	},
 	{
 		id: 3,
@@ -27,7 +29,8 @@ const juices = [
 		imageUrl: '/assets/img/juices/sour-punch.png',
 		ingredients: ['Black Grape', 'Green Apple', 'Blueberry', 'Cucumber', 'Pineapple', 'Lemon'],
 		price: 7,
-		color: '#8b000d'
+		color: '#8b000d',
+		inStock: false
 	},
 	{
 		id: 4,
@@ -37,7 +40,8 @@ const juices = [
 		imageUrl: '/assets/img/juices/strawberry-banana.png',
 		ingredients: ['Strawberry', 'Banana', 'Blueberry', 'Gala Apple', 'Pineapple'],
 		price: 7,
-		color: '#f96e67'
+		color: '#f96e67',
+		inStock: false
 	},
 	{
 		id: 5,
@@ -47,7 +51,8 @@ const juices = [
 		imageUrl: '/assets/img/juices/electric-berry-lemonade.png',
 		ingredients: ['Strawberry', 'Blueberry', 'Pineapple', 'Lemon'],
 		price: 7,
-		color: '#8b2986'
+		color: '#8b2986',
+		inStock: false
 	},
 	{
 		id: 6,
@@ -57,6 +62,7 @@ const juices = [
 		imageUrl: '/assets/img/juices/strawberry-lemonade.png',
 		ingredients: ['Strawberry', 'Lemon', 'Gala Apple', 'Coconut', 'Agave'],
 		price: 7,
-		color: '#ce280f'
+		color: '#ce280f',
+		inStock: true
 	}
 ];

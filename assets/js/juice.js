@@ -76,12 +76,18 @@ document.addEventListener('DOMContentLoaded', function () {
                 </ul>
             </div>
             <p class="product__price">$${juice.price.toFixed(2)}</p>
-            <button class="home__button add-to-cart" data-id="${juice.id}"  style="transform: translate(0px, 0px); opacity: 1; background-color: ${juice.color}">
+            ${
+				juice.inStock
+					? `<button class="home__button add-to-cart" data-id="${juice.id}" style="transform: translate(0px, 0px); opacity: 1; background-color: ${juice.color}">
                 <span style="margin-right: 5px; font-size: 1rem;">Add to Cart</span> <svg viewBox="0 0 24 24" width="24" height="24" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1">
                         <line x1="12" y1="5" x2="12" y2="19"></line>
                         <line x1="5" y1="12" x2="19" y2="12"></line>
                     </svg>
-            </button>
+            </button>`
+					: `<button class="home__button add-to-cart" disabled style="transform: translate(0px, 0px); opacity: 1; background-color: #ccc; color: #666;">
+                <span style="margin-right: 5px; font-size: 1rem;">Out of Stock</span>
+            </button>`
+			}
         </div>
 
         <div class="home__images">
@@ -206,7 +212,13 @@ function initializeCarousel(currentSlug) {
 	carouselElement.prepend(leftPanel);
 
 	// Filter out current juice
-	const filteredJuices = juices.filter(j => j.slug !== currentSlug);
+	const filteredJuices = juices
+		.filter(j => j.slug !== currentSlug)
+		.sort((a, b) => {
+			if (a.inStock && !b.inStock) return -1;
+			if (!a.inStock && b.inStock) return 1;
+			return 0;
+		});
 
 	// Carousel state
 	let currentIndex = 0;
@@ -242,9 +254,10 @@ function initializeCarousel(currentSlug) {
 			const juiceIndex = (filteredJuices.length - clonesNeeded + i + filteredJuices.length) % filteredJuices.length;
 			const juice = filteredJuices[juiceIndex];
 			if (!juice) continue; // Safety check
+			const outOfStockClass = juice.inStock ? '' : ' out-of-stock';
 			track.insertAdjacentHTML(
 				'beforeend',
-				`<div class="carousel-item clone-start" data-original-index="${juiceIndex}">
+				`<div class="carousel-item clone-start${outOfStockClass}" data-original-index="${juiceIndex}">
 					<a href="/juices/${juice.slug}" class="carousel-item-link" tabindex="-1">
 						<img src="${juice.imageUrl}" alt="${juice.name}" class="juice-bottle" loading="lazy" decoding="async">
 					</a>
@@ -255,9 +268,10 @@ function initializeCarousel(currentSlug) {
 		// Add original items
 		filteredJuices.forEach((juice, index) => {
 			if (!juice) return; // Safety check
+			const outOfStockClass = juice.inStock ? '' : ' out-of-stock';
 			track.insertAdjacentHTML(
 				'beforeend',
-				`<div class="carousel-item original" data-original-index="${index}">
+				`<div class="carousel-item original${outOfStockClass}" data-original-index="${index}">
 					<a href="/juices/${juice.slug}" class="carousel-item-link" tabindex="-1">
 						<img src="${juice.imageUrl}" alt="${juice.name}" class="juice-bottle" loading="lazy" decoding="async">
 					</a>
@@ -270,9 +284,10 @@ function initializeCarousel(currentSlug) {
 			const juiceIndex = i % filteredJuices.length;
 			const juice = filteredJuices[juiceIndex];
 			if (!juice) continue; // Safety check
+			const outOfStockClass = juice.inStock ? '' : ' out-of-stock';
 			track.insertAdjacentHTML(
 				'beforeend',
-				`<div class="carousel-item clone-end" data-original-index="${juiceIndex}">
+				`<div class="carousel-item clone-end${outOfStockClass}" data-original-index="${juiceIndex}">
 					<a href="/juices/${juice.slug}" class="carousel-item-link" tabindex="-1">
 						<img src="${juice.imageUrl}" alt="${juice.name}" class="juice-bottle" loading="lazy" decoding="async">
 					</a>
@@ -286,6 +301,8 @@ function initializeCarousel(currentSlug) {
 
 	// Render left panel content
 	function renderLeftPanel(juice) {
+		const addToCartButton = juice.inStock ? `<button class="home__button left-btn add-to-cart left-add-cart" data-id="${juice.id}" style="background-color:#fff;color:${juice.color};">Add to Cart</button>` : `<button class="home__button left-btn add-to-cart left-add-cart" data-id="${juice.id}" style="background-color:#ccc;color:#666;" disabled>Out of Stock</button>`;
+
 		leftPanel.innerHTML = `
 			<h3 class="slide-title" style="font-family: var(--second-font); color:#fff; margin-bottom:1.5rem;">${juice.name}</h3>
 			<div class="ingredients-preview">
@@ -293,7 +310,7 @@ function initializeCarousel(currentSlug) {
 			</div>
 			<div class="button-row">
 				<a href="/juices/${juice.slug}" class="home__button left-btn" style="background-color:#fff;color:${juice.color};">View Product</a>
-				<button class="home__button left-btn add-to-cart left-add-cart" data-id="${juice.id}" style="background-color:#fff;color:${juice.color};">Add to Cart</button>
+				${addToCartButton}
 			</div>
 		`;
 		leftPanel.style.backgroundColor = juice.color;
@@ -310,9 +327,9 @@ function initializeCarousel(currentSlug) {
 			otherJuicesWord.style.color = juice.color;
 		}
 
-		// Bind add-to-cart button
+		// Bind add-to-cart button (only if in stock)
 		const btn = leftPanel.querySelector('.left-add-cart');
-		if (btn) {
+		if (btn && juice.inStock) {
 			btn.addEventListener('click', e => {
 				e.preventDefault();
 				window.cart.addItem(juice.id);
