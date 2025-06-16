@@ -958,7 +958,7 @@ img {
 	.carousel-left-panel {
 		position: relative;
 		width: 100%;
-		padding: 2rem 1rem 1rem 1rem;
+		padding: 1rem 0.75rem 0.5rem 0.75rem;
 		text-align: center;
 		min-height: auto;
 	}
@@ -967,23 +967,25 @@ img {
 		justify-content: center;
 		gap: 0.5rem;
 		flex-wrap: nowrap;
+		margin: 0.5rem 0;
 	}
 	.carousel-left-panel .left-btn {
-		width: 220px;
+		width: 180px;
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		margin: 0 !important;
 		text-align: center;
 		font-family: var(--second-font);
-		font-size: 1rem;
+		font-size: 0.9rem;
+		padding: 0.75rem 1rem;
 	}
 	/* Track below info */
 	.carousel-track {
 		position: relative;
 		width: 100%;
-		margin-top: 1.5rem;
-		margin-bottom: 4rem;
+		margin-top: 1rem;
+		margin-bottom: 3rem;
 		gap: 1rem;
 		cursor: grab;
 		touch-action: pan-y pinch-zoom;
@@ -1022,15 +1024,22 @@ img {
 		position: static;
 	}
 	.slide-title {
-		font-size: 2rem;
+		font-size: 1.6rem;
 	}
 	.ingredients-preview {
-		min-height: 6rem;
+		min-height: 4rem;
 		align-items: center;
+		margin-bottom: 0.75rem;
 	}
 	.ingredient-tag {
-		min-height: 44px;
+		min-height: 36px;
 		height: fit-content;
+		font-size: 1rem;
+		padding: 0.2rem 0.6rem;
+	}
+	.ingredient-icon {
+		width: 16px !important;
+		height: 16px !important;
 	}
 }
 
@@ -2285,6 +2294,12 @@ img {
 
 /* Responsive Design */
 
+@media screen and (max-width: 1070px) {
+	.all-juices.juice-bottle {
+		height: 100% !important;
+	}
+}
+
 @media screen and (max-width: 968px) {
 	.contact-content {
 		grid-template-columns: 1fr;
@@ -2313,6 +2328,9 @@ img {
 	.info-card {
 		width: 100%;
 	}
+	.juice-splash {
+		max-width: 370px;
+	}
 }
 
 @media screen and (max-width: 576px) {
@@ -2323,11 +2341,11 @@ img {
 		padding: 1.5rem;
 	}
 	.slide-title {
-		min-height: 84px;
+		min-height: 62px;
 		align-content: center;
 	}
 	.ingredients-preview {
-		min-height: 148px;
+		min-height: 168px;
 		align-content: center;
 	}
 }
