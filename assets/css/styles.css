@@ -2596,3 +2596,7 @@ html.page-loading body > *:not(#page-loader) {
 .carousel-item.clone-end.out-of-stock::before {
 	display: none;
 }
+
+.carousel-item:not(.active).out-of-stock::before {
+	display: none;
+}
