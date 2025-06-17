@@ -2589,3 +2589,10 @@ html.page-loading body > *:not(#page-loader) {
 	transform: none !important;
 	background-color: #ccc !important;
 }
+
+/* Prevent Out-of-Stock label from flashing on off-screen clone slides */
+
+.carousel-item.clone-start.out-of-stock::before,
+.carousel-item.clone-end.out-of-stock::before {
+	display: none;
+}
