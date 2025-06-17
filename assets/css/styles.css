@@ -2539,7 +2539,9 @@ html.page-loading body > *:not(#page-loader) {
 
 .out-of-stock {
 	position: relative;
-	opacity: 0.6;
+	opacity: 0.75;
+	pointer-events: none;
+	transition: opacity 0.3s ease;
 }
 
 .out-of-stock::before {
@@ -2547,8 +2549,8 @@ html.page-loading body > *:not(#page-loader) {
 	position: absolute;
 	top: 33%;
 	left: 50%;
-	transform: translate(-50%, -50%);
-	background: rgba(255, 255, 255, 0.9);
+	transform: translate(-50%, -50%) scale(1);
+	background: rgba(255, 255, 255, 0.95);
 	color: #333;
 	padding: 0.5rem 1rem;
 	border-radius: 4px;
@@ -2556,11 +2558,29 @@ html.page-loading body > *:not(#page-loader) {
 	font-size: 0.9rem;
 	z-index: 5;
 	white-space: nowrap;
+	transition: transform 0.3s ease;
+	will-change: transform;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	backface-visibility: hidden;
 }
 
 .out-of-stock img {
-	filter: grayscale(50%);
+	filter: grayscale(70%);
+	transition: filter 0.3s ease;
 }
+
+/* Ensure consistent treatment in carousel */
+
+.carousel-item.out-of-stock {
+	opacity: 0.75;
+}
+
+.carousel-item.out-of-stock img {
+	filter: grayscale(70%);
+}
+
+/* Ensure consistent treatment in product cards */
 
 .juice-card.out-of-stock {
 	pointer-events: none;
@@ -2570,19 +2590,14 @@ html.page-loading body > *:not(#page-loader) {
 	transform: none;
 }
 
-.carousel-item.out-of-stock {
-	opacity: 0.5;
-}
-
-.carousel-item.out-of-stock img {
-	filter: grayscale(70%);
-}
+/* Disabled button styles */
 
 .add-to-cart:disabled {
 	background-color: #ccc !important;
 	color: #666 !important;
 	cursor: not-allowed !important;
 	opacity: 0.6;
+	pointer-events: none;
 }
 
 .add-to-cart:disabled:hover {
@@ -2590,13 +2605,18 @@ html.page-loading body > *:not(#page-loader) {
 	background-color: #ccc !important;
 }
 
-/* Prevent Out-of-Stock label from flashing on off-screen clone slides */
+/* Ensure Safari stability */
 
-.carousel-item.clone-start.out-of-stock::before,
-.carousel-item.clone-end.out-of-stock::before {
-	display: none;
+.carousel-item {
+	-webkit-transform-style: preserve-3d;
+	transform-style: preserve-3d;
+	backface-visibility: hidden;
+	-webkit-backface-visibility: hidden;
 }
 
-.carousel-item:not(.active).out-of-stock::before {
-	display: none;
+/* Ensure consistent z-index stacking */
+
+.carousel-item.out-of-stock::before {
+	transform: translate(-50%, -50%) translateZ(1px);
+	-webkit-transform: translate(-50%, -50%) translateZ(1px);
 }
