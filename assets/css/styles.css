@@ -843,11 +843,11 @@ img {
 	display: flex;
 	gap: 0.25rem;
 	transform: translateX(0);
-	transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+	transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 	will-change: transform;
-	cursor: grab;
 	user-select: none;
-	touch-action: pan-y pinch-zoom;
+	transform-style: preserve-3d;
+	backface-visibility: hidden;
 }
 
 .slide-title {
@@ -868,12 +868,17 @@ img {
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	will-change: transform, opacity;
+	transform-style: preserve-3d;
+	backface-visibility: hidden;
 }
 
 .carousel-item img {
 	width: 100%;
 	max-width: 250px;
-	transition: transform 0.4s ease, opacity 0.4s ease;
+	transition: transform 0.35s ease, opacity 0.35s ease;
+	will-change: transform, opacity;
+	backface-visibility: hidden;
 }
 
 .carousel-item.active img {
@@ -987,12 +992,6 @@ img {
 		margin-top: 1rem;
 		margin-bottom: 3rem;
 		gap: 1rem;
-		cursor: grab;
-		touch-action: pan-y pinch-zoom;
-		-webkit-overflow-scrolling: touch;
-	}
-	.carousel-track:active {
-		cursor: grabbing;
 	}
 	.carousel-item img {
 		max-width: 160px;
@@ -1034,7 +1033,7 @@ img {
 	.ingredient-tag {
 		min-height: 36px;
 		height: fit-content;
-		font-size: 1rem;
+		font-size: 1rem !important;
 		padding: 0.2rem 0.6rem;
 	}
 	.ingredient-icon {
@@ -2341,11 +2340,11 @@ img {
 		padding: 1.5rem;
 	}
 	.slide-title {
-		min-height: 62px;
-		align-content: center;
+		font-size: 1.2rem;
+		margin-bottom: 0.5rem;
 	}
 	.ingredients-preview {
-		min-height: 168px;
+		min-height: 124px;
 		align-content: center;
 	}
 }
@@ -2458,6 +2457,33 @@ html.page-loading body > *:not(#page-loader) {
 .carousel-button.next {
 	left: 50%;
 	transform: translateX(20%);
+}
+
+/* Bigger buttons on mobile */
+
+@media (max-width: 767px) {
+	.carousel-button {
+		width: 64px;
+		height: 64px;
+		bottom: 2rem;
+		background: rgba(255, 255, 255, 0.2);
+		border: 3px solid #fff;
+		transition: all 0.3s ease;
+	}
+	.carousel-button:hover {
+		background: rgba(255, 255, 255, 0.4);
+		transform: scale(1.05);
+	}
+	.carousel-button.prev {
+		transform: translateX(-140%);
+	}
+	.carousel-button.next {
+		transform: translateX(40%);
+	}
+	.carousel-button svg {
+		width: 32px;
+		height: 32px;
+	}
 }
 
 /* Show faded prev & next items on tablet/mobile when only 1 item is visible */

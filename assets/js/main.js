@@ -53,11 +53,6 @@ document.addEventListener('DOMContentLoaded', function () {
 	let isTransitioning = false;
 	let activeJuice = null;
 	let sortedJuices = [];
-	let touchStartX = 0;
-	let touchStartY = 0;
-	let isDragging = false;
-	let dragOffset = 0;
-	let baseTransformX = 0;
 
 	// Get number of visible items based on screen size
 	function getVisibleItems() {
@@ -87,54 +82,122 @@ document.addEventListener('DOMContentLoaded', function () {
 	// Create initial carousel items
 	function createCarouselItems() {
 		track.innerHTML = '';
-		const visibleItems = getVisibleItems();
-		const totalItems = Math.max(visibleItems + 4, 7);
 
-		// Create items centered around current index
-		for (let i = 0; i < totalItems; i++) {
-			const logicalIndex = currentIndex - Math.floor(totalItems / 2) + i;
-			const juice = getJuiceByIndex(logicalIndex);
-			const outOfStockClass = juice.inStock ? '' : ' out-of-stock';
-
-			const item = document.createElement('div');
-			item.className = `carousel-item${outOfStockClass}`;
-			item.dataset.logicalIndex = logicalIndex;
-			item.innerHTML = `
-				<a href="/juices/${juice.slug}" class="carousel-item-link" tabindex="-1">
-					<img src="${juice.imageUrl}" alt="${juice.name}" class="juice-bottle" loading="lazy" decoding="async">
-				</a>
-			`;
-			track.appendChild(item);
+		// Safety: if we have no juices, show message and exit
+		if (sortedJuices.length === 0) {
+			track.innerHTML = '<div class="no-juices">No juices available</div>';
+			return;
 		}
+
+		const visibleItems = getVisibleItems();
+		// Create enough clones (ahead & behind) so any navigation distance is seamless
+		const clonesNeeded = Math.max(visibleItems * 2, sortedJuices.length);
+
+		// 1️⃣  Clones of LAST items at the beginning
+		for (let i = 0; i < clonesNeeded; i++) {
+			const juiceIndex = (sortedJuices.length - clonesNeeded + i + sortedJuices.length) % sortedJuices.length;
+			const juice = sortedJuices[juiceIndex];
+			if (!juice) continue;
+			const outOfStockClass = juice.inStock ? '' : ' out-of-stock';
+			track.insertAdjacentHTML(
+				'beforeend',
+				`<div class="carousel-item clone-start${outOfStockClass}" data-original-index="${juiceIndex}">
+					<a href="/juices/${juice.slug}" class="carousel-item-link" tabindex="-1">
+						<img src="${juice.imageUrl}" alt="${juice.name}" class="juice-bottle" loading="lazy" decoding="async">
+					</a>
+				</div>`
+			);
+		}
+
+		// 2️⃣  Original items
+		sortedJuices.forEach((juice, index) => {
+			const outOfStockClass = juice.inStock ? '' : ' out-of-stock';
+			track.insertAdjacentHTML(
+				'beforeend',
+				`<div class="carousel-item original${outOfStockClass}" data-original-index="${index}">
+					<a href="/juices/${juice.slug}" class="carousel-item-link" tabindex="-1">
+						<img src="${juice.imageUrl}" alt="${juice.name}" class="juice-bottle" loading="lazy" decoding="async">
+					</a>
+				</div>`
+			);
+		});
+
+		// 3️⃣  Clones of FIRST items at the end
+		for (let i = 0; i < clonesNeeded; i++) {
+			const juiceIndex = i % sortedJuices.length;
+			const juice = sortedJuices[juiceIndex];
+			if (!juice) continue;
+			const outOfStockClass = juice.inStock ? '' : ' out-of-stock';
+			track.insertAdjacentHTML(
+				'beforeend',
+				`<div class="carousel-item clone-end${outOfStockClass}" data-original-index="${juiceIndex}">
+					<a href="/juices/${juice.slug}" class="carousel-item-link" tabindex="-1">
+						<img src="${juice.imageUrl}" alt="${juice.name}" class="juice-bottle" loading="lazy" decoding="async">
+					</a>
+				</div>`
+			);
+		}
+
+		// Set initial index to first original item (right after beginning clones)
+		currentIndex = clonesNeeded;
 	}
 
 	// Update existing items without recreating DOM - smooth transitions
-	function updateCarouselContent() {
+	function updateCarousel(skipTransition = false, skipActiveUpdate = false) {
 		const items = document.querySelectorAll('.carousel-item');
+		if (items.length === 0) return;
+
+		const itemWidth = items[0].offsetWidth + parseInt(window.getComputedStyle(track).gap || '0');
 		const visibleItems = getVisibleItems();
-		const totalItems = Math.max(visibleItems + 4, 7);
 
-		// Update each existing item
-		items.forEach((item, i) => {
-			const logicalIndex = currentIndex - Math.floor(totalItems / 2) + i;
-			const juice = getJuiceByIndex(logicalIndex);
+		// Calculate offset so the currentIndex item is centred appropriately
+		let offset;
+		if (visibleItems === 3) {
+			offset = -(currentIndex - 1) * itemWidth;
+		} else if (visibleItems === 1) {
+			const carouselWidth = carouselElement.offsetWidth;
+			const extraSpace = (carouselWidth - itemWidth) / 2;
+			offset = -currentIndex * itemWidth + extraSpace;
+		} else {
+			offset = -currentIndex * itemWidth;
+		}
 
-			// Update data attribute
-			item.dataset.logicalIndex = logicalIndex;
+		if (skipTransition) {
+			track.style.transition = 'none';
+			track.style.transform = `translateX(${offset}px)`;
+			// Force reflow then restore transition timing
+			track.offsetHeight;
+			track.style.transition = 'transform 0.5s ease-in-out';
+		} else {
+			track.style.transition = 'transform 0.5s ease-in-out';
+			track.style.transform = `translateX(${offset}px)`;
+		}
 
-			// Update out of stock class
-			item.classList.toggle('out-of-stock', !juice.inStock);
-
-			// Update content only if needed to avoid unnecessary reflows
-			const link = item.querySelector('.carousel-item-link');
-			const img = item.querySelector('.juice-bottle');
-
-			if (link.href !== window.location.origin + `/juices/${juice.slug}`) {
-				link.href = `/juices/${juice.slug}`;
-				img.src = juice.imageUrl;
-				img.alt = juice.name;
+		// Update active / prev / next classes if required (not during clone jump)
+		if (!skipActiveUpdate) {
+			const clonesNeeded = Math.max(visibleItems * 2, sortedJuices.length);
+			const originalStart = clonesNeeded;
+			const originalEnd = originalStart + sortedJuices.length - 1;
+			const isClonePosition = currentIndex < originalStart || currentIndex > originalEnd;
+			if (!isClonePosition) {
+				items.forEach((item, index) => {
+					item.classList.remove('active', 'prev', 'next', 'next2');
+					if (index === currentIndex) {
+						item.classList.add('active');
+						activeJuice = sortedJuices[parseInt(item.dataset.originalIndex)];
+					} else if (index === currentIndex - 1) {
+						item.classList.add('prev');
+					} else if (index === currentIndex + 1) {
+						item.classList.add('next');
+					} else if (index === currentIndex + 2) {
+						item.classList.add('next2');
+					}
+				});
+				if (activeJuice) {
+					renderLeftPanel(activeJuice);
+				}
 			}
-		});
+		}
 	}
 
 	// Render left panel content
@@ -183,74 +246,24 @@ document.addEventListener('DOMContentLoaded', function () {
 		}
 	}
 
-	// Update carousel position and styling
-	function updateCarousel(instant = false, includeDragOffset = false) {
-		const items = document.querySelectorAll('.carousel-item');
-		if (items.length === 0) return;
-
-		const itemWidth = items[0].offsetWidth + parseInt(window.getComputedStyle(track).gap || '0');
-		const visibleItems = getVisibleItems();
-		const centerIndex = Math.floor(items.length / 2);
-
-		// Calculate base offset to center the middle item
-		if (visibleItems === 3) {
-			baseTransformX = -(centerIndex - 1) * itemWidth;
-		} else if (visibleItems === 1) {
-			const carouselWidth = carouselElement.offsetWidth;
-			const extraSpace = (carouselWidth - itemWidth) / 2;
-			baseTransformX = -centerIndex * itemWidth + extraSpace;
-		} else {
-			baseTransformX = -centerIndex * itemWidth;
-		}
-
-		// Include drag offset if dragging
-		const finalOffset = baseTransformX + (includeDragOffset ? dragOffset : 0);
-
-		// Apply transform
-		if (instant) {
-			track.style.transition = 'none';
-			track.style.transform = `translateX(${finalOffset}px)`;
-			track.offsetHeight; // Force reflow
-			track.style.transition = 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-		} else {
-			track.style.transition = isDragging ? 'none' : 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-			track.style.transform = `translateX(${finalOffset}px)`;
-		}
-
-		// Update item classes only if not actively dragging
-		if (!isDragging || !includeDragOffset) {
-			items.forEach((item, index) => {
-				item.classList.remove('active', 'prev', 'next', 'next2');
-
-				if (index === centerIndex) {
-					item.classList.add('active');
-					const logicalIndex = parseInt(item.dataset.logicalIndex);
-					activeJuice = getJuiceByIndex(logicalIndex);
-				} else if (index === centerIndex - 1) {
-					item.classList.add('prev');
-				} else if (index === centerIndex + 1) {
-					item.classList.add('next');
-				} else if (index === centerIndex + 2) {
-					item.classList.add('next2');
-				}
-			});
-
-			if (activeJuice) {
-				renderLeftPanel(activeJuice);
-			}
-		}
-	}
-
 	// Navigate to next item
 	function nextSlide() {
 		if (isTransitioning) return;
 		isTransitioning = true;
 		currentIndex++;
-		updateCarouselContent(); // Update content without DOM recreation
 		updateCarousel();
 		setTimeout(() => {
+			const visibleItems = getVisibleItems();
+			const clonesNeeded = Math.max(visibleItems * 2, sortedJuices.length);
+			const originalStart = clonesNeeded;
+			const originalEnd = originalStart + sortedJuices.length - 1;
+			if (currentIndex > originalEnd) {
+				const clonePos = currentIndex - originalEnd - 1;
+				currentIndex = originalStart + clonePos;
+				updateCarousel(true);
+			}
 			isTransitioning = false;
-		}, 400);
+		}, 500);
 	}
 
 	// Navigate to previous item
@@ -258,135 +271,63 @@ document.addEventListener('DOMContentLoaded', function () {
 		if (isTransitioning) return;
 		isTransitioning = true;
 		currentIndex--;
-		updateCarouselContent(); // Update content without DOM recreation
 		updateCarousel();
 		setTimeout(() => {
+			const visibleItems = getVisibleItems();
+			const clonesNeeded = Math.max(visibleItems * 2, sortedJuices.length);
+			const originalStart = clonesNeeded;
+			const originalEnd = originalStart + sortedJuices.length - 1;
+			if (currentIndex < originalStart) {
+				const clonePos = originalStart - currentIndex - 1;
+				currentIndex = originalEnd - clonePos;
+				updateCarousel(true);
+			}
 			isTransitioning = false;
-		}, 400);
+		}, 500);
 	}
 
-	// Navigate to specific item
-	function goToSlide(targetLogicalIndex) {
+	// Click helper to jump multiple items smoothly
+	function moveToIndex(targetIndex) {
 		if (isTransitioning) return;
 		isTransitioning = true;
-		currentIndex = targetLogicalIndex;
-		updateCarouselContent(); // Update content without DOM recreation
+		currentIndex = targetIndex;
 		updateCarousel();
 		setTimeout(() => {
+			const visibleItems = getVisibleItems();
+			const clonesNeeded = Math.max(visibleItems * 2, sortedJuices.length);
+			const originalStart = clonesNeeded;
+			const originalEnd = originalStart + sortedJuices.length - 1;
+			if (currentIndex > originalEnd) {
+				const clonePos = currentIndex - originalEnd - 1;
+				currentIndex = originalStart + clonePos;
+				updateCarousel(true);
+			} else if (currentIndex < originalStart) {
+				const clonePos = originalStart - currentIndex - 1;
+				currentIndex = originalEnd - clonePos;
+				updateCarousel(true);
+			}
 			isTransitioning = false;
-		}, 400);
+		}, 500);
 	}
 
-	// Handle item clicks
+	// Replace handleItemClick logic
 	function handleItemClick(e) {
 		const clickedItem = e.target.closest('.carousel-item');
 		if (!clickedItem) return;
 
-		// If clicking inactive item, navigate to it instead of following link
 		if (!clickedItem.classList.contains('active')) {
 			e.preventDefault();
-			const logicalIndex = parseInt(clickedItem.dataset.logicalIndex);
-			goToSlide(logicalIndex);
-		}
-	}
-
-	// Enhanced touch event handlers for mobile dragging/swiping
-	function handleTouchStart(e) {
-		if (isTransitioning) return;
-
-		touchStartX = e.touches[0].clientX;
-		touchStartY = e.touches[0].clientY;
-		isDragging = false;
-		dragOffset = 0;
-
-		// Stop any ongoing transitions
-		track.style.transition = 'none';
-	}
-
-	function handleTouchMove(e) {
-		if (!touchStartX || isTransitioning) return;
-
-		const touchCurrentX = e.touches[0].clientX;
-		const touchCurrentY = e.touches[0].clientY;
-		const diffX = touchStartX - touchCurrentX;
-		const diffY = touchStartY - touchCurrentY;
-
-		// Start dragging if horizontal movement is dominant
-		if (!isDragging && Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 5) {
-			isDragging = true;
-			e.preventDefault(); // Prevent scrolling
-		}
-
-		// Update drag offset and apply real-time visual feedback
-		if (isDragging) {
-			e.preventDefault();
-			dragOffset = -diffX; // Negative because we want drag to follow finger
-			updateCarousel(false, true); // Update with drag offset
-		}
-	}
-
-	function handleTouchEnd(e) {
-		if (!touchStartX) return;
-
-		const touchEndX = e.changedTouches[0].clientX;
-		const diffX = touchStartX - touchEndX;
-		const threshold = 50;
-		const velocity = Math.abs(diffX) / 100; // Simple velocity calculation
-
-		// Reset drag state
-		const wasDragging = isDragging;
-		isDragging = false;
-		dragOffset = 0;
-
-		if (wasDragging) {
-			// Calculate how many items to skip based on drag distance
-			const itemWidth = document.querySelector('.carousel-item')?.offsetWidth || 200;
-			const dragDistance = Math.abs(diffX);
-			let itemsToSkip = 1;
-
-			// Multi-item swiping: skip more items for longer swipes
-			if (dragDistance > itemWidth * 0.8) {
-				itemsToSkip = Math.min(Math.floor(dragDistance / (itemWidth * 0.6)), 3); // Max 3 items
-			} else if (dragDistance > threshold || velocity > 0.5) {
-				itemsToSkip = 1;
-			} else {
-				// Snap back to current position
-				updateCarousel(false, false);
-				touchStartX = 0;
-				touchStartY = 0;
-				return;
-			}
-
-			// Navigate multiple items
-			if (diffX > 0) {
-				// Swipe left - go to next items
-				for (let i = 0; i < itemsToSkip; i++) {
-					setTimeout(() => {
-						if (i === itemsToSkip - 1) {
-							nextSlide(); // Final slide with animation
-						} else {
-							currentIndex++;
-							updateCarouselContent();
-						}
-					}, i * 100); // Stagger for smooth multi-skip
-				}
-			} else {
-				// Swipe right - go to previous items
-				for (let i = 0; i < itemsToSkip; i++) {
-					setTimeout(() => {
-						if (i === itemsToSkip - 1) {
-							prevSlide(); // Final slide with animation
-						} else {
-							currentIndex--;
-							updateCarouselContent();
-						}
-					}, i * 100); // Stagger for smooth multi-skip
-				}
+			const items = Array.from(document.querySelectorAll('.carousel-item'));
+			const clickedIndex = items.indexOf(clickedItem);
+			const diff = clickedIndex - currentIndex;
+			if (diff === 1) {
+				nextSlide();
+			} else if (diff === -1) {
+				prevSlide();
+			} else if (diff !== 0) {
+				moveToIndex(clickedIndex);
 			}
 		}
-
-		touchStartX = 0;
-		touchStartY = 0;
 	}
 
 	// Debounce function for resize
@@ -404,13 +345,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 	// Handle window resize
 	const handleResize = debounce(() => {
-		// Only recreate items if screen size category changes significantly
-		const items = document.querySelectorAll('.carousel-item');
-		if (items.length === 0) {
-			createCarouselItems();
-		} else {
-			updateCarouselContent();
-		}
+		createCarouselItems();
 		updateCarousel(true);
 	}, 250);
 
@@ -418,9 +353,6 @@ document.addEventListener('DOMContentLoaded', function () {
 	prevButton.addEventListener('click', prevSlide);
 	nextButton.addEventListener('click', nextSlide);
 	track.addEventListener('click', handleItemClick);
-	track.addEventListener('touchstart', handleTouchStart, { passive: false });
-	track.addEventListener('touchmove', handleTouchMove, { passive: false });
-	track.addEventListener('touchend', handleTouchEnd, { passive: false });
 	window.addEventListener('resize', handleResize);
 
 	// Initialize carousel
