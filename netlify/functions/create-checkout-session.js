@@ -9,6 +9,9 @@ const stripeSecretKey = process.env.CONTEXT === 'dev' && process.env.STRIPE_SECR
 
 const stripe = stripeLib(stripeSecretKey);
 
+// NJ Sales Tax Rate (6.625%)
+const NJ_SALES_TAX_RATE = 0.06625;
+
 exports.handler = async event => {
 	if (event.httpMethod !== 'POST') {
 		return {
@@ -18,16 +21,21 @@ exports.handler = async event => {
 	}
 
 	try {
-		const { items } = JSON.parse(event.body);
+		const { items, pickupDate, pickupLocation, customerName, customerPhone } = JSON.parse(event.body);
 
 		// Determine base URL for absolute image links
 		const protocol = event.headers['x-forwarded-proto'] || 'https';
 		const host = event.headers['host'];
 		const baseURL = `${protocol}://${host}`;
 
+		// Calculate subtotal for tax calculation
+		let subtotal = 0;
 		const lineItems = items.map(item => {
 			const rawImage = item.price_data.product_data.images[0] || '';
 			const imageUrl = rawImage.startsWith('http') ? rawImage : `${baseURL}${rawImage}`;
+
+			const itemTotal = item.price_data.unit_amount * item.quantity;
+			subtotal += itemTotal;
 
 			return {
 				price_data: {
@@ -43,12 +51,43 @@ exports.handler = async event => {
 			};
 		});
 
+		// Add NJ Sales Tax as a separate line item
+		const taxAmount = Math.round(subtotal * NJ_SALES_TAX_RATE);
+		if (taxAmount > 0) {
+			lineItems.push({
+				price_data: {
+					currency: 'usd',
+					product_data: {
+						name: 'NJ Sales Tax (6.625%)',
+						description: 'New Jersey State Sales Tax'
+					},
+					unit_amount: taxAmount
+				},
+				quantity: 1
+			});
+		}
+
 		const session = await stripe.checkout.sessions.create({
 			payment_method_types: ['card'],
 			line_items: lineItems,
 			mode: 'payment',
-			success_url: `${baseURL}/success`,
-			cancel_url: `${baseURL}/cancel`
+			success_url: `${baseURL}/success?pickup_date=${encodeURIComponent(pickupDate || '')}&location=${encodeURIComponent(pickupLocation || '')}`,
+			cancel_url: `${baseURL}/cancel`,
+			metadata: {
+				order_type: 'pickup',
+				pickup_date: pickupDate || '',
+				pickup_location: pickupLocation || '',
+				customer_name: customerName || '',
+				customer_phone: customerPhone || '',
+				subtotal: (subtotal / 100).toFixed(2),
+				tax_amount: (taxAmount / 100).toFixed(2),
+				location: 'New Jersey'
+			},
+			custom_text: {
+				submit: {
+					message: 'Order will be ready for pickup on your selected date'
+				}
+			}
 		});
 
 		return {

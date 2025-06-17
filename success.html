@@ -13,6 +13,26 @@
 
     <!--=============== CSS ===============-->
     <link rel="stylesheet" href="/assets/css/styles.css">
+    <style>
+        .pickup-info {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border: 2px solid #ff9700;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            text-align: left;
+            position: relative;
+        }
+
+        .pickup-details p {
+            margin: 0.5rem 0;
+            font-size: 1rem;
+        }
+
+        .pickup-details strong {
+            color: #333;
+        }
+    </style>
 
     <title>Order Success - Pressed By J & H</title>
 </head>
@@ -35,6 +55,15 @@
                     <p class="home__description">
                         Your order has been successfully placed. <br> We'll send you an email with your order details.
                     </p>
+                    <div id="pickup-info" class="pickup-info" style="display: none;">
+                        <div class="pickup-details">
+                            <h3 style="color: #ff9700; margin-bottom: 1rem;">📍 Pickup Information</h3>
+                            <p><strong>Pickup Date:</strong> <span id="pickup-date-display"></span></p>
+                            <p><strong>Location:</strong> <span id="pickup-location-display"></span></p>
+                            <p><strong>Address:</strong> Exact address will be provided via email</p>
+                            <p><strong>Important:</strong> Please bring your order confirmation email</p>
+                        </div>
+                    </div>
                     <div class="success-buttons">
                         <a href="/" class="home__button" style="background-color: #4CAF50; margin-right: 1rem;">
                             Back to Home
@@ -55,12 +84,35 @@
     <script src="/assets/js/juices-database.js"></script>
     <script src="/assets/js/cart.js"></script>
     <script>
-        // Clear cart after successful order
+        // Clear cart after successful order and show pickup info
         document.addEventListener('DOMContentLoaded', () => {
             localStorage.removeItem('cart');
             if (window.cart) {
                 window.cart.items = {};
                 window.cart.updateCartUI();
+            }
+
+            // Get pickup date and location from URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const pickupDate = urlParams.get('pickup_date');
+            const pickupLocation = urlParams.get('location');
+
+            if (pickupDate && pickupLocation) {
+                document.getElementById('pickup-info').style.display = 'block';
+                const formattedDate = new Date(pickupDate).toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+
+                const locationName = pickupLocation.charAt(0).toUpperCase() + pickupLocation.slice(1);
+                const locationDetails = pickupLocation === 'woodbury' ?
+                    'Gloucester County, NJ' :
+                    'Camden County, NJ';
+
+                document.getElementById('pickup-date-display').textContent = formattedDate;
+                document.getElementById('pickup-location-display').textContent = `${locationName}, ${locationDetails}`;
             }
         });
         // GSAP animations

@@ -266,10 +266,21 @@ class Cart {
 			return;
 		}
 
+		const subtotal = this.getTotal();
+		const njTaxRate = 0.06625;
+		const taxAmount = subtotal * njTaxRate;
+		const totalWithTax = subtotal + taxAmount;
+
 		let cartHTML = `
             <div class="cart-header">
                 <h2>Your Cart</h2>
                 <button onclick="cart.closeCart()" class="close-button">×</button>
+            </div>
+            <div class="pickup-notice">
+                <div class="pickup-alert">
+                    <i class="ri-store-2-line"></i>
+                    <strong>PICKUP ONLY</strong>
+                </div>
             </div>
             <div class="cart-items">
                 ${Object.entries(this.items)
@@ -294,7 +305,20 @@ class Cart {
 					.join('')}
             </div>
             <div class="cart-total">
-                <h3 style="margin-bottom: 0px; text-align: center; font-size: 1.4rem; font-weight: bold;">Total: $${this.getTotal().toFixed(2)}</h3>
+                <div class="order-summary">
+                    <div class="summary-line">
+                        <span>Subtotal:</span>
+                        <span>$${subtotal.toFixed(2)}</span>
+                    </div>
+                    <div class="summary-line">
+                        <span>NJ Sales Tax (6.625%):</span>
+                        <span>$${taxAmount.toFixed(2)}</span>
+                    </div>
+                    <div class="summary-line total-line">
+                        <span>Total:</span>
+                        <span>$${totalWithTax.toFixed(2)}</span>
+                    </div>
+                </div>
                 <button id="checkoutButton" class="checkout-button home__button" style="transform: translate(0px, 0px);">Proceed to Checkout</button>
             </div>
         `;
@@ -339,59 +363,15 @@ class Cart {
 		}, 0);
 	}
 
+	getTomorrowDate() {
+		const tomorrow = new Date();
+		tomorrow.setDate(tomorrow.getDate() + 1);
+		return tomorrow.toISOString().split('T')[0];
+	}
+
 	async checkout() {
-		try {
-			const checkoutItems = Object.entries(this.items).map(([juiceId, quantity]) => {
-				const juice = juices.find(j => j.id === parseInt(juiceId));
-				console.log('Processing juice for checkout:', {
-					id: juice.id,
-					name: juice.name,
-					imageUrl: juice.imageUrl,
-					fullData: juice
-				});
-
-				return {
-					price_data: {
-						currency: 'usd',
-						product_data: {
-							name: juice.name,
-							description: juice.description,
-							images: [juice.imageUrl]
-						},
-						unit_amount: Math.round(juice.price * 100)
-					},
-					quantity: quantity
-				};
-			});
-
-			console.log('Sending checkout items to server:', JSON.stringify(checkoutItems, null, 2));
-
-			console.log('Checkout items:', checkoutItems);
-
-			const response = await fetch('/create-checkout-session', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({
-					items: checkoutItems
-				})
-			});
-
-			if (!response.ok) {
-				throw new Error(`HTTP error! status: ${response.status}`);
-			}
-
-			const { url } = await response.json();
-			if (!url) {
-				throw new Error('No checkout URL received');
-			}
-
-			window.location.href = url; // Use href instead of assignment
-		} catch (error) {
-			console.error('Error during checkout:', error);
-			alert('There was an error processing your checkout. Please try again.');
-		}
+		// Redirect to checkout page
+		window.location.href = '/checkout';
 	}
 }
 
