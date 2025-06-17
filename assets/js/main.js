@@ -54,6 +54,9 @@ document.addEventListener('DOMContentLoaded', function () {
 	let activeJuice = null;
 	let sortedJuices = [];
 
+	// Track last known layout category so we only rebuild when needed
+	let lastVisibleItems = getVisibleItems();
+
 	// Get number of visible items based on screen size
 	function getVisibleItems() {
 		const width = window.innerWidth;
@@ -345,7 +348,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
 	// Handle window resize
 	const handleResize = debounce(() => {
-		createCarouselItems();
+		const newVisible = getVisibleItems();
+		if (newVisible !== lastVisibleItems) {
+			// Preserve currently active original index
+			const originalIndex = currentIndex % sortedJuices.length;
+			lastVisibleItems = newVisible;
+			createCarouselItems();
+			// Adjust currentIndex so the same juice stays centred
+			const clonesNeeded = Math.max(newVisible * 2, sortedJuices.length);
+			currentIndex = clonesNeeded + originalIndex;
+		}
 		updateCarousel(true);
 	}, 250);
 
