@@ -2540,7 +2540,6 @@ html.page-loading body > *:not(#page-loader) {
 .out-of-stock {
 	position: relative;
 	opacity: 0.75;
-	pointer-events: none;
 	transition: opacity 0.3s ease;
 }
 
