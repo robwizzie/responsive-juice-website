@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!--=============== FAVICON ===============-->
+    <link rel="shortcut icon" href="/assets/img/favicon.png" type="image/x-icon">
+
+    <!--=============== REMIXICONS ===============-->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
+
+    <!--=============== CSS ===============-->
+    <link rel="stylesheet" href="/assets/css/styles.css">
+
+    <style>
+        .checkout-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            padding-top: 8rem;
+        }
+
+        .checkout-content {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 3rem;
+            align-items: start;
+        }
+
+        .checkout-form {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .form-section {
+            margin-bottom: 2rem;
+        }
+
+        .form-section h3 {
+            color: #333;
+            margin-bottom: 1rem;
+            font-family: var(--second-font);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #ff9700;
+        }
+
+        .location-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .location-card {
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .location-card:hover {
+            border-color: #ff9700;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 151, 0, 0.2);
+        }
+
+        .location-card.selected {
+            border-color: #ff9700;
+            background: linear-gradient(135deg, #fff9f0, #fff3e0);
+        }
+
+        .location-card h4 {
+            color: #ff9700;
+            margin-bottom: 0.5rem;
+            font-family: var(--second-font);
+        }
+
+        .location-card p {
+            color: #666;
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        .order-summary {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 2rem;
+        }
+
+        .summary-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .summary-header h3 {
+            color: #333;
+            margin: 0;
+            font-family: var(--second-font);
+        }
+
+        .order-items {
+            margin-bottom: 1.5rem;
+        }
+
+        .order-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            border-left: 4px solid #ff9700;
+        }
+
+        .order-item img {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+            border-radius: 6px;
+        }
+
+        .item-details {
+            flex: 1;
+        }
+
+        .item-details h4 {
+            margin: 0 0 0.25rem 0;
+            font-size: 1rem;
+            color: #ff9700;
+            font-family: var(--second-font);
+        }
+
+        .item-details p {
+            margin: 0;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .item-price {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .summary-totals {
+            border-top: 1px solid #eee;
+            padding-top: 1rem;
+        }
+
+        .summary-line {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .summary-line.total {
+            border-top: 2px solid #ff9700;
+            padding-top: 1rem;
+            margin-top: 1rem;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .checkout-button {
+            width: 100%;
+            background: linear-gradient(135deg, #ff9700, #ff7700);
+            color: white;
+            border: none;
+            padding: 1rem;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+        }
+
+        .checkout-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 151, 0, 0.4);
+        }
+
+        .checkout-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .pickup-notice-checkout {
+            background: linear-gradient(135deg, #fff3cd, #fff8e1);
+            border: 2px solid #ff9700;
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .pickup-notice-checkout strong {
+            color: #ff9700;
+        }
+
+        @media screen and (max-width: 968px) {
+            .checkout-content {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .location-options {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+
+    <!--=============== JS ===============-->
+    <script type="module" src="assets/js/main.js"></script>
+
+    <title>Checkout - Pressed By J & H</title>
+</head>
+
+<body>
+    <main class="main">
+        <div class="background-shapes">
+            <div class="home__shape-small"></div>
+            <div class="home__shape-big"></div>
+            <img src="/assets/img/shape-bg.png" alt="" class="home__shape-bg">
+        </div>
+
+        <div class="checkout-container">
+            <div class="pickup-notice-checkout">
+                <strong>🏪 PICKUP ONLY</strong> - All orders are for pickup at your selected location
+            </div>
+
+            <div class="checkout-content">
+                <div class="checkout-form">
+                    <h2 style="color: #ff9700; margin-bottom: 2rem; font-family: var(--second-font);">
+                        <i class="ri-shopping-cart-line"></i> Complete Your Order
+                    </h2>
+
+                    <div class="form-section">
+                        <h3>
+                            <i class="ri-map-pin-line"></i> Select Pickup Location
+                        </h3>
+                        <div class="location-options">
+                            <div class="location-card" data-location="woodbury">
+                                <h4>Woodbury</h4>
+                                <p>Gloucester County, NJ</p>
+                                <p style="margin-top: 0.5rem; font-size: 0.8rem; color: #999;">
+                                    Address provided after order
+                                </p>
+                            </div>
+                            <div class="location-card" data-location="blackwood">
+                                <h4>Blackwood</h4>
+                                <p>Camden County, NJ</p>
+                                <p style="margin-top: 0.5rem; font-size: 0.8rem; color: #999;">
+                                    Address provided after order
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>
+                            <i class="ri-calendar-line"></i> Select Pickup Date
+                        </h3>
+                        <div class="form-group">
+                            <label for="pickupDate">Choose your preferred pickup date:</label>
+                            <input type="date" id="pickupDate" name="pickupDate" required>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>
+                            <i class="ri-user-line"></i> Contact Information
+                        </h3>
+                        <div class="form-group">
+                            <label for="customerName">Full Name:</label>
+                            <input type="text" id="customerName" name="customerName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="customerPhone">Phone Number:</label>
+                            <input type="tel" id="customerPhone" name="customerPhone" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="order-summary">
+                    <div class="summary-header">
+                        <i class="ri-file-list-line"></i>
+                        <h3>Order Summary</h3>
+                    </div>
+
+                    <div class="order-items" id="orderItems">
+                        <!-- Items will be populated by JavaScript -->
+                    </div>
+
+                    <div class="summary-totals">
+                        <div class="summary-line">
+                            <span>Subtotal:</span>
+                            <span id="subtotalAmount">$0.00</span>
+                        </div>
+                        <div class="summary-line">
+                            <span>NJ Sales Tax (6.625%):</span>
+                            <span id="taxAmount">$0.00</span>
+                        </div>
+                        <div class="summary-line total">
+                            <span>Total:</span>
+                            <span id="totalAmount">$0.00</span>
+                        </div>
+                    </div>
+
+                    <button id="completeOrderButton" class="checkout-button" disabled>
+                        Complete Order
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!--=============== MAIN JS ===============-->
+    <script src="/assets/js/juices-database.js"></script>
+    <script src="/assets/js/cart.js"></script>
+    <script>
+        // Checkout page functionality
+        class CheckoutPage {
+            constructor() {
+                this.selectedLocation = null;
+                this.cart = window.cart || new Cart();
+                this.init();
+            }
+
+            init() {
+                this.setupLocationSelector();
+                this.setupDatePicker();
+                this.setupFormValidation();
+                this.populateOrderSummary();
+                this.setupCheckoutButton();
+            }
+
+            setupLocationSelector() {
+                const locationCards = document.querySelectorAll('.location-card');
+                locationCards.forEach(card => {
+                    card.addEventListener('click', () => {
+                        // Remove selected class from all cards
+                        locationCards.forEach(c => c.classList.remove('selected'));
+                        // Add selected class to clicked card
+                        card.classList.add('selected');
+                        this.selectedLocation = card.dataset.location;
+                        this.validateForm();
+                    });
+                });
+            }
+
+            setupDatePicker() {
+                const dateInput = document.getElementById('pickupDate');
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                dateInput.min = tomorrow.toISOString().split('T')[0];
+
+                dateInput.addEventListener('change', () => {
+                    this.validateForm();
+                });
+            }
+
+            setupFormValidation() {
+                const inputs = document.querySelectorAll('input[required]');
+                inputs.forEach(input => {
+                    input.addEventListener('input', () => {
+                        this.validateForm();
+                    });
+                });
+            }
+
+            validateForm() {
+                const name = document.getElementById('customerName').value;
+                const phone = document.getElementById('customerPhone').value;
+                const date = document.getElementById('pickupDate').value;
+                const location = this.selectedLocation;
+
+                const isValid = name && phone && date && location && Object.keys(this.cart.items).length > 0;
+                document.getElementById('completeOrderButton').disabled = !isValid;
+            }
+
+            populateOrderSummary() {
+                const orderItemsContainer = document.getElementById('orderItems');
+                const subtotal = this.cart.getTotal();
+                const taxAmount = subtotal * 0.06625;
+                const total = subtotal + taxAmount;
+
+                // Populate items
+                let itemsHTML = '';
+                Object.entries(this.cart.items).forEach(([juiceId, quantity]) => {
+                    const juice = juices.find(j => j.id === parseInt(juiceId));
+                    if (juice) {
+                        itemsHTML += `
+                            <div class="order-item" style="border-left: 4px solid ${juice.color};">
+                                <img src="${juice.imageUrl}" alt="${juice.name}">
+                                <div class="item-details">
+                                    <h4 style="color: ${juice.color}; font-family: var(--second-font); font-size: 1rem;">${juice.name}</h4>
+                                    <p>${quantity} × $${juice.price.toFixed(2)}</p>
+                                </div>
+                                <div class="item-price">
+                                    $${(juice.price * quantity).toFixed(2)}
+                                </div>
+                            </div>
+                        `;
+                    }
+                });
+
+                orderItemsContainer.innerHTML = itemsHTML;
+
+                // Update totals
+                document.getElementById('subtotalAmount').textContent = `$${subtotal.toFixed(2)}`;
+                document.getElementById('taxAmount').textContent = `$${taxAmount.toFixed(2)}`;
+                document.getElementById('totalAmount').textContent = `$${total.toFixed(2)}`;
+            }
+
+            setupCheckoutButton() {
+                document.getElementById('completeOrderButton').addEventListener('click', () => {
+                    this.processCheckout();
+                });
+            }
+
+            async processCheckout() {
+                const button = document.getElementById('completeOrderButton');
+                button.disabled = true;
+                button.textContent = 'Processing...';
+
+                try {
+                    const checkoutData = {
+                        items: Object.entries(this.cart.items).map(([juiceId, quantity]) => {
+                            const juice = juices.find(j => j.id === parseInt(juiceId));
+                            return {
+                                price_data: {
+                                    currency: 'usd',
+                                    product_data: {
+                                        name: juice.name,
+                                        description: `${juice.description} - Pickup Only`,
+                                        images: [juice.imageUrl]
+                                    },
+                                    unit_amount: Math.round(juice.price * 100)
+                                },
+                                quantity: quantity
+                            };
+                        }),
+                        pickupDate: document.getElementById('pickupDate').value,
+                        pickupLocation: this.selectedLocation,
+                        customerName: document.getElementById('customerName').value,
+                        customerPhone: document.getElementById('customerPhone').value
+                    };
+
+                    const response = await fetch('/create-checkout-session', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(checkoutData)
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const {
+                        url
+                    } = await response.json();
+                    if (!url) {
+                        throw new Error('No checkout URL received');
+                    }
+
+                    window.location.href = url;
+                } catch (error) {
+                    console.error('Error during checkout:', error);
+                    alert('There was an error processing your checkout. Please try again.');
+                    button.disabled = false;
+                    button.textContent = 'Complete Order';
+                }
+            }
+        }
+
+        // Initialize checkout page when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            // Redirect to juices page if cart is empty
+            const cart = window.cart || new Cart();
+            if (Object.keys(cart.items).length === 0) {
+                window.location.href = '/juices';
+                return;
+            }
+
+            // Disable cart flyout on checkout page
+            const cartButton = document.querySelector('.cart-button');
+            if (cartButton) {
+                cartButton.style.pointerEvents = 'none';
+                cartButton.style.opacity = '0.6';
+            }
+
+            // Disable cart overlay functionality
+            const cartOverlay = document.getElementById('cartOverlay');
+            if (cartOverlay) {
+                cartOverlay.style.display = 'none !important';
+            }
+
+            // Override cart methods to prevent flyout
+            if (window.cart) {
+                window.cart.openCart = () => { }; // Disable cart opening
+                window.cart.closeCart = () => { }; // Disable cart closing
+            }
+
+            new CheckoutPage();
+        });
+    </script>
+</body>
+
+</html>

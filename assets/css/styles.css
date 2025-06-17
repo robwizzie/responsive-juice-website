@@ -444,6 +444,7 @@ img {
 .cart-items {
 	padding-right: 2rem;
 	padding-left: 2rem;
+	padding-top: 1rem;
 	flex: 1;
 	overflow-y: auto;
 }
@@ -615,6 +616,104 @@ img {
 
 .add-to-cart.button-pop:not(.left-add-cart) {
 	animation: buttonPop 0.3s ease-out;
+}
+
+/* Pickup Notice Styles */
+
+.pickup-notice {
+	padding: 0rem 2rem 1rem 2rem;
+	border-bottom: 1px solid #eee;
+}
+
+.pickup-alert {
+	background: linear-gradient(135deg, #ff9700, #ff7700);
+	color: white;
+	padding: 0.75rem 1rem;
+	border-radius: 8px;
+	text-align: center;
+	font-weight: bold;
+	font-size: 0.9rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+}
+
+.pickup-alert i {
+	font-size: 1.2rem;
+}
+
+/* Pickup Date Selection */
+
+.pickup-date-selection {
+	padding: 1.5rem 2rem;
+	border-bottom: 1px solid #eee;
+	background: #f9f9f9;
+}
+
+.pickup-date-selection label {
+	color: #333;
+	font-family: var(--second-font);
+}
+
+/* Order Summary */
+
+.order-summary {
+	margin-bottom: 1rem;
+}
+
+.summary-line {
+	display: flex;
+	justify-content: space-between;
+	padding: 0.25rem 0;
+	font-size: 0.95rem;
+}
+
+.summary-line.total-line {
+	border-top: 2px solid #ff9700;
+	padding-top: 0.75rem;
+	margin-top: 0.5rem;
+	font-weight: bold;
+	font-size: 1.1rem;
+}
+
+/* Pickup Only Banner */
+
+.pickup-only-banner {
+	margin-top: 2rem;
+	display: flex;
+	justify-content: center;
+}
+
+.pickup-banner-content {
+	background: linear-gradient(135deg, #ff9700, #ff7700);
+	color: white;
+	padding: 1rem 2rem;
+	border-radius: 50px;
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+	font-size: 1rem;
+	font-weight: 500;
+	box-shadow: 0 4px 20px rgba(255, 151, 0, 0.3);
+	animation: pulse-glow 3s ease-in-out infinite;
+}
+
+.pickup-banner-content i {
+	font-size: 1.3rem;
+	opacity: 0.9;
+}
+
+@keyframes pulse-glow {
+	0%,
+	100% {
+		box-shadow: 0 4px 20px rgba(255, 151, 0, 0.3);
+		transform: scale(1);
+	}
+	50% {
+		box-shadow: 0 6px 30px rgba(255, 151, 0, 0.5);
+		transform: scale(1.02);
+	}
 }
 
 /* Background image */

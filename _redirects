@@ -1,5 +1,8 @@
 /create-checkout-session /.netlify/functions/create-checkout-session 200
 /send-email /.netlify/functions/send-email 200
+/webhook/stripe /.netlify/functions/handle-successful-payment 200
+/checkout          /checkout.html     200
+/checkout/         /checkout.html     200
 /juices            /juices.html        200
 /juices/           /juices.html        200
 /juices/:slug      /juice-details.html 200
