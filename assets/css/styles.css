@@ -1026,7 +1026,7 @@ img {
 		font-size: 1.6rem;
 	}
 	.ingredients-preview {
-		min-height: 4rem;
+		min-height: 80px;
 		align-items: center;
 		margin-bottom: 0.75rem;
 	}
