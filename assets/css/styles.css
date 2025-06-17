@@ -2547,7 +2547,7 @@ html.page-loading body > *:not(#page-loader) {
 .out-of-stock::before {
 	content: 'OUT OF STOCK';
 	position: absolute;
-	top: 33%;
+	top: 42%;
 	left: 50%;
 	transform: translate(-50%, -50%) scale(1);
 	background: rgba(255, 255, 255, 0.95);
