@@ -225,6 +225,9 @@ function initializeCarousel(currentSlug) {
 	let isTransitioning = false;
 	let activeJuice = null;
 
+	// Track last known visible item category
+	let lastVisibleItems = getVisibleItems();
+
 	// Get number of visible items based on screen size
 	function getVisibleItems() {
 		const width = window.innerWidth;
@@ -695,7 +698,14 @@ function initializeCarousel(currentSlug) {
 
 	// Handle window resize
 	const handleResize = debounce(() => {
-		createCarouselItems();
+		const newVisible = getVisibleItems();
+		if (newVisible !== lastVisibleItems) {
+			const originalIndex = currentIndex % filteredJuices.length;
+			lastVisibleItems = newVisible;
+			createCarouselItems();
+			const clonesNeeded = Math.max(newVisible * 2, filteredJuices.length);
+			currentIndex = clonesNeeded + originalIndex;
+		}
 		updateCarousel(true);
 	}, 250);
 
