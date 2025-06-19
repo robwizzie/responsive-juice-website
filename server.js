@@ -2,6 +2,7 @@
 require('dotenv').config();
 const express = require('express');
 const path = require('path');
+const { locations, getLocationBySlug } = require('./assets/js/locations-database.js');
 // Choose Stripe key based on environment
 const stripeSecretKey = process.env.NODE_ENV !== 'production' && process.env.STRIPE_SECRET_KEY_TEST ? process.env.STRIPE_SECRET_KEY_TEST : process.env.STRIPE_SECRET_KEY;
 const stripe = require('stripe')(stripeSecretKey);
@@ -190,6 +191,11 @@ app.post('/create-checkout-session', async (req, res) => {
 			});
 		}
 
+		// Get location details from database
+		const locationData = getLocationBySlug(pickupLocation);
+		const locationName = locationData ? locationData.name : pickupLocation;
+		const locationFullName = locationData ? `${locationData.name}, ${locationData.fullLocation}` : pickupLocation;
+
 		const session = await stripe.checkout.sessions.create({
 			payment_method_types: ['card'],
 			line_items: lineItems,
@@ -200,6 +206,8 @@ app.post('/create-checkout-session', async (req, res) => {
 				order_type: 'pickup',
 				pickup_date: pickupDate || '',
 				pickup_location: pickupLocation || '',
+				pickup_location_name: locationName,
+				pickup_location_full: locationFullName,
 				customer_name: customerName || '',
 				customer_phone: customerPhone || '',
 				subtotal: (subtotal / 100).toFixed(2),
@@ -208,7 +216,7 @@ app.post('/create-checkout-session', async (req, res) => {
 			},
 			custom_text: {
 				submit: {
-					message: 'Order will be ready for pickup on your selected date'
+					message: `Order will be ready for pickup in ${locationName} on your selected date`
 				}
 			}
 		});

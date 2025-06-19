@@ -1,4 +1,5 @@
 const stripeLib = require('stripe');
+const { locations, getLocationBySlug } = require('../../assets/js/locations-database.js');
 
 require('dotenv').config();
 
@@ -67,6 +68,11 @@ exports.handler = async event => {
 			});
 		}
 
+		// Get location details from database
+		const locationData = getLocationBySlug(pickupLocation);
+		const locationName = locationData ? locationData.name : pickupLocation;
+		const locationFullName = locationData ? `${locationData.name}, ${locationData.fullLocation}` : pickupLocation;
+
 		const session = await stripe.checkout.sessions.create({
 			payment_method_types: ['card'],
 			line_items: lineItems,
@@ -77,6 +83,8 @@ exports.handler = async event => {
 				order_type: 'pickup',
 				pickup_date: pickupDate || '',
 				pickup_location: pickupLocation || '',
+				pickup_location_name: locationName,
+				pickup_location_full: locationFullName,
 				customer_name: customerName || '',
 				customer_phone: customerPhone || '',
 				subtotal: (subtotal / 100).toFixed(2),
@@ -85,7 +93,7 @@ exports.handler = async event => {
 			},
 			custom_text: {
 				submit: {
-					message: 'Order will be ready for pickup on your selected date'
+					message: `Order will be ready for pickup in ${locationName} on your selected date`
 				}
 			}
 		});

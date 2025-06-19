@@ -115,6 +115,31 @@
             margin: 0;
         }
 
+        .location-details {
+            margin-top: 1rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid #eee;
+        }
+
+        .location-details p {
+            margin: 0.25rem 0;
+            font-size: 0.85rem;
+        }
+
+        .hours-display {
+            background: #f8f9fa;
+            padding: 0.5rem;
+            border-radius: 4px;
+            margin-top: 0.5rem;
+            font-size: 0.8rem;
+            line-height: 1.3;
+        }
+
+        .phone-number {
+            color: #ff9700;
+            font-weight: bold;
+        }
+
         .order-summary {
             background: white;
             padding: 2rem;
@@ -181,6 +206,37 @@
             color: #333;
         }
 
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: bold;
+            margin-top: 0.5rem;
+        }
+
+        .quantity-controls button {
+            padding: 0.25rem 0.5rem;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            min-width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .quantity-controls button:hover {
+            opacity: 0.8;
+        }
+
+        .quantity-controls span {
+            min-width: 20px;
+            text-align: center;
+        }
+
         .summary-totals {
             border-top: 1px solid #eee;
             padding-top: 1rem;
@@ -224,6 +280,37 @@
             cursor: not-allowed;
             transform: none;
             box-shadow: none;
+        }
+
+        /* Enhanced date input styling */
+
+        input[type="date"] {
+            padding: 0.75rem;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+            width: 100%;
+        }
+
+        input[type="date"]:focus {
+            outline: none;
+            border-color: #ff9700;
+            box-shadow: 0 0 0 3px rgba(255, 151, 0, 0.1);
+        }
+
+        input[type="date"]:invalid {
+            border-color: #dc3545;
+        }
+
+        .date-help-text {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .date-help-text i {
+            color: #ff9700;
         }
 
         .pickup-notice-checkout {
@@ -281,21 +368,8 @@
                         <h3>
                             <i class="ri-map-pin-line"></i> Select Pickup Location
                         </h3>
-                        <div class="location-options">
-                            <div class="location-card" data-location="woodbury">
-                                <h4>Woodbury</h4>
-                                <p>Gloucester County, NJ</p>
-                                <p style="margin-top: 0.5rem; font-size: 0.8rem; color: #999;">
-                                    Address provided after order
-                                </p>
-                            </div>
-                            <div class="location-card" data-location="blackwood">
-                                <h4>Blackwood</h4>
-                                <p>Camden County, NJ</p>
-                                <p style="margin-top: 0.5rem; font-size: 0.8rem; color: #999;">
-                                    Address provided after order
-                                </p>
-                            </div>
+                        <div class="location-options" id="locationOptions">
+                            <!-- Locations will be populated by JavaScript -->
                         </div>
                     </div>
 
@@ -306,6 +380,11 @@
                         <div class="form-group">
                             <label for="pickupDate">Choose your preferred pickup date:</label>
                             <input type="date" id="pickupDate" name="pickupDate" required>
+                            <div class="date-help-text" style="font-size: 0.875rem; color: #666; margin-top: 0.5rem;">
+                                <i class="ri-information-line"></i>
+                                <span id="location-hours-info">Select a location first to see available pickup
+                                    days</span>
+                            </div>
                         </div>
                     </div>
 
@@ -350,7 +429,7 @@
                     </div>
 
                     <button id="completeOrderButton" class="checkout-button" disabled>
-                        Complete Order
+                        Proceed to Payment
                     </button>
                 </div>
             </div>
@@ -359,7 +438,9 @@
 
     <!--=============== MAIN JS ===============-->
     <script src="/assets/js/juices-database.js"></script>
+    <script src="/assets/js/locations-database.js"></script>
     <script src="/assets/js/cart.js"></script>
+    <script src="/assets/js/components/footer.js"></script>
     <script>
         // Checkout page functionality
         class CheckoutPage {
@@ -370,11 +451,43 @@
             }
 
             init() {
+                this.populateLocations();
                 this.setupLocationSelector();
                 this.setupDatePicker();
                 this.setupFormValidation();
                 this.populateOrderSummary();
                 this.setupCheckoutButton();
+            }
+
+            populateLocations() {
+                const locationOptionsContainer = document.getElementById('locationOptions');
+                const activeLocations = getActiveLocations();
+
+                let locationsHTML = '';
+                activeLocations.forEach(location => {
+                    const todaysHours = getTodaysHours(location.slug);
+                    const formattedHours = getFormattedHours(location);
+
+                    locationsHTML += `
+                        <div class="location-card" data-location="${location.slug}" data-location-id="${location.id}">
+                            <h4>${location.name}</h4>
+                            <p style="font-weight: 500;">${location.fullLocation}</p>
+                            <p style="color: #666; margin-top: 0.5rem;">${location.description}</p>
+                            
+                            <div class="location-details">
+                                <p><strong>Address:</strong><br>${location.address}</p>
+                                <p><strong>Phone:</strong> <span class="phone-number">${location.contactPhone}</span></p>
+                                <p><strong>Today's Hours:</strong> ${todaysHours}</p>
+                                <div class="hours-display">
+                                    <strong>Full Schedule:</strong><br>
+                                    ${formattedHours.split('\n').join('<br>')}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                locationOptionsContainer.innerHTML = locationsHTML;
             }
 
             setupLocationSelector() {
@@ -386,6 +499,9 @@
                         // Add selected class to clicked card
                         card.classList.add('selected');
                         this.selectedLocation = card.dataset.location;
+
+                        // Update date picker with location-specific restrictions
+                        this.updateDatePickerForLocation();
                         this.validateForm();
                     });
                 });
@@ -397,9 +513,494 @@
                 tomorrow.setDate(tomorrow.getDate() + 1);
                 dateInput.min = tomorrow.toISOString().split('T')[0];
 
+                // Disable date input until location is selected
+                dateInput.disabled = true;
+
                 dateInput.addEventListener('change', () => {
+                    this.validatePickupDate();
                     this.validateForm();
                 });
+            }
+
+            updateDatePickerForLocation() {
+                if (!this.selectedLocation) return;
+
+                const dateInput = document.getElementById('pickupDate');
+                const currentValue = dateInput.value;
+                const location = getLocationBySlug(this.selectedLocation);
+
+                // Enable the date picker now that location is selected
+                dateInput.disabled = false;
+
+                // Set up date restrictions for the selected location
+                this.setupDateRestrictions();
+
+                // Update the help text to show location-specific hours
+                this.updateLocationHoursInfo();
+
+                // Clear current selection if location changed
+                dateInput.value = '';
+
+                // If there was a previous date selected, validate it for the new location
+                if (currentValue && !this.isValidPickupDate(currentValue)) {
+                    this.showDateMessage('Please select a new pickup date - the selected location is closed on the previously chosen day.');
+                }
+
+                this.validateForm();
+            }
+
+            setupDateRestrictions() {
+                if (!this.selectedLocation) return;
+
+                const dateInput = document.getElementById('pickupDate');
+                const location = getLocationBySlug(this.selectedLocation);
+
+                // Remove any existing event listener
+                if (this.dateInputHandler) {
+                    dateInput.removeEventListener('input', this.dateInputHandler);
+                }
+
+                // Create a new handler that prevents selecting closed days
+                this.dateInputHandler = (e) => {
+                    const selectedDate = e.target.value;
+                    if (selectedDate && !this.isValidPickupDate(selectedDate)) {
+                        e.target.value = '';
+                        const locationName = location ? location.name : 'Selected location';
+                        this.showDateMessage(`${locationName} is closed on the selected date. Please choose a different day.`);
+                        return false;
+                    }
+                    this.clearDateMessage();
+                    this.validateForm();
+                };
+
+                // Add the new event listener
+                dateInput.addEventListener('input', this.dateInputHandler);
+
+                // Also prevent keyboard input of invalid dates
+                dateInput.addEventListener('keydown', (e) => {
+                    // Allow navigation keys
+                    if (['Tab', 'Escape', 'Enter', 'Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
+                        return;
+                    }
+                });
+
+                // Use CSS to disable closed days in the calendar
+                this.setupCalendarRestrictions();
+            }
+
+            setupCalendarRestrictions() {
+                const dateInput = document.getElementById('pickupDate');
+                const location = getLocationBySlug(this.selectedLocation);
+
+                // Remove any existing select dropdown
+                const existingSelect = document.getElementById('pickupDateSelect');
+                if (existingSelect) {
+                    existingSelect.remove();
+                }
+
+                // Create custom calendar that shows disabled days
+                this.createCustomCalendar();
+            }
+
+            createCustomCalendar() {
+                const dateInput = document.getElementById('pickupDate');
+                const location = getLocationBySlug(this.selectedLocation);
+
+                // Hide the original date input
+                dateInput.style.display = 'none';
+
+                // Remove existing custom calendar
+                const existingCalendar = document.getElementById('customCalendar');
+                if (existingCalendar) {
+                    existingCalendar.remove();
+                }
+
+                // Create custom calendar container
+                const calendarContainer = document.createElement('div');
+                calendarContainer.id = 'customCalendar';
+                calendarContainer.className = 'custom-calendar';
+
+                // Insert after the date input
+                dateInput.parentNode.insertBefore(calendarContainer, dateInput.nextSibling);
+
+                // Initialize calendar
+                this.initCustomCalendar(calendarContainer);
+
+                // Add custom calendar styles
+                this.addCustomCalendarStyles();
+            }
+
+            initCustomCalendar(container) {
+                const today = new Date();
+                const currentMonth = today.getMonth();
+                const currentYear = today.getFullYear();
+
+                // Always start with current month - never allow going backwards
+                this.currentCalendarMonth = currentMonth;
+                this.currentCalendarYear = currentYear;
+
+                this.renderCalendar(container);
+            }
+
+            renderCalendar(container) {
+                const location = getLocationBySlug(this.selectedLocation);
+                const today = new Date();
+                const firstDay = new Date(this.currentCalendarYear, this.currentCalendarMonth, 1);
+                const lastDay = new Date(this.currentCalendarYear, this.currentCalendarMonth + 1, 0);
+                const firstDayOfWeek = firstDay.getDay();
+                const daysInMonth = lastDay.getDate();
+
+                const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                    'July', 'August', 'September', 'October', 'November', 'December'
+                ];
+
+                // Check if we're in the current month to disable previous button
+                const currentMonth = today.getMonth();
+                const currentYear = today.getFullYear();
+                const isCurrentMonth = this.currentCalendarMonth === currentMonth && this.currentCalendarYear === currentYear;
+                const prevButtonDisabled = isCurrentMonth ? 'disabled' : '';
+                const prevButtonClass = isCurrentMonth ? 'calendar-nav disabled' : 'calendar-nav';
+
+                let html = `
+                    <div class="calendar-header">
+                        <button type="button" class="${prevButtonClass}" id="prevMonth" ${prevButtonDisabled}>&lt;</button>
+                        <span class="calendar-month-year">${monthNames[this.currentCalendarMonth]} ${this.currentCalendarYear}</span>
+                        <button type="button" class="calendar-nav" id="nextMonth">&gt;</button>
+                    </div>
+                    <div class="calendar-days-header">
+                        <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+                    </div>
+                    <div class="calendar-grid">
+                `;
+
+                // Add empty cells for days before the first day of the month
+                for (let i = 0; i < firstDayOfWeek; i++) {
+                    html += '<div class="calendar-day empty"></div>';
+                }
+
+                // Add days of the month
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const currentDate = new Date(this.currentCalendarYear, this.currentCalendarMonth, day);
+                    const dateString = currentDate.toISOString().split('T')[0];
+                    const isPast = currentDate < today;
+                    const isToday = currentDate.toDateString() === today.toDateString();
+                    const isTomorrow = currentDate > today;
+                    const isOpen = isTomorrow && isLocationOpenOnDate(this.selectedLocation, currentDate);
+
+                    let classes = 'calendar-day';
+                    if (isPast) classes += ' past';
+                    if (isToday) classes += ' today';
+                    if (!isOpen && isTomorrow) classes += ' closed';
+                    if (isOpen) classes += ' available';
+
+                    const clickable = isOpen ? `onclick="checkoutPage.selectDate('${dateString}')"` : '';
+                    const title = isPast ? 'Past date' :
+                        isToday ? 'Today (select tomorrow or later)' :
+                            !isOpen ? `${location.name} is closed` :
+                                'Available for pickup';
+
+                    html += `<div class="${classes}" ${clickable} title="${title}" data-date="${dateString}">${day}</div>`;
+                }
+
+                html += '</div>';
+                container.innerHTML = html;
+
+                // Add event listeners for navigation
+                document.getElementById('prevMonth').addEventListener('click', (e) => {
+                    // Don't allow going to previous months if button is disabled
+                    if (e.target.disabled) return;
+
+                    this.currentCalendarMonth--;
+                    if (this.currentCalendarMonth < 0) {
+                        this.currentCalendarMonth = 11;
+                        this.currentCalendarYear--;
+                    }
+                    this.renderCalendar(container);
+                });
+
+                document.getElementById('nextMonth').addEventListener('click', () => {
+                    this.currentCalendarMonth++;
+                    if (this.currentCalendarMonth > 11) {
+                        this.currentCalendarMonth = 0;
+                        this.currentCalendarYear++;
+                    }
+                    this.renderCalendar(container);
+                });
+            }
+
+            selectDate(dateString) {
+                const dateInput = document.getElementById('pickupDate');
+                dateInput.value = dateString;
+
+                // Update visual selection in calendar
+                document.querySelectorAll('.calendar-day').forEach(day => {
+                    day.classList.remove('selected');
+                });
+
+                const selectedDay = document.querySelector(`[data-date="${dateString}"]`);
+                if (selectedDay) {
+                    selectedDay.classList.add('selected');
+                }
+
+                this.clearDateMessage();
+                this.validateForm();
+            }
+
+            addCustomCalendarStyles() {
+                // Remove existing styles
+                const existingStyle = document.getElementById('custom-calendar-styles');
+                if (existingStyle) {
+                    existingStyle.remove();
+                }
+
+                const styleElement = document.createElement('style');
+                styleElement.id = 'custom-calendar-styles';
+                styleElement.textContent = `
+                    .custom-calendar {
+                        border: 2px solid #ddd;
+                        border-radius: 8px;
+                        background: white;
+                        padding: 1rem;
+                        font-family: inherit;
+                        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+                    }
+                    
+                    .calendar-header {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        margin-bottom: 1rem;
+                        padding-bottom: 0.5rem;
+                        border-bottom: 1px solid #eee;
+                    }
+                    
+                    .calendar-nav {
+                        background: #ff9700;
+                        color: white;
+                        border: none;
+                        border-radius: 4px;
+                        padding: 0.5rem;
+                        cursor: pointer;
+                        font-weight: bold;
+                        min-width: 32px;
+                        height: 32px;
+                    }
+                    
+                    .calendar-nav:hover:not(.disabled) {
+                        background: #ff7700;
+                    }
+                    
+                    .calendar-nav.disabled {
+                        background: #ccc !important;
+                        color: #666 !important;
+                        cursor: not-allowed !important;
+                        opacity: 0.5;
+                    }
+                    
+                    .calendar-month-year {
+                        font-weight: bold;
+                        font-size: 1.1rem;
+                        color: #333;
+                    }
+                    
+                    .calendar-days-header {
+                        display: grid;
+                        grid-template-columns: repeat(7, 1fr);
+                        gap: 0.25rem;
+                        margin-bottom: 0.5rem;
+                    }
+                    
+                    .calendar-days-header span {
+                        text-align: center;
+                        font-weight: bold;
+                        color: #666;
+                        padding: 0.5rem;
+                        font-size: 0.9rem;
+                    }
+                    
+                    .calendar-grid {
+                        display: grid;
+                        grid-template-columns: repeat(7, 1fr);
+                        gap: 0.25rem;
+                    }
+                    
+                    .calendar-day {
+                        aspect-ratio: 1;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        border-radius: 4px;
+                        font-weight: 500;
+                        position: relative;
+                        transition: all 0.2s ease;
+                    }
+                    
+                    .calendar-day.empty {
+                        visibility: hidden;
+                    }
+                    
+                    .calendar-day.past {
+                        color: #ccc;
+                        background: #f9f9f9;
+                    }
+                    
+                    .calendar-day.today {
+                        color: #666;
+                        background: #f0f0f0;
+                        border: 1px solid #ddd;
+                    }
+                    
+                    .calendar-day.closed {
+                        color: #dc3545;
+                        background: #fff5f5;
+                        border: 1px solid #f8d7da;
+                        cursor: not-allowed;
+                        position: relative;
+                    }
+                    
+                    .calendar-day.closed::after {
+                        content: "✕";
+                        position: absolute;
+                        top: 2px;
+                        right: 2px;
+                        font-size: 0.6rem;
+                        color: #dc3545;
+                    }
+                    
+                    .calendar-day.available {
+                        color: #333;
+                        background: #f8f9fa;
+                        border: 1px solid #e9ecef;
+                        cursor: pointer;
+                    }
+                    
+                    .calendar-day.available:hover {
+                        background: #fff3e0;
+                        border-color: #ff9700;
+                        transform: scale(1.05);
+                    }
+                    
+                    .calendar-day.selected {
+                        background: #ff9700 !important;
+                        color: white !important;
+                        border-color: #ff7700 !important;
+                        font-weight: bold;
+                    }
+                `;
+
+                document.head.appendChild(styleElement);
+            }
+
+            formatDateForDisplay(date) {
+                const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                const months = ['January', 'February', 'March', 'April', 'May', 'June',
+                    'July', 'August', 'September', 'October', 'November', 'December'
+                ];
+
+                const dayName = days[date.getDay()];
+                const monthName = months[date.getMonth()];
+                const day = date.getDate();
+                const year = date.getFullYear();
+
+                return `${dayName}, ${monthName} ${day}, ${year}`;
+            }
+
+            getSelectedPickupDate() {
+                // Get the date from the calendar input
+                return document.getElementById('pickupDate').value;
+            }
+
+            updateLocationHoursInfo() {
+                const infoSpan = document.getElementById('location-hours-info');
+                if (!infoSpan || !this.selectedLocation) return;
+
+                const location = getLocationBySlug(this.selectedLocation);
+                if (!location) return;
+
+                // Show which days are available for pickup
+                const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+                const dayKeys = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+
+                const openDays = days.filter((day, index) => {
+                    const hours = location.pickupHours[dayKeys[index]];
+                    return hours && hours.toLowerCase() !== 'closed';
+                });
+
+                const closedDays = days.filter((day, index) => {
+                    const hours = location.pickupHours[dayKeys[index]];
+                    return !hours || hours.toLowerCase() === 'closed';
+                });
+
+                let message = `${location.name} is open for pickup: ${openDays.join(', ')}`;
+                if (closedDays.length > 0) {
+                    message += `. Closed: ${closedDays.join(', ')}`;
+                }
+                message += '. Closed days are marked with ✕ and cannot be selected.';
+
+                infoSpan.textContent = message;
+            }
+
+            isValidPickupDate(dateString) {
+                if (!this.selectedLocation || !dateString) return false;
+
+                try {
+                    const selectedDate = new Date(dateString + 'T00:00:00');
+                    return isLocationOpenOnDate(this.selectedLocation, selectedDate);
+                } catch (error) {
+                    console.error('Error validating pickup date:', error);
+                    return false;
+                }
+            }
+
+            validatePickupDate() {
+                const selectedDate = this.getSelectedPickupDate();
+
+                if (!selectedDate || !this.selectedLocation) return true;
+
+                if (!this.isValidPickupDate(selectedDate)) {
+                    const location = getLocationBySlug(this.selectedLocation);
+                    const locationName = location ? location.name : 'Selected location';
+
+                    this.showDateMessage(`${locationName} is closed on the selected date. Please choose a different day.`);
+
+                    // Clear both inputs
+                    document.getElementById('pickupDate').value = '';
+                    const selectElement = document.getElementById('pickupDateSelect');
+                    if (selectElement) selectElement.value = '';
+
+                    return false;
+                }
+
+                this.clearDateMessage();
+                return true;
+            }
+
+            showDateMessage(message) {
+                // Remove existing message
+                this.clearDateMessage();
+
+                const dateInput = document.getElementById('pickupDate');
+                const messageDiv = document.createElement('div');
+                messageDiv.id = 'date-validation-message';
+                messageDiv.style.cssText = `
+                    color: #dc3545;
+                    font-size: 0.875rem;
+                    margin-top: 0.5rem;
+                    padding: 0.5rem;
+                    background: #f8d7da;
+                    border: 1px solid #f5c6cb;
+                    border-radius: 4px;
+                `;
+                messageDiv.textContent = message;
+
+                dateInput.parentNode.appendChild(messageDiv);
+            }
+
+            clearDateMessage() {
+                const existingMessage = document.getElementById('date-validation-message');
+                if (existingMessage) {
+                    existingMessage.remove();
+                }
             }
 
             setupFormValidation() {
@@ -414,10 +1015,14 @@
             validateForm() {
                 const name = document.getElementById('customerName').value;
                 const phone = document.getElementById('customerPhone').value;
-                const date = document.getElementById('pickupDate').value;
+                const date = this.getSelectedPickupDate();
                 const location = this.selectedLocation;
 
-                const isValid = name && phone && date && location && Object.keys(this.cart.items).length > 0;
+                // Check if all fields are filled and date is valid for the selected location
+                const isBasicDataValid = name && phone && date && location && Object.keys(this.cart.items).length > 0;
+                const isDateValid = !date || !location || this.isValidPickupDate(date);
+
+                const isValid = isBasicDataValid && isDateValid;
                 document.getElementById('completeOrderButton').disabled = !isValid;
             }
 
@@ -437,7 +1042,12 @@
                                 <img src="${juice.imageUrl}" alt="${juice.name}">
                                 <div class="item-details">
                                     <h4 style="color: ${juice.color}; font-family: var(--second-font); font-size: 1rem;">${juice.name}</h4>
-                                    <p>${quantity} × $${juice.price.toFixed(2)}</p>
+                                    <p>$${juice.price.toFixed(2)} each</p>
+                                    <div class="quantity-controls">
+                                        <button onclick="checkoutPage.removeItem(${juice.id})" style="background-color: ${juice.color}">-</button>
+                                        <span>${quantity}</span>
+                                        <button onclick="checkoutPage.addItem(${juice.id})" style="background-color: ${juice.color}">+</button>
+                                    </div>
                                 </div>
                                 <div class="item-price">
                                     $${(juice.price * quantity).toFixed(2)}
@@ -459,6 +1069,23 @@
                 document.getElementById('completeOrderButton').addEventListener('click', () => {
                     this.processCheckout();
                 });
+            }
+
+            addItem(juiceId) {
+                this.cart.addItem(juiceId);
+                this.populateOrderSummary();
+                this.validateForm();
+            }
+
+            removeItem(juiceId) {
+                this.cart.removeItem(juiceId);
+                this.populateOrderSummary();
+                this.validateForm();
+
+                // Redirect to juices page if cart becomes empty
+                if (Object.keys(this.cart.items).length === 0) {
+                    window.location.href = '/juices';
+                }
             }
 
             async processCheckout() {
@@ -483,7 +1110,7 @@
                                 quantity: quantity
                             };
                         }),
-                        pickupDate: document.getElementById('pickupDate').value,
+                        pickupDate: this.getSelectedPickupDate(),
                         pickupLocation: this.selectedLocation,
                         customerName: document.getElementById('customerName').value,
                         customerPhone: document.getElementById('customerPhone').value
@@ -513,7 +1140,7 @@
                     console.error('Error during checkout:', error);
                     alert('There was an error processing your checkout. Please try again.');
                     button.disabled = false;
-                    button.textContent = 'Complete Order';
+                    button.textContent = 'Proceed to Payment';
                 }
             }
         }
@@ -546,7 +1173,7 @@
                 window.cart.closeCart = () => { }; // Disable cart closing
             }
 
-            new CheckoutPage();
+            window.checkoutPage = new CheckoutPage();
         });
     </script>
 </body>
