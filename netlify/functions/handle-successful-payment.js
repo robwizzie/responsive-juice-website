@@ -1,5 +1,6 @@
 const nodemailer = require('nodemailer');
 const stripeLib = require('stripe');
+const { locations, getLocationBySlug, getTodaysHours, getFormattedHours } = require('../../assets/js/locations-database.js');
 require('dotenv').config();
 
 // Initialize Stripe
@@ -63,9 +64,14 @@ exports.handler = async event => {
 					day: 'numeric'
 				});
 
-				// Format location name
-				const locationName = pickupLocation.charAt(0).toUpperCase() + pickupLocation.slice(1);
-				const locationDetails = pickupLocation === 'woodbury' ? 'Gloucester County, NJ' : 'Camden County, NJ';
+				// Get location details from database
+				const locationData = getLocationBySlug(pickupLocation);
+				const locationName = locationData ? locationData.name : pickupLocation.charAt(0).toUpperCase() + pickupLocation.slice(1);
+				const locationDetails = locationData ? locationData.fullLocation : 'New Jersey';
+				const locationAddress = locationData ? locationData.address : '[ADDRESS TO BE PROVIDED]';
+				const locationPhone = locationData ? locationData.contactPhone : '';
+				const locationDescription = locationData ? locationData.description : '';
+				const todaysHours = locationData ? getTodaysHours(pickupLocation) : 'Hours not available';
 
 				// Send confirmation email to customer
 				const customerEmailHtml = `
@@ -80,9 +86,16 @@ exports.handler = async event => {
                         <p><strong>Customer:</strong> ${customerName}</p>
                         <p><strong>Phone:</strong> ${customerPhone}</p>
                         <p><strong>Pickup Date:</strong> ${formattedPickupDate}</p>
-                        <p><strong>Pickup Location:</strong> ${locationName}, ${locationDetails}</p>
-                        <p><strong>Address:</strong> [EXACT ADDRESS WILL BE PROVIDED - Please reply to this email for specific location details]</p>
-                        <p><strong>Pickup Time:</strong> We'll confirm the exact time via email before your pickup date</p>
+                        
+                        <div style="margin: 15px 0; padding: 15px; background: white; border-radius: 8px; border: 1px solid #e0e0e0;">
+                            <h3 style="color: #ff9700; margin-top: 0; margin-bottom: 10px;">${locationName} Location</h3>
+                            <p style="margin: 5px 0;"><strong>📍 Address:</strong> ${locationAddress}</p>
+                            <p style="margin: 5px 0;"><strong>📞 Phone:</strong> <a href="tel:${locationPhone}" style="color: #ff9700; text-decoration: none;">${locationPhone}</a></p>
+                            <p style="margin: 5px 0;"><strong>🏢 Details:</strong> ${locationDescription}</p>
+                            <p style="margin: 5px 0;"><strong>🕒 Today's Hours:</strong> ${todaysHours}</p>
+                        </div>
+                        
+                        <p style="margin-top: 15px;"><strong>📞 We'll call you</strong> to confirm the exact pickup time before your scheduled date.</p>
                     </div>
                     
                     <div style="background: #fff3cd; padding: 15px; border-radius: 8px; border-left: 4px solid #ff9700; margin-bottom: 20px;">
@@ -138,7 +151,10 @@ exports.handler = async event => {
                         
                         <h3 style="color: #333; margin-top: 20px;">Pickup Information</h3>
                         <p><strong>Date:</strong> ${formattedPickupDate}</p>
-                        <p><strong>Location:</strong> ${locationName}, ${locationDetails}</p>
+                        <p><strong>Location:</strong> ${locationName} - ${locationDescription}</p>
+                        <p><strong>Address:</strong> ${locationAddress}</p>
+                        <p><strong>Location Phone:</strong> ${locationPhone}</p>
+                        <p><strong>Today's Hours:</strong> ${todaysHours}</p>
                         
                         <h3 style="color: #333; margin-top: 20px;">Order Details</h3>
                         <p><strong>Order Total:</strong> $${total}</p>

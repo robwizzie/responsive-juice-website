@@ -60,8 +60,15 @@
                             <h3 style="color: #ff9700; margin-bottom: 1rem;">📍 Pickup Information</h3>
                             <p><strong>Pickup Date:</strong> <span id="pickup-date-display"></span></p>
                             <p><strong>Location:</strong> <span id="pickup-location-display"></span></p>
-                            <p><strong>Address:</strong> Exact address will be provided via email</p>
-                            <p><strong>Important:</strong> Please bring your order confirmation email</p>
+                            <div id="location-details"
+                                style="margin: 1rem 0; padding: 1rem; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #ff9700;">
+                                <p><strong>📍 Address:</strong> <span id="pickup-address-display"></span></p>
+                                <p><strong>📞 Phone:</strong> <span id="pickup-phone-display"></span></p>
+                                <p><strong>🏢 Details:</strong> <span id="pickup-description-display"></span></p>
+                            </div>
+                            <p><strong>Important:</strong> Please bring your order confirmation email when you arrive
+                            </p>
+                            <p><strong>Note:</strong> Check your email for pickup time confirmation</p>
                         </div>
                     </div>
                     <div class="success-buttons">
@@ -82,7 +89,9 @@
 
     <!--=============== MAIN JS ===============-->
     <script src="/assets/js/juices-database.js"></script>
+    <script src="/assets/js/locations-database.js"></script>
     <script src="/assets/js/cart.js"></script>
+    <script src="/assets/js/components/footer.js"></script>
     <script>
         // Clear cart after successful order and show pickup info
         document.addEventListener('DOMContentLoaded', () => {
@@ -106,13 +115,21 @@
                     day: 'numeric'
                 });
 
-                const locationName = pickupLocation.charAt(0).toUpperCase() + pickupLocation.slice(1);
-                const locationDetails = pickupLocation === 'woodbury' ?
-                    'Gloucester County, NJ' :
-                    'Camden County, NJ';
+                const locationData = getLocationBySlug(pickupLocation);
+                const locationName = locationData ? locationData.name : pickupLocation.charAt(0).toUpperCase() + pickupLocation.slice(1);
+                const locationDetails = locationData ? locationData.fullLocation : 'New Jersey';
 
                 document.getElementById('pickup-date-display').textContent = formattedDate;
                 document.getElementById('pickup-location-display').textContent = `${locationName}, ${locationDetails}`;
+
+                // Show detailed location information if available
+                if (locationData) {
+                    document.getElementById('pickup-address-display').textContent = locationData.address;
+                    document.getElementById('pickup-phone-display').innerHTML = `<a href="tel:${locationData.contactPhone}" style="color: #ff9700; text-decoration: none;">${locationData.contactPhone}</a>`;
+                    document.getElementById('pickup-description-display').textContent = locationData.description;
+                } else {
+                    document.getElementById('location-details').style.display = 'none';
+                }
             }
         });
         // GSAP animations

@@ -206,9 +206,20 @@ class Cart {
 		const cartContainer = document.getElementById('cartContainer');
 		if (!cartContainer) return;
 
-		const totalElement = cartContainer.querySelector('.cart-total h3');
-		if (totalElement) {
-			totalElement.textContent = `Total: $${this.getTotal().toFixed(2)}`;
+		const subtotal = this.getTotal();
+		const njTaxRate = 0.06625;
+		const taxAmount = subtotal * njTaxRate;
+		const totalWithTax = subtotal + taxAmount;
+
+		// Update order summary elements
+		const orderSummary = cartContainer.querySelector('.order-summary');
+		if (orderSummary) {
+			const summaryLines = orderSummary.querySelectorAll('.summary-line span:last-child');
+			if (summaryLines.length >= 3) {
+				summaryLines[0].textContent = `$${subtotal.toFixed(2)}`; // Subtotal
+				summaryLines[1].textContent = `$${taxAmount.toFixed(2)}`; // Tax
+				summaryLines[2].textContent = `$${totalWithTax.toFixed(2)}`; // Total
+			}
 		}
 	}
 
