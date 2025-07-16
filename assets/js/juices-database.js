@@ -64,5 +64,27 @@ const juices = [
 		price: 7,
 		color: '#ce280f',
 		inStock: true
+	},
+	{
+		id: 7,
+		name: 'Midnight Rush',
+		slug: 'midnight-rush',
+		description: 'Blueberry, Pineapple, Lemon, Coconut Water, Blue Spirulina',
+		imageUrl: '/assets/img/juices/midnight-rush.png',
+		ingredients: ['Blueberry', 'Pineapple', 'Lemon', 'Coconut Water', 'Blue Spirulina'],
+		price: 7,
+		color: '#1e3a8a',
+		inStock: true
+	},
+	{
+		id: 8,
+		name: 'Peach Sunrise',
+		slug: 'peach-sunrise',
+		description: 'Peach, Mango, Carrot, Lemon, Coconut Water',
+		imageUrl: '/assets/img/juices/peach-sunrise.png',
+		ingredients: ['Peach', 'Mango', 'Carrot', 'Lemon', 'Coconut Water'],
+		price: 7,
+		color: '#fb923c',
+		inStock: true
 	}
 ];
