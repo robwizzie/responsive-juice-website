@@ -64,5 +64,16 @@ const juices = [
 		price: 7,
 		color: '#ce280f',
 		inStock: true
+	},
+	{
+		id: 7,
+		name: 'Midnight Rush',
+		slug: 'midnight-rush',
+		description: 'Blueberry, Pineapple, Lemon, Coconut Water, Blue Spirulina',
+		imageUrl: '/assets/img/juices/midnight-rush.png',
+		ingredients: ['Blueberry', 'Pineapple', 'Lemon', 'Coconut', 'Blue Spirulina'],
+		price: 7,
+		color: '#8f32a6',
+		inStock: true
 	}
 ];
