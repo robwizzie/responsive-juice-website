@@ -1364,68 +1364,87 @@ img {
 
 .nutrition-section {
 	background-color: var(--container-color);
+	padding: 2rem 0;
 }
 
 .nutrition-content {
 	display: flex;
 	justify-content: center;
 	align-items: center;
+	max-width: 800px;
+	margin: 0 auto;
+	padding: 0 1rem;
 }
 
 .magnifier-container {
-	position: relative;
-	width: 100%;
-	cursor: none;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	padding: 2rem;
+	background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+	border-radius: 20px;
+	backdrop-filter: blur(10px);
+	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+	border: 1px solid rgba(255, 255, 255, 0.2);
+	transition: transform 0.3s ease, box-shadow 0.3s ease;
 	text-align: center;
+}
+
+.magnifier-container:hover {
+	box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
 }
 
 .nutrition-image {
 	width: 100%;
-	height: auto;
+	max-width: 500px;
+	max-height: 600px;
+	object-fit: contain;
 	border-radius: 12px;
-	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-	transition: transform 0.3s ease, box-shadow 0.3s ease;
+	filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.2));
 }
 
-.magnifier {
-	position: absolute;
-	width: 120px;
-	height: 120px;
-	border-radius: 50%;
-	border: 2px solid var(--title-color);
-	pointer-events: none;
-	opacity: 0;
-	background-repeat: no-repeat;
-	transform: translate(-50%, -50%);
-	box-shadow: 0 0 0 2px white, 0 4px 12px rgba(0, 0, 0, 0.2), inset 0 0 20px rgba(0, 0, 0, 0.1);
-	transition: opacity 0.3s ease;
-	z-index: 100;
-}
+/* Mobile styles */
 
-.magnifier::after {
-	content: '';
-	position: absolute;
-	bottom: -20px;
-	right: -20px;
-	width: 30px;
-	height: 30px;
-	background: var(--title-color);
-	transform: rotate(45deg);
-	border-radius: 0 0 5px 0;
-	box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
+/* Tablet styles */
+
+@media screen and (max-width: 1024px) and (min-width: 769px) {
+	.nutrition-content {
+		padding: 0 1rem;
+	}
+	.magnifier-container {
+		padding: 1.5rem;
+	}
 }
 
 /* Mobile styles */
 
 @media screen and (max-width: 768px) {
 	.nutrition-content {
-		padding: 1rem;
-	}
-	.magnifier {
-		display: none;
+		padding: 0 1rem;
 	}
 	.magnifier-container {
-		cursor: default;
+		padding: 1.5rem;
+	}
+	.nutrition-image {
+		width: 100%;
+		max-width: 400px;
+	}
+}
+
+/* Small mobile styles */
+
+@media screen and (max-width: 480px) {
+	.nutrition-section {
+		padding: 1rem 0;
+	}
+	.nutrition-content {
+		padding: 0 0.5rem;
+	}
+	.magnifier-container {
+		padding: 1rem;
+	}
+	.nutrition-image {
+		max-width: 350px;
 	}
 }
 
@@ -2639,7 +2658,7 @@ html.page-loading body > *:not(#page-loader) {
 .out-of-stock {
 	position: relative;
 	opacity: 0.75;
-	transition: opacity 0.3s ease;
+	transition: opacity 0.5s ease-in-out;
 }
 
 .out-of-stock::before {
@@ -2656,8 +2675,8 @@ html.page-loading body > *:not(#page-loader) {
 	font-size: 0.9rem;
 	z-index: 5;
 	white-space: nowrap;
-	transition: transform 0.3s ease;
-	will-change: transform;
+	transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
+	will-change: transform, opacity;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
 	backface-visibility: hidden;
@@ -2665,17 +2684,19 @@ html.page-loading body > *:not(#page-loader) {
 
 .out-of-stock img {
 	filter: grayscale(70%);
-	transition: filter 0.3s ease;
+	transition: filter 0.5s ease-in-out, transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
 }
 
 /* Ensure consistent treatment in carousel */
 
 .carousel-item.out-of-stock {
 	opacity: 0.75;
+	transition: opacity 0.5s ease-in-out;
 }
 
 .carousel-item.out-of-stock img {
 	filter: grayscale(70%);
+	transition: filter 0.5s ease-in-out, transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
 }
 
 /* Ensure consistent treatment in product cards */
@@ -2715,6 +2736,7 @@ html.page-loading body > *:not(#page-loader) {
 /* Ensure consistent z-index stacking */
 
 .carousel-item.out-of-stock::before {
+	transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
 	transform: translate(-50%, -50%) translateZ(1px);
 	-webkit-transform: translate(-50%, -50%) translateZ(1px);
 }
