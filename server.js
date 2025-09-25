@@ -149,10 +149,7 @@ app.post('/create-checkout-session', async (req, res) => {
 	try {
 		// Get the base URL
 		const baseURL = `${req.protocol}://${req.get('host')}`;
-		const { items, pickupDate, pickupLocation, customerName, customerPhone } = req.body;
-
-		// NJ Sales Tax Rate (6.625%)
-		const NJ_SALES_TAX_RATE = 0.06625;
+		const { items, pickupDate, pickupLocation, orderType, customerName, customerPhone, deliveryAddress, deliveryCity, deliveryZip, deliveryFee } = req.body;
 
 		// Calculate subtotal for tax calculation
 		let subtotal = 0;
@@ -175,20 +172,20 @@ app.post('/create-checkout-session', async (req, res) => {
 			};
 		});
 
-		// Add NJ Sales Tax as a separate line item
-		const taxAmount = Math.round(subtotal * NJ_SALES_TAX_RATE);
-		if (taxAmount > 0) {
+		// Add delivery fee if applicable
+		if (orderType === 'delivery' && deliveryFee && deliveryFee > 0) {
 			lineItems.push({
 				price_data: {
 					currency: 'usd',
 					product_data: {
-						name: 'NJ Sales Tax (6.625%)',
-						description: 'New Jersey State Sales Tax'
+						name: 'Delivery Fee',
+						description: 'Delivery within 30 miles of Blackwood'
 					},
-					unit_amount: taxAmount
+					unit_amount: Math.round(deliveryFee * 100)
 				},
 				quantity: 1
 			});
+			subtotal += Math.round(deliveryFee * 100);
 		}
 
 		// Get location details from database
@@ -200,23 +197,26 @@ app.post('/create-checkout-session', async (req, res) => {
 			payment_method_types: ['card'],
 			line_items: lineItems,
 			mode: 'payment',
-			success_url: `${baseURL}/success?pickup_date=${encodeURIComponent(pickupDate || '')}&location=${encodeURIComponent(pickupLocation || '')}`,
+			success_url: `${baseURL}/success?pickup_date=${encodeURIComponent(pickupDate || '')}&location=${encodeURIComponent(pickupLocation || '')}&order_type=${encodeURIComponent(orderType || 'pickup')}`,
 			cancel_url: `${baseURL}/cancel`,
 			metadata: {
-				order_type: 'pickup',
+				order_type: orderType || 'pickup',
 				pickup_date: pickupDate || '',
 				pickup_location: pickupLocation || '',
 				pickup_location_name: locationName,
 				pickup_location_full: locationFullName,
 				customer_name: customerName || '',
 				customer_phone: customerPhone || '',
+				delivery_address: deliveryAddress || '',
+				delivery_city: deliveryCity || '',
+				delivery_zip: deliveryZip || '',
+				delivery_fee: deliveryFee || 0,
 				subtotal: (subtotal / 100).toFixed(2),
-				tax_amount: (taxAmount / 100).toFixed(2),
 				location: 'New Jersey'
 			},
 			custom_text: {
 				submit: {
-					message: `Order will be ready for pickup in ${locationName} on your selected date`
+					message: orderType === 'delivery' ? `Order will be delivered to your address on your selected date` : `Order will be ready for pickup in ${locationName} on your selected date`
 				}
 			}
 		});

@@ -207,18 +207,14 @@ class Cart {
 		if (!cartContainer) return;
 
 		const subtotal = this.getTotal();
-		const njTaxRate = 0.06625;
-		const taxAmount = subtotal * njTaxRate;
-		const totalWithTax = subtotal + taxAmount;
 
 		// Update order summary elements
 		const orderSummary = cartContainer.querySelector('.order-summary');
 		if (orderSummary) {
 			const summaryLines = orderSummary.querySelectorAll('.summary-line span:last-child');
-			if (summaryLines.length >= 3) {
+			if (summaryLines.length >= 2) {
 				summaryLines[0].textContent = `$${subtotal.toFixed(2)}`; // Subtotal
-				summaryLines[1].textContent = `$${taxAmount.toFixed(2)}`; // Tax
-				summaryLines[2].textContent = `$${totalWithTax.toFixed(2)}`; // Total
+				summaryLines[1].textContent = `$${subtotal.toFixed(2)}`; // Total
 			}
 		}
 	}
@@ -278,19 +274,19 @@ class Cart {
 		}
 
 		const subtotal = this.getTotal();
-		const njTaxRate = 0.06625;
-		const taxAmount = subtotal * njTaxRate;
-		const totalWithTax = subtotal + taxAmount;
 
 		let cartHTML = `
             <div class="cart-header">
                 <h2>Your Cart</h2>
                 <button onclick="cart.closeCart()" class="close-button">×</button>
             </div>
-            <div class="pickup-notice">
-                <div class="pickup-alert">
-                    <i class="ri-store-2-line"></i>
-                    <strong>PICKUP ONLY</strong>
+            <div class="order-notice">
+                <div class="order-alert" style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem; padding: 1rem; margin: 0rem 1rem;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="ri-store-2-line"></i>
+                        <strong>PICKUP & DELIVERY</strong>
+                    </div>
+                    <span style="font-size: 0.8rem; opacity: 0.9;">Delivery within 30 miles of Blackwood</span>
                 </div>
             </div>
             <div class="cart-items">
@@ -317,17 +313,9 @@ class Cart {
             </div>
             <div class="cart-total">
                 <div class="order-summary">
-                    <div class="summary-line">
-                        <span>Subtotal:</span>
-                        <span>$${subtotal.toFixed(2)}</span>
-                    </div>
-                    <div class="summary-line">
-                        <span>NJ Sales Tax (6.625%):</span>
-                        <span>$${taxAmount.toFixed(2)}</span>
-                    </div>
                     <div class="summary-line total-line">
                         <span>Total:</span>
-                        <span>$${totalWithTax.toFixed(2)}</span>
+                        <span>$${subtotal.toFixed(2)}</span>
                     </div>
                 </div>
                 <button id="checkoutButton" class="checkout-button home__button" style="transform: translate(0px, 0px);">Proceed to Checkout</button>

@@ -86,10 +86,10 @@ class Footer {
                         <div class="footer__section">
                             <h4 class="footer__title">Important Info</h4>
                             <div class="footer__info">
-                                <div class="footer__pickup-notice">
+                                <div class="footer__order-notice">
                                     <i class="ri-store-2-line"></i>
-                                    <strong>PICKUP ONLY</strong>
-                                    <p>All orders are for pickup at our NJ locations</p>
+                                    <strong>PICKUP & DELIVERY</strong>
+                                    <p>Pickup at our NJ locations or delivery within 30 miles of Blackwood</p>
                                 </div>
                                 <div class="footer__info-item">
                                     <i class="ri-leaf-line"></i>
