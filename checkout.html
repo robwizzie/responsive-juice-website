@@ -12,7 +12,10 @@
     <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
 
     <!--=============== CSS ===============-->
-    <link rel="stylesheet" href="/assets/css/styles.css">
+    <link rel="preload" href="/assets/css/styles.css" as="style" onload="this.rel='stylesheet'">
+    <noscript>
+        <link rel="stylesheet" href="/assets/css/styles.css">
+    </noscript>
 
     <style>
         .checkout-container {
@@ -764,6 +767,21 @@
     </style>
 
     <!--=============== JS ===============-->
+    <script>
+        const loaderCss = '<style>html.page-loading body>*:not(#page-loader){visibility:hidden;opacity:0}#page-loader{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#ffffff;z-index:10000}#page-loader .spinner{width:48px;height:48px;border:5px solid #f3f3f3;border-top:5px solid #ff9700;border-radius:50%;animation:pl-spin 1s linear infinite}@keyframes pl-spin{to{transform:rotate(360deg)}}</style>';
+        document.write(loaderCss + '<div id="page-loader"><div class="spinner"></div></div>');
+        document.documentElement.classList.add('page-loading');
+
+        // Remove loading when page is fully loaded
+        window.addEventListener('load', () => {
+            document.documentElement.classList.remove('page-loading');
+            const loader = document.getElementById('page-loader');
+            if (loader) {
+                loader.classList.add('hidden');
+                setTimeout(() => loader.remove(), 600);
+            }
+        });
+    </script>
     <script type="module" src="assets/js/main.js"></script>
 
     <title>Checkout - Pressed By J & H</title>
@@ -1314,6 +1332,7 @@
                 }
 
                 this.validateForm();
+                this.updateStepButtons();
             }
 
             async validateDeliveryAddress(address, city, zipCode) {
@@ -1463,7 +1482,10 @@
 
                 // Auto-check if all fields are filled
                 if (deliveryAddress && deliveryCity && deliveryZip) {
-                    this.checkDeliveryZone();
+                    this.checkDeliveryZone().then(() => {
+                        // Update step buttons after validation is complete
+                        this.updateStepButtons();
+                    });
                 }
             }
 
