@@ -19,19 +19,19 @@ async function initializePage() {
 document.addEventListener('DOMContentLoaded', initializePage);
 
 /*=============== GSAP ANIMATION ===============*/
-TweenMax.from('.home__title', 1, { delay: 0.2, opacity: 0, y: 20, ease: Expo.easeInOut });
-TweenMax.from('.home__description', 1, { delay: 0.3, opacity: 0, y: 20, ease: Expo.easeInOut });
-TweenMax.from('.home__button:not(.add-to-cart)', 1, { delay: 0.4, opacity: 0, y: 20, ease: Expo.easeInOut });
-TweenMax.from('.home__liquid', 1, { delay: 0.7, opacity: 0, y: 200, ease: Expo.easeInOut });
-TweenMax.from('.home__juice-animate', 1, { delay: 1.2, opacity: 0, y: -800, ease: Expo.easeInOut });
-TweenMax.from('.home__apple1', 1, { delay: 1.5, opacity: 0, y: -800, ease: Expo.easeInOut });
-TweenMax.from('.home__apple2', 1, { delay: 1.6, opacity: 0, y: -800, ease: Expo.easeInOut });
-TweenMax.from('.home__leaf:nth-child(1)', 2, { delay: 1.3, opacity: 0, y: -800, ease: Expo.easeInOut });
-TweenMax.from('.home__leaf:nth-child(2)', 2, { delay: 1.4, opacity: 0, y: -800, ease: Expo.easeInOut });
-TweenMax.from('.home__leaf:nth-child(3)', 2, { delay: 1.5, opacity: 0, y: -800, ease: Expo.easeInOut });
-TweenMax.from('.home__leaf:nth-child(4)', 2, { delay: 1.6, opacity: 0, y: -800, ease: Expo.easeInOut });
-TweenMax.from('.home__leaf:nth-child(5)', 2, { delay: 1.7, opacity: 0, y: -800, ease: Expo.easeInOut });
-TweenMax.from('.home__leaf:nth-child(6)', 2, { delay: 1.8, opacity: 0, y: -800, ease: Expo.easeInOut });
+gsap.from('.home__title', { duration: 1, delay: 0.2, opacity: 0, y: 20, ease: 'expo.inOut' });
+gsap.from('.home__description', { duration: 1, delay: 0.3, opacity: 0, y: 20, ease: 'expo.inOut' });
+gsap.from('.home__button:not(.add-to-cart)', { duration: 1, delay: 0.4, opacity: 0, y: 20, ease: 'expo.inOut' });
+gsap.from('.home__liquid', { duration: 1, delay: 0.7, opacity: 0, y: 200, ease: 'expo.inOut' });
+gsap.from('.home__juice-animate', { duration: 1, delay: 1.2, opacity: 0, y: -800, ease: 'expo.inOut' });
+gsap.from('.home__apple1', { duration: 1, delay: 1.5, opacity: 0, y: -800, ease: 'expo.inOut' });
+gsap.from('.home__apple2', { duration: 1, delay: 1.6, opacity: 0, y: -800, ease: 'expo.inOut' });
+gsap.from('.home__leaf:nth-child(1)', { duration: 2, delay: 1.3, opacity: 0, y: -800, ease: 'expo.inOut' });
+gsap.from('.home__leaf:nth-child(2)', { duration: 2, delay: 1.4, opacity: 0, y: -800, ease: 'expo.inOut' });
+gsap.from('.home__leaf:nth-child(3)', { duration: 2, delay: 1.5, opacity: 0, y: -800, ease: 'expo.inOut' });
+gsap.from('.home__leaf:nth-child(4)', { duration: 2, delay: 1.6, opacity: 0, y: -800, ease: 'expo.inOut' });
+gsap.from('.home__leaf:nth-child(5)', { duration: 2, delay: 1.7, opacity: 0, y: -800, ease: 'expo.inOut' });
+gsap.from('.home__leaf:nth-child(6)', { duration: 2, delay: 1.8, opacity: 0, y: -800, ease: 'expo.inOut' });
 
 document.addEventListener('DOMContentLoaded', function () {
 	// Only run main carousel on home page, not on juice detail pages
@@ -55,9 +55,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // Add to main.js
 document.addEventListener('DOMContentLoaded', () => {
-	console.log('Main.js - DOM Content Loaded');
-	console.log('Cart available:', window.cart);
-	console.log('Add to cart buttons:', document.querySelectorAll('.add-to-cart').length);
+	// Main.js initialization complete
 });
 
 // Add page-loading class immediately
@@ -79,6 +77,18 @@ window.addEventListener('load', () => {
 	document.documentElement.classList.remove('page-loading');
 	loader.classList.add('hidden');
 	setTimeout(() => loader.remove(), 600); // clean up after fade-out
+
+	// Register service worker for caching
+	if ('serviceWorker' in navigator) {
+		navigator.serviceWorker
+			.register('/sw.js')
+			.then(registration => {
+				// Service Worker registered successfully
+			})
+			.catch(error => {
+				// Service Worker registration failed
+			});
+	}
 });
 
 // Enable navigation for <button href="..."> elements (used on the hero section buttons).

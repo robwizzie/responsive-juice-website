@@ -1,13 +1,11 @@
 // cart.js
 class Cart {
 	constructor() {
-		console.log('Cart constructor called');
 		this.items = JSON.parse(localStorage.getItem('cart')) || {};
 		this.init();
 	}
 
 	init() {
-		console.log('Initializing cart...');
 		this.addCartToDOM();
 		// Wait a bit for carousel to initialize
 		setTimeout(() => {
@@ -17,14 +15,14 @@ class Cart {
 	}
 
 	addCartToDOM() {
-		console.log('Adding cart elements to DOM...');
+		// console.log('Adding cart elements to DOM...');
 		// Add cart button to navigation if it doesn't exist
 		const existingButton = document.querySelector('.cart-button');
-		console.log('Existing cart button:', existingButton);
+		// console.log('Existing cart button:', existingButton);
 
 		if (!existingButton) {
 			const navList = document.querySelector('.nav__list');
-			console.log('Nav list element:', navList);
+			// console.log('Nav list element:', navList);
 
 			if (navList) {
 				navList.insertAdjacentHTML(
@@ -39,13 +37,13 @@ class Cart {
                     </li>
                 `
 				);
-				console.log('Cart button added to navigation');
+				// console.log('Cart button added to navigation');
 			}
 		}
 
 		// Add cart container to body if it doesn't exist
 		const existingOverlay = document.getElementById('cartOverlay');
-		console.log('Existing cart overlay:', existingOverlay);
+		// console.log('Existing cart overlay:', existingOverlay);
 
 		if (!existingOverlay) {
 			document.body.insertAdjacentHTML(
@@ -58,38 +56,38 @@ class Cart {
                 </div>
             `
 			);
-			console.log('Cart overlay added to body');
+			// console.log('Cart overlay added to body');
 		}
 	}
 
 	initializeEventListeners() {
-		console.log('Initializing event listeners...');
+		// console.log('Initializing event listeners...');
 
 		// Add to cart buttons
 		const addToCartButtons = document.querySelectorAll('.add-to-cart');
-		console.log('Found add-to-cart buttons:', addToCartButtons.length);
+		// console.log('Found add-to-cart buttons:', addToCartButtons.length);
 
 		addToCartButtons.forEach(button => {
 			const juiceId = button.dataset.id;
-			console.log('Setting up listener for juice ID:', juiceId);
+			// console.log('Setting up listener for juice ID:', juiceId);
 
 			// Remove old listeners by cloning the button
 			const newButton = button.cloneNode(true);
 			button.parentNode.replaceChild(newButton, button);
 
 			newButton.addEventListener('click', e => {
-				console.log('Add to cart button clicked');
+				// console.log('Add to cart button clicked');
 				e.preventDefault();
 				e.stopPropagation();
 				const id = parseInt(e.currentTarget.dataset.id);
-				console.log('Attempting to add juice ID:', id);
+				// console.log('Attempting to add juice ID:', id);
 				this.addItem(id);
 			});
 		});
 
 		// Cart toggle
 		const cartButton = document.querySelector('.cart-button');
-		console.log('Cart toggle button:', cartButton);
+		// console.log('Cart toggle button:', cartButton);
 
 		if (cartButton) {
 			// Remove old listeners by cloning
@@ -97,18 +95,18 @@ class Cart {
 			cartButton.parentNode.replaceChild(newCartButton, cartButton);
 
 			newCartButton.addEventListener('click', () => {
-				console.log('Cart button clicked');
+				// console.log('Cart button clicked');
 				this.toggleCart();
 			});
 		}
 
 		// Cart overlay close
 		const cartOverlay = document.getElementById('cartOverlay');
-		console.log('Cart overlay element:', cartOverlay);
+		// console.log('Cart overlay element:', cartOverlay);
 
 		if (cartOverlay) {
 			cartOverlay.addEventListener('click', e => {
-				console.log('Cart overlay clicked');
+				// console.log('Cart overlay clicked');
 				if (e.target === cartOverlay) {
 					this.toggleCart();
 				}
@@ -117,23 +115,23 @@ class Cart {
 	}
 
 	addItem(juiceId) {
-		console.log('Adding item to cart:', juiceId);
+		// console.log('Adding item to cart:', juiceId);
 
 		// Check if juice is in stock
 		const juice = juices.find(j => j.id === parseInt(juiceId));
 		if (!juice || !juice.inStock) {
-			console.log('Item out of stock, cannot add to cart');
+			// console.log('Item out of stock, cannot add to cart');
 			return;
 		}
 
-		console.log('Current items:', this.items);
+		// console.log('Current items:', this.items);
 
 		if (!this.items[juiceId]) {
 			this.items[juiceId] = 0;
 		}
 		this.items[juiceId]++;
 
-		console.log('Updated items:', this.items);
+		// console.log('Updated items:', this.items);
 		this.saveCart();
 		this.updateCartUI();
 		this.showAddedToCartFeedback(juiceId);
@@ -244,22 +242,22 @@ class Cart {
 	}
 
 	updateCartUI() {
-		console.log('Updating cart UI');
-		console.log('Current items:', this.items);
+		// console.log('Updating cart UI');
+		// console.log('Current items:', this.items);
 
 		const cartContainer = document.getElementById('cartContainer');
 		if (!cartContainer) {
-			console.log('Cart container not found');
+			// console.log('Cart container not found');
 			return;
 		}
 
 		const itemsCount = Object.values(this.items).reduce((a, b) => a + b, 0);
-		console.log('Total items count:', itemsCount);
+		// console.log('Total items count:', itemsCount);
 
 		const cartButton = document.querySelector('.cart-button');
 		if (cartButton) {
 			cartButton.setAttribute('data-count', itemsCount);
-			console.log('Updated cart button count:', itemsCount);
+			// console.log('Updated cart button count:', itemsCount);
 		}
 
 		if (itemsCount === 0) {
@@ -376,9 +374,9 @@ class Cart {
 
 // Single initialization
 document.addEventListener('DOMContentLoaded', function () {
-	console.log('DOM Content Loaded - Initializing Cart');
+	// console.log('DOM Content Loaded - Initializing Cart');
 	window.cart = new Cart();
-	console.log('Cart initialized:', window.cart);
+	// console.log('Cart initialized:', window.cart);
 });
 
 // Make cart available globally

@@ -8,7 +8,10 @@ const juices = [
 		ingredients: ['Pineapple', 'Carrot', 'Mango', 'Orange', 'Ginger', 'Tumeric'],
 		price: 7.5,
 		color: '#ff8902',
-		inStock: true
+		inStock: true,
+		metaDescription: 'Experience the perfect blend of tropical flavors with our Tropical Storm cold-pressed juice. Made with fresh pineapple, carrot, mango, orange, ginger, and turmeric - a refreshing burst of vitamins and antioxidants.',
+		metaImage: '/assets/img/og-images/tropical-storm-og.png',
+		metaKeywords: 'tropical storm juice, pineapple juice, mango juice, cold-pressed juice, tropical flavors, vitamin C, antioxidants, fresh juice'
 	},
 	{
 		id: 2,
@@ -19,7 +22,10 @@ const juices = [
 		ingredients: ['Kale', 'Spinach', 'Kiwi', 'Orange', 'Pineapple', 'Banana'],
 		price: 7.5,
 		color: '#969c05',
-		inStock: true
+		inStock: true,
+		metaDescription: 'Fuel your day with our nutrient-packed Sweet Green cold-pressed juice. A perfect blend of kale, spinach, kiwi, orange, pineapple, and banana - delivering essential vitamins, iron, and natural energy.',
+		metaImage: '/assets/img/og-images/sweet-green-og.png',
+		metaKeywords: 'sweet green juice, kale juice, spinach juice, green smoothie, cold-pressed juice, iron rich, vitamin K, leafy greens, healthy juice'
 	},
 	{
 		id: 3,
@@ -30,7 +36,10 @@ const juices = [
 		ingredients: ['Black Grape', 'Green Apple', 'Blueberry', 'Cucumber', 'Pineapple', 'Lemon'],
 		price: 7.5,
 		color: '#8b000d',
-		inStock: false
+		inStock: false,
+		metaDescription: 'Get ready for a tangy explosion with our Sour Punch cold-pressed juice. A bold combination of black grape, green apple, blueberry, cucumber, pineapple, and lemon - perfect for those who love a zesty kick.',
+		metaImage: '/assets/img/og-images/sour-punch-og.png',
+		metaKeywords: 'sour punch juice, tart juice, grape juice, apple juice, blueberry juice, tangy juice, antioxidant rich, vitamin C, coming soon'
 	},
 	{
 		id: 4,
@@ -41,7 +50,10 @@ const juices = [
 		ingredients: ['Strawberry', 'Banana', 'Blueberry', 'Gala Apple', 'Pineapple'],
 		price: 7.5,
 		color: '#f96e67',
-		inStock: false
+		inStock: false,
+		metaDescription: 'Indulge in the classic combination of our Strawberry Banana cold-pressed juice. Sweet strawberries, creamy banana, antioxidant-rich blueberries, crisp gala apple, and tropical pineapple create the perfect fruity blend.',
+		metaImage: '/assets/img/og-images/strawberry-banana-og.png',
+		metaKeywords: 'strawberry banana juice, fruit juice, berry juice, banana smoothie, vitamin C, potassium, antioxidants, natural sweetness, coming soon'
 	},
 	{
 		id: 5,
@@ -52,7 +64,10 @@ const juices = [
 		ingredients: ['Strawberry', 'Blueberry', 'Pineapple', 'Lemon'],
 		price: 7.5,
 		color: '#8b2986',
-		inStock: false
+		inStock: false,
+		metaDescription: 'Feel the electric energy with our vibrant Electric Berry Lemonade cold-pressed juice. A powerful blend of strawberry, blueberry, pineapple, and lemon that delivers an energizing burst of flavor and nutrients.',
+		metaImage: '/assets/img/og-images/electric-berry-lemonade-og.png',
+		metaKeywords: 'electric berry lemonade, berry lemonade, strawberry lemonade, blueberry juice, energy juice, vitamin C, antioxidants, refreshing drink, coming soon'
 	},
 	{
 		id: 6,
@@ -63,7 +78,10 @@ const juices = [
 		ingredients: ['Strawberry', 'Lemon', 'Gala Apple', 'Coconut', 'Agave'],
 		price: 7.5,
 		color: '#ce280f',
-		inStock: true
+		inStock: true,
+		metaDescription: 'Quench your thirst with our refreshing Strawberry Lemonade cold-pressed juice. Made with fresh strawberries, pressed lemon juice, gala apple, coconut water, and natural agave - the perfect summer drink.',
+		metaImage: '/assets/img/og-images/strawberry-lemonade-og.png',
+		metaKeywords: 'strawberry lemonade, lemonade juice, strawberry juice, coconut water, agave sweetened, vitamin C, hydrating, refreshing drink, summer juice'
 	},
 	{
 		id: 7,
@@ -74,7 +92,10 @@ const juices = [
 		ingredients: ['Blueberry', 'Pineapple', 'Lemon', 'Coconut', 'Blue Spirulina'],
 		price: 7.5,
 		color: '#8f32a6',
-		inStock: true
+		inStock: true,
+		metaDescription: 'Experience the power of our Midnight Rush cold-pressed juice. A superfood blend of blueberry, pineapple, lemon, coconut water, and blue spirulina - packed with antioxidants and natural energy.',
+		metaImage: '/assets/img/og-images/midnight-rush-og.png',
+		metaKeywords: 'midnight rush juice, blue spirulina juice, superfood juice, blueberry juice, spirulina benefits, antioxidants, natural energy, protein rich, healthy juice'
 	},
 	{
 		id: 8,
@@ -85,6 +106,9 @@ const juices = [
 		ingredients: ['Green Apple', 'Pear', 'Cinnamon', 'Coconut'],
 		price: 7.5,
 		color: '#969c05',
-		inStock: true
+		inStock: true,
+		metaDescription: 'Warm up with our comforting Cinnamon Green Apple cold-pressed juice. A delightful blend of crisp green apple, sweet pear, warming cinnamon, and hydrating coconut water - perfect for any time of day.',
+		metaImage: '/assets/img/og-images/cinnamon-green-apple-og.png',
+		metaKeywords: 'cinnamon green apple juice, apple juice, pear juice, cinnamon juice, warming spices, vitamin C, fiber rich, hydrating, comfort drink'
 	}
 ];

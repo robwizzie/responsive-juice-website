@@ -32,20 +32,20 @@ function linkAction() {
 navLink.forEach(n => n.addEventListener('click', linkAction));
 
 document.addEventListener('DOMContentLoaded', function () {
-	console.log('Juice.js loaded');
+	// console.log('Juice.js loaded');
 
 	// Get the juice slug from the URL path
 	const slug = window.location.pathname.split('/').pop();
-	console.log('Current slug:', slug);
+	// console.log('Current slug:', slug);
 
 	if (typeof juices === 'undefined' || !juices) {
 		console.error('Juices array is not defined. Ensure juices-database.js is loaded.');
 		return;
 	}
-	console.log('Available juices:', juices);
+	// console.log('Available juices:', juices);
 
 	const juice = juices.find(j => j.slug === slug);
-	console.log('Found juice:', juice);
+	// console.log('Found juice:', juice);
 
 	if (!juice) {
 		window.location.href = '/';
@@ -171,32 +171,28 @@ function updateSEOMetadata(juice) {
 	// Update title
 	document.title = `${juice.name} - Premium Cold-Pressed Juice | Sip On Pressed`;
 
-	// Create comprehensive description
-	const description = `Try our delicious ${juice.name} cold-pressed juice made with ${juice.ingredients.join(', ')}. Fresh, organic, and packed with nutrients. Only $${juice.price.toFixed(2)} - ${juice.inStock ? 'Available now' : 'Coming soon'}!`;
-
-	// Create keywords from ingredients and juice name
-	const keywords = `${juice.name}, ${juice.ingredients.join(', ')}, cold-pressed juice, organic juice, fresh juice, healthy drinks, nutrient-rich, ${juice.inStock ? 'buy online' : 'coming soon'}`;
+	// Use database metadata if available, otherwise fallback to generated content
+	const description = juice.metaDescription || `Try our delicious ${juice.name} cold-pressed juice made with ${juice.ingredients.join(', ')}. Fresh, organic, and packed with nutrients. Only $${juice.price.toFixed(2)} - ${juice.inStock ? 'Available now' : 'Coming soon'}!`;
+	const keywords = juice.metaKeywords || `${juice.name}, ${juice.ingredients.join(', ')}, cold-pressed juice, organic juice, fresh juice, healthy drinks, nutrient-rich, ${juice.inStock ? 'buy online' : 'coming soon'}`;
+	const metaImage = juice.metaImage ? `${baseUrl}${juice.metaImage}` : `${baseUrl}/.netlify/functions/generate-og-image?slug=${juice.slug}`;
 
 	// Update meta description
 	updateMetaTag('name', 'description', description);
 	updateMetaTag('name', 'keywords', keywords);
 
-	// Generate dynamic OG image URL
-	const ogImageUrl = `${baseUrl}/.netlify/functions/generate-og-image?slug=${juice.slug}`;
-
 	// Update Open Graph tags
 	updateMetaTag('property', 'og:title', `${juice.name} - Premium Cold-Pressed Juice`);
 	updateMetaTag('property', 'og:description', description);
-	updateMetaTag('property', 'og:image', ogImageUrl);
+	updateMetaTag('property', 'og:image', metaImage);
 	updateMetaTag('property', 'og:image:width', '1200');
 	updateMetaTag('property', 'og:image:height', '630');
-	updateMetaTag('property', 'og:image:type', 'image/svg+xml');
+	updateMetaTag('property', 'og:image:type', 'image/png');
 	updateMetaTag('property', 'og:url', currentUrl);
 
 	// Update Twitter Card tags
 	updateMetaTag('name', 'twitter:title', `${juice.name} - Premium Cold-Pressed Juice`);
 	updateMetaTag('name', 'twitter:description', description);
-	updateMetaTag('name', 'twitter:image', ogImageUrl);
+	updateMetaTag('name', 'twitter:image', metaImage);
 
 	// Update canonical URL
 	let canonical = document.querySelector('link[rel="canonical"]');
@@ -235,14 +231,14 @@ function addStructuredData(juice) {
 	}
 
 	const baseUrl = window.location.origin;
-	const ogImageUrl = `${baseUrl}/.netlify/functions/generate-og-image?slug=${juice.slug}`;
+	const metaImage = juice.metaImage ? `${baseUrl}${juice.metaImage}` : `${baseUrl}/.netlify/functions/generate-og-image?slug=${juice.slug}`;
 
 	const structuredData = {
 		'@context': 'https://schema.org/',
 		'@type': 'Product',
 		name: juice.name,
-		description: `Fresh cold-pressed juice made with ${juice.ingredients.join(', ')}`,
-		image: [`${baseUrl}${juice.imageUrl}`, ogImageUrl, `${baseUrl}/assets/img/nutrition-facts/${juice.slug}-facts.png`],
+		description: juice.metaDescription || `Fresh cold-pressed juice made with ${juice.ingredients.join(', ')}`,
+		image: [`${baseUrl}${juice.imageUrl}`, metaImage, `${baseUrl}/assets/img/nutrition-facts/${juice.slug}-facts.png`],
 		brand: {
 			'@type': 'Brand',
 			name: 'Sip On Pressed'

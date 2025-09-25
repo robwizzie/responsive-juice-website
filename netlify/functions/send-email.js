@@ -41,13 +41,6 @@ exports.handler = async event => {
 		}
 	});
 
-	// Optional: tiny debug to verify connection params (removed automatically when building)
-	console.log('SMTP config =>', {
-		host: process.env.EMAIL_HOST,
-		port,
-		secure: port === 465
-	});
-
 	try {
 		await transporter.verify();
 
