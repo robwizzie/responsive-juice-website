@@ -6,7 +6,7 @@ const juices = [
 		description: 'Pineapple, Carrot, Mango, Orange, Ginger, Tumeric',
 		imageUrl: '/assets/img/juices/tropical-storm.png',
 		ingredients: ['Pineapple', 'Carrot', 'Mango', 'Orange', 'Ginger', 'Tumeric'],
-		price: 7,
+		price: 7.5,
 		color: '#ff8902',
 		inStock: true
 	},
@@ -17,7 +17,7 @@ const juices = [
 		description: 'Kale, Spinach, Kiwi, Orange, Pineapple, Banana',
 		imageUrl: '/assets/img/juices/sweet-green.png',
 		ingredients: ['Kale', 'Spinach', 'Kiwi', 'Orange', 'Pineapple', 'Banana'],
-		price: 7,
+		price: 7.5,
 		color: '#969c05',
 		inStock: true
 	},
@@ -28,7 +28,7 @@ const juices = [
 		description: 'Black Grape, Green Apple, Blueberry, Cucumber, Pineapple, Lemon',
 		imageUrl: '/assets/img/juices/sour-punch.png',
 		ingredients: ['Black Grape', 'Green Apple', 'Blueberry', 'Cucumber', 'Pineapple', 'Lemon'],
-		price: 7,
+		price: 7.5,
 		color: '#8b000d',
 		inStock: false
 	},
@@ -39,7 +39,7 @@ const juices = [
 		description: 'Strawberry, Banana, Blueberry, Gala Apple, Pineapple',
 		imageUrl: '/assets/img/juices/strawberry-banana.png',
 		ingredients: ['Strawberry', 'Banana', 'Blueberry', 'Gala Apple', 'Pineapple'],
-		price: 7,
+		price: 7.5,
 		color: '#f96e67',
 		inStock: false
 	},
@@ -50,7 +50,7 @@ const juices = [
 		description: 'Strawberry, Blueberry, Pineapple, Lemon',
 		imageUrl: '/assets/img/juices/electric-berry-lemonade.png',
 		ingredients: ['Strawberry', 'Blueberry', 'Pineapple', 'Lemon'],
-		price: 7,
+		price: 7.5,
 		color: '#8b2986',
 		inStock: false
 	},
@@ -61,7 +61,7 @@ const juices = [
 		description: 'Strawberry, Fresh Pressed Lemon Juice, Gala Apple, Coconut Water, Agave',
 		imageUrl: '/assets/img/juices/strawberry-lemonade.png',
 		ingredients: ['Strawberry', 'Lemon', 'Gala Apple', 'Coconut', 'Agave'],
-		price: 7,
+		price: 7.5,
 		color: '#ce280f',
 		inStock: true
 	},
@@ -72,8 +72,19 @@ const juices = [
 		description: 'Blueberry, Pineapple, Lemon, Coconut Water, Blue Spirulina',
 		imageUrl: '/assets/img/juices/midnight-rush.png',
 		ingredients: ['Blueberry', 'Pineapple', 'Lemon', 'Coconut', 'Blue Spirulina'],
-		price: 7,
+		price: 7.5,
 		color: '#8f32a6',
+		inStock: true
+	},
+	{
+		id: 8,
+		name: 'Cinnamon Green Apple',
+		slug: 'cinnamon-green-apple',
+		description: 'Green Apple, Pear, Cinnamon, Coconut Water',
+		imageUrl: '/assets/img/juices/cinnamon-green-apple.png',
+		ingredients: ['Green Apple', 'Pear', 'Cinnamon', 'Coconut'],
+		price: 7.5,
+		color: '#969c05',
 		inStock: true
 	}
 ];

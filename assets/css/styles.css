@@ -478,14 +478,9 @@ img {
 }
 
 .checkout-button {
-	width: 100%;
 	border: none;
 	cursor: pointer;
 	margin-top: 1rem;
-}
-
-.checkout-button:hover {
-	background: #4caf50;
 }
 
 /* Animation for add to cart feedback */
@@ -625,7 +620,7 @@ img {
 	border-bottom: 1px solid #eee;
 }
 
-.pickup-alert {
+.order-alert {
 	background: linear-gradient(135deg, #ff9700, #ff7700);
 	color: white;
 	padding: 0.75rem 1rem;
@@ -639,7 +634,7 @@ img {
 	gap: 0.5rem;
 }
 
-.pickup-alert i {
+.order-alert i {
 	font-size: 1.2rem;
 }
 
@@ -677,15 +672,15 @@ img {
 	font-size: 1.1rem;
 }
 
-/* Pickup Only Banner */
+/* Order Options Banner */
 
-.pickup-only-banner {
+.order-options-banner {
 	margin-top: 2rem;
 	display: flex;
 	justify-content: center;
 }
 
-.pickup-banner-content {
+.order-banner-content {
 	background: linear-gradient(135deg, #ff9700, #ff7700);
 	color: white;
 	padding: 1rem 2rem;
@@ -699,7 +694,7 @@ img {
 	animation: pulse-glow 3s ease-in-out infinite;
 }
 
-.pickup-banner-content i {
+.order-banner-content i {
 	font-size: 1.3rem;
 	opacity: 0.9;
 }
@@ -2981,7 +2976,7 @@ html.page-loading body > *:not(#page-loader) {
 	gap: 1rem;
 }
 
-.footer__pickup-notice {
+.footer__order-notice {
 	background: rgba(255, 151, 0, 0.1);
 	border: 1px solid rgba(255, 151, 0, 0.3);
 	border-radius: 0.8rem;
@@ -2989,21 +2984,21 @@ html.page-loading body > *:not(#page-loader) {
 	text-align: center;
 }
 
-.footer__pickup-notice i {
+.footer__order-notice i {
 	font-size: 1.5rem;
 	color: #ff9700;
 	margin-bottom: 0.5rem;
 	display: block;
 }
 
-.footer__pickup-notice strong {
+.footer__order-notice strong {
 	display: block;
 	color: #ff9700;
 	font-size: 1.1rem;
 	margin-bottom: 0.5rem;
 }
 
-.footer__pickup-notice p {
+.footer__order-notice p {
 	margin: 0;
 	color: #cccccc;
 	font-size: 0.9rem;
@@ -3067,7 +3062,7 @@ html.page-loading body > *:not(#page-loader) {
 
 /*=============== FOOTER RESPONSIVE DESIGN ===============*/
 
-@media screen and (max-width: 968px) {
+@media screen and (max-width: 1330px) {
 	.footer__content {
 		grid-template-columns: repeat(2, 1fr);
 		gap: 2.5rem;
@@ -3179,7 +3174,7 @@ html.page-loading body > *:not(#page-loader) {
 		align-items: center;
 		text-align: center;
 	}
-	.footer__pickup-notice {
+	.footer__order-notice {
 		padding: 1rem;
 		text-align: center;
 	}

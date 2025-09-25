@@ -10,6 +10,8 @@ const locations = [
 		description: 'Located inside of Clean Meal Prep in Giant Fitness',
 		color: '#ff9700', // Primary brand color
 		active: true,
+		deliveryAvailable: false,
+		deliveryRadius: 0,
 		pickupHours: {
 			monday: '10:00 AM - 9:00 PM',
 			tuesday: '10:00 AM - 9:00 PM',
@@ -21,7 +23,7 @@ const locations = [
 		},
 		contactPhone: '(856) 537-1906',
 		googleMapsLink: 'https://maps.app.goo.gl/TYcVsdRCeTf4Kjfs8',
-		specialInstructions: ''
+		specialInstructions: 'Fridge inventory available - no prep required'
 	},
 	{
 		id: 2,
@@ -34,6 +36,9 @@ const locations = [
 		description: 'Located inside of Clean Meal Prep',
 		color: '#ff7700',
 		active: true,
+		deliveryAvailable: true,
+		deliveryRadius: 30, // 30 mile radius
+		deliveryFee: 5.0, // $5 delivery fee
 		pickupHours: {
 			monday: '10:00 AM - 9:00 PM',
 			tuesday: '10:00 AM - 9:00 PM',
@@ -46,7 +51,7 @@ const locations = [
 		contactPhone: '(609) 828-6626',
 		website: 'https://cleanmealprep.com',
 		googleMapsLink: 'https://maps.app.goo.gl/D1YhSAWWwFT8kcu48',
-		specialInstructions: ''
+		specialInstructions: 'Orders by Friday, prep Saturday, ship Sunday, pickup Monday'
 	}
 ];
 
@@ -101,6 +106,29 @@ const isLocationOpenOnDate = (locationSlug, date) => {
 	return hours && hours.toLowerCase() !== 'closed';
 };
 
+// Check if delivery is available for a location
+const isDeliveryAvailable = locationSlug => {
+	const location = getLocationBySlug(locationSlug);
+	return location && location.deliveryAvailable === true;
+};
+
+// Get delivery fee for a location
+const getDeliveryFee = locationSlug => {
+	const location = getLocationBySlug(locationSlug);
+	return location && location.deliveryAvailable ? location.deliveryFee : 0;
+};
+
+// Get delivery radius for a location
+const getDeliveryRadius = locationSlug => {
+	const location = getLocationBySlug(locationSlug);
+	return location && location.deliveryAvailable ? location.deliveryRadius : 0;
+};
+
+// Get locations that offer delivery
+const getDeliveryLocations = () => {
+	return locations.filter(location => location.active && location.deliveryAvailable);
+};
+
 // Export for use in other files
 if (typeof module !== 'undefined' && module.exports) {
 	module.exports = {
@@ -110,6 +138,10 @@ if (typeof module !== 'undefined' && module.exports) {
 		getActiveLocations,
 		getTodaysHours,
 		getFormattedHours,
-		isLocationOpenOnDate
+		isLocationOpenOnDate,
+		isDeliveryAvailable,
+		getDeliveryFee,
+		getDeliveryRadius,
+		getDeliveryLocations
 	};
 }
