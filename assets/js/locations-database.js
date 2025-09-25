@@ -49,7 +49,7 @@ const locations = [
 			sunday: 'Closed'
 		},
 		contactPhone: '(609) 828-6626',
-		website: 'https://cleanmealprep.com',
+		website: 'https://www.cleanplatemealprep.com/',
 		googleMapsLink: 'https://maps.app.goo.gl/D1YhSAWWwFT8kcu48',
 		specialInstructions: 'Orders by Friday, prep Saturday, ship Sunday, pickup Monday'
 	}

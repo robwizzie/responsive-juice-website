@@ -34,7 +34,7 @@ exports.handler = async event => {
 		try {
 			stripeEvent = stripe.webhooks.constructEvent(event.body, sig, endpointSecret);
 		} catch (err) {
-			console.log(`Webhook signature verification failed.`, err.message);
+			// console.log(`Webhook signature verification failed.`, err.message);
 			return {
 				statusCode: 400,
 				body: `Webhook Error: ${err.message}`
@@ -210,7 +210,7 @@ exports.handler = async event => {
 					html: businessNotificationHtml
 				});
 
-				console.log(`Confirmation emails sent for order ${session.id}`);
+				// console.log(`Confirmation emails sent for order ${session.id}`);
 			}
 		}
 

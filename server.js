@@ -29,6 +29,13 @@ app.use(
 	})
 );
 
+// Serve service worker with correct MIME type and no caching
+app.get('/sw.js', (req, res) => {
+	res.setHeader('Content-Type', 'application/javascript');
+	res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+	res.sendFile(path.join(__dirname, 'sw.js'));
+});
+
 // Serve JS files from /js directory
 app.use(
 	'/js',
@@ -137,7 +144,6 @@ app.post('/send-email', emailLimiter, validateEmail, async (req, res) => {
             `
 		});
 
-		console.log('Email sent successfully:', info);
 		res.status(200).json({ message: 'Email sent successfully' });
 	} catch (error) {
 		console.error('Error sending email:', error);
