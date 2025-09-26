@@ -19,19 +19,38 @@ async function initializePage() {
 document.addEventListener('DOMContentLoaded', initializePage);
 
 /*=============== GSAP ANIMATION ===============*/
-gsap.from('.home__title', { duration: 1, delay: 0.2, opacity: 0, y: 20, ease: 'expo.inOut' });
-gsap.from('.home__description', { duration: 1, delay: 0.3, opacity: 0, y: 20, ease: 'expo.inOut' });
-gsap.from('.home__button:not(.add-to-cart)', { duration: 1, delay: 0.4, opacity: 0, y: 20, ease: 'expo.inOut' });
-gsap.from('.home__liquid', { duration: 1, delay: 0.7, opacity: 0, y: 200, ease: 'expo.inOut' });
-gsap.from('.home__juice-animate', { duration: 1, delay: 1.2, opacity: 0, y: -800, ease: 'expo.inOut' });
-gsap.from('.home__apple1', { duration: 1, delay: 1.5, opacity: 0, y: -800, ease: 'expo.inOut' });
-gsap.from('.home__apple2', { duration: 1, delay: 1.6, opacity: 0, y: -800, ease: 'expo.inOut' });
-gsap.from('.home__leaf:nth-child(1)', { duration: 2, delay: 1.3, opacity: 0, y: -800, ease: 'expo.inOut' });
-gsap.from('.home__leaf:nth-child(2)', { duration: 2, delay: 1.4, opacity: 0, y: -800, ease: 'expo.inOut' });
-gsap.from('.home__leaf:nth-child(3)', { duration: 2, delay: 1.5, opacity: 0, y: -800, ease: 'expo.inOut' });
-gsap.from('.home__leaf:nth-child(4)', { duration: 2, delay: 1.6, opacity: 0, y: -800, ease: 'expo.inOut' });
-gsap.from('.home__leaf:nth-child(5)', { duration: 2, delay: 1.7, opacity: 0, y: -800, ease: 'expo.inOut' });
-gsap.from('.home__leaf:nth-child(6)', { duration: 2, delay: 1.8, opacity: 0, y: -800, ease: 'expo.inOut' });
+function initializeGSAPAnimations() {
+	// Only run on homepage
+	if (window.location.pathname !== '/' && !window.location.pathname.includes('index')) {
+		return;
+	}
+
+	gsap.from('.home__title', { duration: 1, delay: 0.2, opacity: 0, y: 20, ease: 'expo.inOut' });
+	gsap.from('.home__description', { duration: 1, delay: 0.3, opacity: 0, y: 20, ease: 'expo.inOut' });
+	gsap.from('.home__button:not(.add-to-cart)', { duration: 1, delay: 0.4, opacity: 0, y: 20, ease: 'expo.inOut' });
+	gsap.from('.home__liquid', { duration: 1, delay: 0.7, opacity: 0, y: 200, ease: 'expo.inOut' });
+	gsap.from('.home__juice-animate', { duration: 1, delay: 1.2, opacity: 0, y: -800, ease: 'expo.inOut' });
+	gsap.from('.home__apple1', { duration: 1, delay: 1.5, opacity: 0, y: -800, ease: 'expo.inOut' });
+	gsap.from('.home__apple2', { duration: 1, delay: 1.6, opacity: 0, y: -800, ease: 'expo.inOut' });
+	gsap.from('.home__leaf:nth-child(1)', { duration: 2, delay: 1.3, opacity: 0, y: -800, ease: 'expo.inOut' });
+	gsap.from('.home__leaf:nth-child(2)', { duration: 2, delay: 1.4, opacity: 0, y: -800, ease: 'expo.inOut' });
+	gsap.from('.home__leaf:nth-child(3)', { duration: 2, delay: 1.5, opacity: 0, y: -800, ease: 'expo.inOut' });
+	gsap.from('.home__leaf:nth-child(4)', { duration: 2, delay: 1.6, opacity: 0, y: -800, ease: 'expo.inOut' });
+	gsap.from('.home__leaf:nth-child(5)', { duration: 2, delay: 1.7, opacity: 0, y: -800, ease: 'expo.inOut' });
+	gsap.from('.home__leaf:nth-child(6)', { duration: 2, delay: 1.8, opacity: 0, y: -800, ease: 'expo.inOut' });
+}
+
+// Wait for GSAP to be available
+function waitForGSAP() {
+	if (typeof gsap !== 'undefined') {
+		initializeGSAPAnimations();
+	} else {
+		setTimeout(waitForGSAP, 50);
+	}
+}
+
+// Start waiting for GSAP
+waitForGSAP();
 
 document.addEventListener('DOMContentLoaded', function () {
 	// Only run main carousel on home page, not on juice detail pages
