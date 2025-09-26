@@ -595,6 +595,22 @@ img {
 	transform: translateX(0);
 }
 
+/* Mobile cart overlay - full screen */
+
+@media screen and (max-width: 767px) {
+	.cart-overlay {
+		justify-content: center;
+		align-items: center;
+	}
+	.cart-container {
+		max-width: 100%;
+		width: 100%;
+		height: 100%;
+		border-radius: 0;
+		box-shadow: none;
+	}
+}
+
 /* Animation for cart button */
 
 @keyframes buttonPop {
@@ -1062,11 +1078,7 @@ img {
 		min-height: auto;
 	}
 	.carousel-left-panel .button-row {
-		flex-direction: row;
-		justify-content: center;
-		gap: 0.5rem;
-		flex-wrap: nowrap;
-		margin: 0.5rem 0;
+		display: none;
 	}
 	.carousel-left-panel .left-btn {
 		width: 180px;
@@ -1084,8 +1096,41 @@ img {
 		position: relative;
 		width: 100%;
 		margin-top: 1rem;
-		margin-bottom: 3rem;
+		margin-bottom: 1rem;
 		gap: 1rem;
+	}
+	/* Mobile button row below carousel - Mobile Carousel v2 */
+	.carousel-mobile-buttons {
+		display: flex;
+		flex-direction: row;
+		justify-content: center;
+		gap: 0.5rem;
+		flex-wrap: nowrap;
+		margin: 1rem 0 3rem 0;
+		padding: 0 0.75rem;
+	}
+	.carousel-mobile-buttons .left-btn {
+		width: 220px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		margin: 0 !important;
+		text-align: center;
+		font-family: var(--second-font);
+		font-size: 0.9rem;
+		padding: 0.75rem 1rem;
+		background: #ffffff;
+		color: var(--text-color);
+		font-weight: 600;
+		border-radius: 1.5rem 0.25rem;
+		transition: background 0.3s ease, color 0.3s ease;
+		text-decoration: none;
+		border: none;
+		cursor: pointer;
+	}
+	.carousel-mobile-buttons .left-btn:hover {
+		background: var(--first-color);
+		color: #fff;
 	}
 	.carousel-item img {
 		max-width: 160px;
@@ -1117,12 +1162,11 @@ img {
 		position: static;
 	}
 	.slide-title {
-		font-size: 1.6rem;
+		font-size: 1.75rem;
+		margin: 0.5rem 0 !important;
 	}
 	.ingredients-preview {
-		min-height: 80px;
-		align-items: center;
-		margin-bottom: 0.75rem;
+		display: none !important;
 	}
 	.ingredient-tag {
 		min-height: 36px;
@@ -1283,8 +1327,9 @@ img {
 		background-color: var(--body-color);
 	}
 	.home__title {
-		font-size: 3rem;
+		font-size: 2.25rem;
 		margin-top: 1rem;
+		padding: 0 0.5rem;
 	}
 	.home__shape-small {
 		width: 250px;
@@ -2224,6 +2269,37 @@ img {
 	}
 }
 
+/* About Page Mobile Fixes */
+
+@media screen and (max-width: 767px) {
+	/* Fix favorite juice badges on mobile */
+	.team-member .athlete-favorite-juice {
+		position: relative !important;
+		left: auto !important;
+		right: auto !important;
+		top: auto !important;
+		bottom: auto !important;
+		margin: 1rem auto 0 auto;
+		width: fit-content;
+		display: flex;
+		justify-content: center;
+	}
+	/* Improve team member layout on mobile */
+	.team-member {
+		text-align: center;
+		align-items: center;
+	}
+	/* Better video sizing on mobile */
+	.story-video {
+		max-height: 300px;
+		width: 100%;
+	}
+	/* Improve story content spacing on mobile */
+	.story-content {
+		padding: 1rem;
+	}
+}
+
 /* Contact Page Styles */
 
 .contact-section {
@@ -2260,6 +2336,12 @@ img {
 
 .info-card:hover {
 	transform: translateY(-5px);
+}
+
+/* Make clickable info cards show pointer cursor */
+
+a.info-card {
+	cursor: pointer;
 }
 
 .info-card i {
@@ -2412,12 +2494,20 @@ img {
 	}
 }
 
-@media screen and (max-width: 968px) {
+@media screen and (max-width: 967px) {
 	.contact-content {
 		grid-template-columns: 1fr;
 		gap: 3rem;
+		/* Reorder: form first, then info cards */
+		grid-template-areas: 'contact-form' 'contact-info';
+	}
+	.contact-form-container {
+		grid-area: contact-form;
+		order: 1;
 	}
 	.contact-info {
+		grid-area: contact-info;
+		order: 2;
 		flex-direction: row;
 		flex-wrap: wrap;
 	}
@@ -2453,7 +2543,6 @@ img {
 		padding: 1.5rem;
 	}
 	.slide-title {
-		font-size: 1.2rem;
 		margin-bottom: 0.5rem;
 	}
 	.ingredients-preview {
@@ -2545,6 +2634,12 @@ html.page-loading body > *:not(#page-loader) {
 .carousel-left-panel .left-btn:hover {
 	background: var(--first-color);
 	color: #fff;
+}
+
+/* Hide mobile buttons on desktop - Mobile Carousel v2 */
+
+.carousel-mobile-buttons {
+	display: none;
 }
 
 /* Arrow buttons styled */
