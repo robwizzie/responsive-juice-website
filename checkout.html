@@ -22,21 +22,21 @@
             max-width: 1200px;
             margin: 0 auto;
             padding: 2rem;
-            padding-top: 8rem;
+            padding-top: 10rem;
         }
-        
+
         .checkout-content {
             display: grid;
             grid-template-columns: 1fr 400px;
             gap: 3rem;
             align-items: start;
         }
-        
+
         .checkout-content.full-width {
             grid-template-columns: 1fr;
             gap: 0;
         }
-        
+
         .checkout-form {
             background: white;
             padding: 2rem;
@@ -44,11 +44,11 @@
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
             position: relative;
         }
-        
+
         .form-section {
             margin-bottom: 2rem;
         }
-        
+
         .form-section h3 {
             color: #333;
             margin-bottom: 1rem;
@@ -57,18 +57,18 @@
             align-items: center;
             gap: 0.5rem;
         }
-        
+
         .form-group {
             margin-bottom: 1.5rem;
         }
-        
+
         .form-group label {
             display: block;
             margin-bottom: 0.5rem;
             font-weight: bold;
             color: #333;
         }
-        
+
         .form-group input,
         .form-group select {
             width: 100%;
@@ -78,19 +78,19 @@
             font-size: 1rem;
             transition: border-color 0.3s ease;
         }
-        
+
         .form-group input:focus,
         .form-group select:focus {
             outline: none;
             border-color: #ff9700;
         }
-        
+
         .location-options {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 1rem;
         }
-        
+
         .location-card {
             border: 2px solid #ddd;
             border-radius: 12px;
@@ -99,41 +99,41 @@
             transition: all 0.3s ease;
             text-align: center;
         }
-        
+
         .location-card:hover {
             border-color: #ff9700;
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(255, 151, 0, 0.2);
         }
-        
+
         .location-card.selected {
             border-color: #ff9700;
             background: linear-gradient(135deg, #fff9f0, #fff3e0);
         }
-        
+
         .location-card h4 {
             color: #ff9700;
             margin-bottom: 0.5rem;
             font-family: var(--second-font);
         }
-        
+
         .location-card p {
             color: #666;
             font-size: 0.9rem;
             margin: 0;
         }
-        
+
         .location-details {
             margin-top: 1rem;
             padding-top: 0.75rem;
             border-top: 1px solid #eee;
         }
-        
+
         .location-details p {
             margin: 0.25rem 0;
             font-size: 0.85rem;
         }
-        
+
         .hours-display {
             background: #f8f9fa;
             padding: 0.5rem;
@@ -142,12 +142,12 @@
             font-size: 0.8rem;
             line-height: 1.3;
         }
-        
+
         .phone-number {
             color: #ff9700;
             font-weight: bold;
         }
-        
+
         .order-summary {
             background: white;
             padding: 2rem;
@@ -156,7 +156,7 @@
             position: sticky;
             top: 2rem;
         }
-        
+
         .order-summary.full-screen {
             position: static;
             width: 100%;
@@ -171,13 +171,13 @@
             flex-direction: column;
             z-index: 1;
         }
-        
+
         .order-summary.full-screen .summary-header,
         .order-summary.full-screen .order-items,
         .order-summary.full-screen .summary-totals {
             flex: 0 0 auto;
         }
-        
+
         .order-summary.full-screen .step-actions {
             margin-top: auto;
             padding-top: 2rem;
@@ -187,7 +187,7 @@
             align-items: center;
             gap: 1rem;
         }
-        
+
         .order-summary.full-screen .step-actions .step-button {
             padding: 0.75rem 1.5rem;
             border: none;
@@ -198,37 +198,37 @@
             transition: all 0.3s ease;
             min-width: 150px;
         }
-        
+
         .order-summary.full-screen .step-actions .step-button.prev-step {
             background: #6c757d;
             color: white;
         }
-        
+
         .order-summary.full-screen .step-actions .step-button.prev-step:hover:not(:disabled) {
             background: #5a6268;
         }
-        
+
         .order-summary.full-screen .step-actions .step-button.checkout-button {
             background: linear-gradient(135deg, #ff9700, #ff7700);
             color: white;
         }
-        
+
         .order-summary.full-screen .step-actions .step-button.checkout-button:hover:not(:disabled) {
             background: linear-gradient(135deg, #ff7700, #ff5500);
         }
-        
+
         .order-summary.full-screen .step-actions .step-button:disabled {
             opacity: 0.6;
             cursor: not-allowed;
         }
-        
+
         .review-section {
             padding: 1rem;
             background: #f8f9fa;
             border-radius: 8px;
             border-left: 4px solid #ff9700;
         }
-        
+
         .review-section h5 {
             margin: 0 0 0.5rem 0;
             color: #333;
@@ -237,39 +237,40 @@
             align-items: center;
             gap: 0.5rem;
         }
-        
+
         .review-section p {
             margin: 0.25rem 0;
             color: #666;
         }
-        
+
         @media (max-width: 768px) {
             .order-summary.full-screen {
                 padding: 1rem;
             }
+
             .review-section {
                 margin: 1rem 0;
                 padding: 0.75rem;
             }
         }
-        
+
         .summary-header {
             display: flex;
             align-items: center;
             gap: 0.5rem;
             margin-bottom: 1.5rem;
         }
-        
+
         .summary-header h3 {
             color: #333;
             margin: 0;
             font-family: var(--second-font);
         }
-        
+
         .order-items {
             margin-bottom: 1.5rem;
         }
-        
+
         .order-item {
             display: flex;
             align-items: center;
@@ -280,36 +281,36 @@
             margin-bottom: 1rem;
             border-left: 4px solid #ff9700;
         }
-        
+
         .order-item img {
             width: 60px;
             height: 60px;
             object-fit: contain;
             border-radius: 6px;
         }
-        
+
         .item-details {
             flex: 1;
         }
-        
+
         .item-details h4 {
             margin: 0 0 0.25rem 0;
             font-size: 1rem;
             color: #ff9700;
             font-family: var(--second-font);
         }
-        
+
         .item-details p {
             margin: 0;
             color: #666;
             font-size: 0.9rem;
         }
-        
+
         .item-price {
             font-weight: bold;
             color: #333;
         }
-        
+
         .quantity-controls {
             display: flex;
             align-items: center;
@@ -317,7 +318,7 @@
             font-weight: bold;
             margin-top: 0.5rem;
         }
-        
+
         .quantity-controls button {
             padding: 0.25rem 0.5rem;
             border: none;
@@ -331,27 +332,27 @@
             align-items: center;
             justify-content: center;
         }
-        
+
         .quantity-controls button:hover {
             opacity: 0.8;
         }
-        
+
         .quantity-controls span {
             min-width: 20px;
             text-align: center;
         }
-        
+
         .summary-totals {
             border-top: 1px solid #eee;
             padding-top: 1rem;
         }
-        
+
         .summary-line {
             display: flex;
             justify-content: space-between;
             margin-bottom: 0.5rem;
         }
-        
+
         .summary-line.total {
             border-top: 2px solid #ff9700;
             padding-top: 1rem;
@@ -359,7 +360,7 @@
             font-weight: bold;
             font-size: 1.2rem;
         }
-        
+
         .checkout-button {
             background: linear-gradient(135deg, #ff9700, #ff7700);
             color: white;
@@ -372,20 +373,21 @@
             transition: all 0.3s ease;
             margin-top: 1rem;
         }
-        
+
         .checkout-button:hover:not(:disabled) {
             background: linear-gradient(135deg, #ff7700, #ff5500);
             box-shadow: 0 6px 20px rgba(255, 151, 0, 0.4);
         }
-        
+
         .checkout-button:disabled {
             opacity: 0.6;
             cursor: not-allowed;
             transform: none;
             box-shadow: none;
         }
+
         /* Enhanced date input styling */
-        
+
         input[type="date"] {
             padding: 0.75rem;
             border: 2px solid #ddd;
@@ -394,27 +396,27 @@
             transition: border-color 0.3s ease;
             width: 100%;
         }
-        
+
         input[type="date"]:focus {
             outline: none;
             border-color: #ff9700;
             box-shadow: 0 0 0 3px rgba(255, 151, 0, 0.1);
         }
-        
+
         input[type="date"]:invalid {
             border-color: #dc3545;
         }
-        
+
         .date-help-text {
             display: flex;
             align-items: center;
             gap: 0.5rem;
         }
-        
+
         .date-help-text i {
             color: #ff9700;
         }
-        
+
         .order-notice-checkout {
             background: linear-gradient(135deg, #fff3cd, #fff8e1);
             border: 2px solid #ff9700;
@@ -424,11 +426,11 @@
             text-align: center;
             position: relative;
         }
-        
+
         .order-notice-checkout strong {
             color: #ff9700;
         }
-        
+
         .delivery-option {
             background: linear-gradient(135deg, #e8f5e8, #f0f8f0);
             border: 2px solid #28a745;
@@ -437,66 +439,69 @@
             margin-bottom: 1rem;
             text-align: center;
         }
-        
+
         .delivery-option strong {
             color: #28a745;
         }
-        
+
         .delivery-fee {
             color: #666;
             font-size: 0.9rem;
             margin-top: 0.5rem;
         }
-        
+
         .order-type-label {
             transition: all 0.3s ease;
         }
-        
+
         .order-type-label:hover:not([style*="opacity: 0.5"]) {
             border-color: #ff9700 !important;
             background-color: #fff9f0;
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(255, 151, 0, 0.2);
         }
-        
+
         .order-type-label input[type="radio"]:checked+i+span {
             color: #ff9700;
             font-weight: bold;
         }
-        
+
         .order-type-label input[type="radio"]:checked {
             accent-color: #ff9700;
         }
+
         /* Delivery-specific styling */
-        
+
         .order-type-label input[value="delivery"]:checked+i+span {
             color: #28a745 !important;
         }
-        
+
         .order-type-label input[value="delivery"]:checked {
             accent-color: #28a745 !important;
         }
-        
+
         .order-type-label:hover:not([style*="opacity: 0.5"]) input[value="delivery"]:not(:checked) {
             border-color: #28a745 !important;
             background-color: #f0f8f0;
         }
+
         /* Auto-check notice styling */
-        
+
         .auto-check-notice {
             display: flex;
             align-items: center;
             gap: 0.25rem;
         }
+
         /* Step-by-Step Checkout Styles */
-        
+
         .checkout-progress {
             display: flex;
             justify-content: center;
             margin: 2rem 0;
             padding: 0 1rem;
         }
-        
+
         .progress-step {
             display: flex;
             flex-direction: column;
@@ -505,7 +510,7 @@
             flex: 1;
             max-width: 200px;
         }
-        
+
         .progress-step:not(:last-child)::after {
             content: '';
             position: absolute;
@@ -516,11 +521,11 @@
             background: #ddd;
             z-index: 1;
         }
-        
+
         .progress-step.completed:not(:last-child)::after {
             background: #ff9700;
         }
-        
+
         .step-number {
             width: 40px;
             height: 40px;
@@ -537,112 +542,119 @@
             z-index: 2;
             transition: all 0.3s ease;
         }
-        
+
         .progress-step.active .step-number {
             background: #ff9700;
             color: white;
         }
-        
+
         .progress-step.completed .step-number {
             background: #28a745;
             color: white;
         }
-        
+
         .step-title {
             font-size: 0.9rem;
             color: #666;
             text-align: center;
             font-weight: 500;
         }
-        
+
         .progress-step.active .step-title {
             color: #ff9700;
             font-weight: bold;
         }
-        
+
         .progress-step.completed .step-title {
             color: #28a745;
         }
-        
+
         .checkout-step {
             display: none;
             animation: fadeIn 0.3s ease-in-out;
         }
-        
+
         .checkout-step.active {
             display: block;
         }
-        
+
         @keyframes fadeIn {
             from {
                 opacity: 0;
                 transform: translateY(20px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
             }
         }
+
         /* Mobile checkout - show only current step */
-        
+
         @media screen and (max-width: 767px) {
             .checkout-progress {
                 display: flex;
                 justify-content: center;
                 margin-bottom: 2rem;
             }
+
             .progress-step {
                 display: none;
                 /* Hide all progress steps by default */
             }
+
             .progress-step.active {
                 display: flex;
                 /* Show only the current active step */
             }
+
             .progress-step:not(:last-child)::after {
                 display: none;
                 /* Hide connecting lines on mobile */
             }
+
             .checkout-step {
                 display: none !important;
             }
+
             .checkout-step.active {
                 display: block !important;
             }
         }
-        
+
         .step-header {
             margin-bottom: 2rem;
             text-align: center;
         }
-        
+
         .step-header h3 {
             color: #ff9700;
             margin-bottom: 0.5rem;
             font-family: var(--second-font);
         }
-        
+
         .step-description {
             color: #666;
             font-size: 1rem;
             margin: 0;
         }
-        
+
         .step-actions {
             display: flex;
             justify-content: space-between;
             margin-top: 2rem;
             gap: 1rem;
         }
-        
+
         .step-actions .next-step {
             margin-left: auto;
         }
-        
+
         .step-actions .prev-step {
             margin-right: auto;
         }
-        
+
         .step-button {
             padding: 0.75rem 1.5rem;
             border: none;
@@ -653,53 +665,53 @@
             transition: all 0.3s ease;
             min-width: 150px;
         }
-        
+
         .step-button.prev-step {
             background: #6c757d;
             color: white;
         }
-        
+
         .step-button.prev-step:hover:not(:disabled) {
             background: #5a6268;
         }
-        
+
         .step-button.next-step {
             background: linear-gradient(135deg, #ff9700, #ff7700);
             color: white;
         }
-        
+
         .step-button.next-step:hover:not(:disabled) {
             background: linear-gradient(135deg, #ff7700, #ff5500);
         }
-        
+
         .step-button:disabled {
             opacity: 0.6;
             cursor: not-allowed;
         }
-        
+
         .order-summary-review {
             background: #f8f9fa;
             padding: 1.5rem;
             border-radius: 8px;
             border: 1px solid #e9ecef;
         }
-        
+
         .order-summary-review h4 {
             color: #ff9700;
             margin-bottom: 1rem;
             font-family: var(--second-font);
         }
-        
+
         .review-section {
             margin-bottom: 1rem;
             padding-bottom: 1rem;
             border-bottom: 1px solid #e9ecef;
         }
-        
+
         .review-section:last-of-type {
             border-bottom: none;
         }
-        
+
         .review-section h5 {
             color: #ff9700;
             margin-bottom: 0.5rem;
@@ -708,12 +720,12 @@
             align-items: center;
             gap: 0.5rem;
         }
-        
+
         .review-section p {
             margin: 0.25rem 0;
             color: #666;
         }
-        
+
         .review-item {
             display: flex;
             justify-content: space-between;
@@ -724,56 +736,62 @@
             border-radius: 8px;
             border: 1px solid #e9ecef;
         }
-        
+
         .review-totals {
             margin-top: 1rem;
             padding-top: 1rem;
             border-top: 2px solid #e9ecef;
         }
-        
+
         .review-line {
             display: flex;
             justify-content: space-between;
             margin: 0.5rem 0;
         }
-        
+
         .review-line.total {
             font-size: 1.1rem;
             padding-top: 0.5rem;
             border-top: 1px solid #e9ecef;
         }
-        
+
         .order-type-label input[disabled] {
             cursor: not-allowed;
         }
-        
+
         .location-selection-hint {
             transition: display 0.3s ease;
         }
-        
+
         @media screen and (max-width: 968px) {
             .checkout-content {
                 grid-template-columns: 1fr;
                 gap: 2rem;
             }
+
             .location-options {
                 grid-template-columns: 1fr;
             }
+
             .checkout-progress {
                 flex-wrap: wrap;
                 gap: 1rem;
             }
+
             .progress-step {
                 flex: 1;
                 min-width: 120px;
             }
+
             .step-title {
                 font-size: 0.8rem;
             }
+
             .step-actions {
                 flex-direction: column;
                 gap: 1rem;
             }
+
             .step-button {
                 min-width: auto;
                 width: 100%;
@@ -802,12 +820,15 @@
     <title>Checkout - Pressed By J & H</title>
 
     <!--=============== SEO META TAGS ===============-->
-    <meta name="description" content="Complete your order for premium cold-pressed juices at Pressed By J & H. Secure checkout with pickup and delivery options available. Fresh, organic juices delivered to your door.">
-    <meta name="keywords" content="checkout, order juice, cold-pressed juice delivery, juice pickup, secure payment, fresh juice order, organic juice delivery">
+    <meta name="description"
+        content="Complete your order for premium cold-pressed juices at Pressed By J & H. Secure checkout with pickup and delivery options available. Fresh, organic juices delivered to your door.">
+    <meta name="keywords"
+        content="checkout, order juice, cold-pressed juice delivery, juice pickup, secure payment, fresh juice order, organic juice delivery">
 
     <!-- Open Graph meta tags -->
     <meta property="og:title" content="Checkout - Pressed By J & H">
-    <meta property="og:description" content="Complete your order for premium cold-pressed juices. Secure checkout with pickup and delivery options available. Fresh, organic juices delivered to your door.">
+    <meta property="og:description"
+        content="Complete your order for premium cold-pressed juices. Secure checkout with pickup and delivery options available. Fresh, organic juices delivered to your door.">
     <meta property="og:image" content="https://siponpressed.com/assets/img/og-images/juice-og-image.png">
     <meta property="og:url" content="https://siponpressed.com/checkout">
     <meta property="og:type" content="website">
@@ -816,7 +837,8 @@
     <!-- Twitter Card meta tags -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Checkout - Pressed By J & H">
-    <meta name="twitter:description" content="Complete your order for premium cold-pressed juices. Secure checkout with pickup and delivery options available.">
+    <meta name="twitter:description"
+        content="Complete your order for premium cold-pressed juices. Secure checkout with pickup and delivery options available.">
     <meta name="twitter:image" content="https://siponpressed.com/assets/img/og-images/juice-og-image.png">
 
     <!-- Additional SEO meta tags -->
@@ -835,7 +857,8 @@
 
         <div class="checkout-container">
             <div class="order-notice-checkout">
-                <strong><i class="ri-shopping-cart-line"></i> ORDER OPTIONS</strong> - Choose pickup or delivery (delivery available within 30 miles of Blackwood)
+                <strong><i class="ri-shopping-cart-line"></i> ORDER OPTIONS</strong> - Choose pickup or delivery
+                (delivery available within 30 miles of Blackwood)
             </div>
 
             <!-- Progress Steps -->
@@ -872,7 +895,8 @@
                     <div class="checkout-step active" id="step1">
                         <div class="step-header">
                             <h3><i class="ri-map-pin-line"></i> Step 1: Select Location & Order Type</h3>
-                            <p class="step-description">Choose your preferred location and whether you'd like pickup or delivery.
+                            <p class="step-description">Choose your preferred location and whether you'd like pickup or
+                                delivery.
                             </p>
                         </div>
                         <div class="form-section">
@@ -881,7 +905,8 @@
                             </div>
                         </div>
                         <div class="step-actions">
-                            <button type="button" class="step-button next-step" id="step1Next" disabled>Continue</button>
+                            <button type="button" class="step-button next-step" id="step1Next"
+                                disabled>Continue</button>
                         </div>
                     </div>
 
@@ -889,13 +914,15 @@
                     <div class="checkout-step" id="step2" style="display: none;">
                         <div class="step-header">
                             <h3><i class="ri-truck-line"></i> Step 2: Delivery Information</h3>
-                            <p class="step-description">Enter your delivery address and verify it's within our delivery zone.
+                            <p class="step-description">Enter your delivery address and verify it's within our delivery
+                                zone.
                             </p>
                         </div>
                         <div class="form-section" id="deliverySection">
                             <div class="form-group">
                                 <label for="deliveryAddress">Delivery Address:</label>
-                                <input type="text" id="deliveryAddress" name="deliveryAddress" placeholder="Enter your full address">
+                                <input type="text" id="deliveryAddress" name="deliveryAddress"
+                                    placeholder="Enter your full address">
                             </div>
                             <div class="form-group">
                                 <label for="deliveryCity">City:</label>
@@ -903,12 +930,16 @@
                             </div>
                             <div class="form-group">
                                 <label for="deliveryZip">ZIP Code:</label>
-                                <input type="text" id="deliveryZip" name="deliveryZip" placeholder="Enter your ZIP code">
-                                <div class="auto-check-notice" style="font-size: 0.8rem; color: #666; margin-top: 0.5rem; font-style: italic;">
-                                    <i class="ri-information-line"></i> Delivery zone will be checked automatically when all fields are filled
+                                <input type="text" id="deliveryZip" name="deliveryZip"
+                                    placeholder="Enter your ZIP code">
+                                <div class="auto-check-notice"
+                                    style="font-size: 0.8rem; color: #666; margin-top: 0.5rem; font-style: italic;">
+                                    <i class="ri-information-line"></i> Delivery zone will be checked automatically when
+                                    all fields are filled
                                 </div>
                             </div>
-                            <div id="deliveryZoneMessage" style="display: none; margin: 1rem 0rem; padding: 1rem; border-radius: 8px; font-weight: bold;">
+                            <div id="deliveryZoneMessage"
+                                style="display: none; margin: 1rem 0rem; padding: 1rem; border-radius: 8px; font-weight: bold;">
                             </div>
                             <div class="delivery-option">
                                 <strong style="color: #28a745;"><i class="ri-truck-line"></i> Delivery
@@ -933,7 +964,8 @@
                             <div class="form-group">
                                 <label for="pickupDate">Choose your preferred date:</label>
                                 <input type="date" id="pickupDate" name="pickupDate" required>
-                                <div class="date-help-text" style="font-size: 0.875rem; color: #666; margin-top: 0.5rem;">
+                                <div class="date-help-text"
+                                    style="font-size: 0.875rem; color: #666; margin-top: 0.5rem;">
                                     <i class="ri-information-line"></i>
                                     <span id="location-hours-info">Select a location first to see available dates</span>
                                 </div>
@@ -975,12 +1007,15 @@
                     <div class="checkout-step" id="step5" style="display: none;">
                         <div class="step-header">
                             <h3><i class="ri-checkbox-circle-line"></i> Step 5: Review & Pay</h3>
-                            <p class="step-description">Review your order details in the expanded order summary and proceed to payment.</p>
+                            <p class="step-description">Review your order details in the expanded order summary and
+                                proceed to payment.</p>
                         </div>
                         <div class="form-section">
                             <div style="text-align: center; padding: 2rem; color: #666;">
-                                <i class="ri-arrow-right-line" style="font-size: 2rem; margin-bottom: 1rem; display: block;"></i>
-                                <p>Your order summary has been expanded to show all details. Please review everything carefully before proceeding to payment.</p>
+                                <i class="ri-arrow-right-line"
+                                    style="font-size: 2rem; margin-bottom: 1rem; display: block;"></i>
+                                <p>Your order summary has been expanded to show all details. Please review everything
+                                    carefully before proceeding to payment.</p>
                             </div>
                         </div>
                         <div class="step-actions">
@@ -1045,17 +1080,17 @@
             }
 
             populateLocations() {
-                    const locationOptionsContainer = document.getElementById('locationOptions');
-                    const activeLocations = getActiveLocations();
+                const locationOptionsContainer = document.getElementById('locationOptions');
+                const activeLocations = getActiveLocations();
 
-                    let locationsHTML = '';
-                    activeLocations.forEach(location => {
-                                const todaysHours = getTodaysHours(location.slug);
-                                const formattedHours = getFormattedHours(location);
-                                const deliveryAvailable = isDeliveryAvailable(location.slug);
-                                const deliveryFee = getDeliveryFee(location.slug);
+                let locationsHTML = '';
+                activeLocations.forEach(location => {
+                    const todaysHours = getTodaysHours(location.slug);
+                    const formattedHours = getFormattedHours(location);
+                    const deliveryAvailable = isDeliveryAvailable(location.slug);
+                    const deliveryFee = getDeliveryFee(location.slug);
 
-                                locationsHTML += `
+                    locationsHTML += `
                         <div class="location-card" data-location="${location.slug}" data-location-id="${location.id}">
                             <h4>${location.name}</h4>
                             <p style="font-weight: bold;">${location.fullLocation}</p>

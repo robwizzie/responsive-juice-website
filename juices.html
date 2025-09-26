@@ -17,12 +17,145 @@
         <link rel="stylesheet" href="/assets/css/styles.css">
     </noscript>
 
-    <!-- Preconnects for Google Fonts -->
+    <!-- Preconnects for performance -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link rel="dns-prefetch" href="//cdn.jsdelivr.net">
 
+    <!-- Critical CSS inline for faster rendering -->
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap');
+        /* Critical styles for initial render */
+
+        .juice-card-hidden {
+            opacity: 0;
+            transform: translateY(50px) scale(0.95);
+        }
+
+        .juice-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .juice-card {
+            background: white;
+            border-radius: 1.5rem;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease;
+            padding: 3rem 0 0 0rem;
+            display: flex;
+        }
+
+        /* Loading skeleton styles */
+
+        .juice-card-skeleton {
+            background: white;
+            border-radius: 1.5rem;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            padding: 3rem 0 0 0rem;
+            display: flex;
+            animation: skeleton-pulse 1.5s ease-in-out infinite alternate;
+        }
+
+        .skeleton-image {
+            width: 100%;
+            height: 300px;
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: skeleton-shimmer 1.5s infinite;
+            margin: 0 2rem;
+        }
+
+        .skeleton-content {
+            padding: 2rem;
+            flex: 1;
+        }
+
+        .skeleton-title {
+            height: 24px;
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: skeleton-shimmer 1.5s infinite;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            width: 60%;
+        }
+
+        .skeleton-description {
+            height: 16px;
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: skeleton-shimmer 1.5s infinite;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            width: 100%;
+        }
+
+        .skeleton-ingredients {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .skeleton-tag {
+            height: 20px;
+            width: 60px;
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: skeleton-shimmer 1.5s infinite;
+            border-radius: 10px;
+        }
+
+        .skeleton-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+        }
+
+        .skeleton-price {
+            height: 20px;
+            width: 50px;
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: skeleton-shimmer 1.5s infinite;
+            border-radius: 4px;
+        }
+
+        .skeleton-button {
+            height: 40px;
+            width: 100px;
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: skeleton-shimmer 1.5s infinite;
+            border-radius: 20px;
+        }
+
+        @keyframes skeleton-shimmer {
+            0% {
+                background-position: -200% 0;
+            }
+
+            100% {
+                background-position: 200% 0;
+            }
+        }
+
+        @keyframes skeleton-pulse {
+            0% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0.8;
+            }
+        }
     </style>
 
     <!--=============== JS ===============-->
@@ -94,7 +227,56 @@
         <!-- Juice Catalog -->
         <section class="juice-catalog">
             <div class="container">
-                <div class="juice-grid">
+                <div class="juice-grid" id="juiceGrid">
+                    <!-- Loading skeleton -->
+                    <div class="juice-card-skeleton">
+                        <div class="skeleton-image"></div>
+                        <div class="skeleton-content">
+                            <div class="skeleton-title"></div>
+                            <div class="skeleton-description"></div>
+                            <div class="skeleton-ingredients">
+                                <div class="skeleton-tag"></div>
+                                <div class="skeleton-tag"></div>
+                                <div class="skeleton-tag"></div>
+                            </div>
+                            <div class="skeleton-footer">
+                                <div class="skeleton-price"></div>
+                                <div class="skeleton-button"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="juice-card-skeleton">
+                        <div class="skeleton-image"></div>
+                        <div class="skeleton-content">
+                            <div class="skeleton-title"></div>
+                            <div class="skeleton-description"></div>
+                            <div class="skeleton-ingredients">
+                                <div class="skeleton-tag"></div>
+                                <div class="skeleton-tag"></div>
+                                <div class="skeleton-tag"></div>
+                            </div>
+                            <div class="skeleton-footer">
+                                <div class="skeleton-price"></div>
+                                <div class="skeleton-button"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="juice-card-skeleton">
+                        <div class="skeleton-image"></div>
+                        <div class="skeleton-content">
+                            <div class="skeleton-title"></div>
+                            <div class="skeleton-description"></div>
+                            <div class="skeleton-ingredients">
+                                <div class="skeleton-tag"></div>
+                                <div class="skeleton-tag"></div>
+                                <div class="skeleton-tag"></div>
+                            </div>
+                            <div class="skeleton-footer">
+                                <div class="skeleton-price"></div>
+                                <div class="skeleton-button"></div>
+                            </div>
+                        </div>
+                    </div>
                     <!-- Juice cards will be dynamically inserted here -->
                 </div>
             </div>
@@ -131,12 +313,12 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.10.4/gsap.min.js"></script>
 
     <!--=============== MAIN JS ===============-->
-    <script src="/assets/js/juices-database.js"></script>
-    <script src="/assets/js/locations-database.js"></script>
-    <script type="module" src="/assets/js/router.js"></script>
-    <script src="/assets/js/cart.js"></script>
-    <script src="/assets/js/components/footer.js"></script>
-    <script src="/assets/js/all-juices.js"></script>
+    <script src="/assets/js/juices-database.js" defer></script>
+    <script src="/assets/js/locations-database.js" defer></script>
+    <script type="module" src="/assets/js/router.js" defer></script>
+    <script src="/assets/js/cart.js" defer></script>
+    <script src="/assets/js/components/footer.js" defer></script>
+    <script src="/assets/js/all-juices.js" defer></script>
 </body>
 
 </html>
