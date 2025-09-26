@@ -27,6 +27,9 @@ class CarouselManager {
 		// Create left panel
 		this.leftPanel = this.createLeftPanel();
 
+		// Create mobile button row
+		this.mobileButtonRow = this.createMobileButtonRow();
+
 		// Initialize
 		this.init();
 	}
@@ -64,6 +67,13 @@ class CarouselManager {
 		leftPanel.className = 'carousel-left-panel';
 		this.carouselElement.prepend(leftPanel);
 		return leftPanel;
+	}
+
+	createMobileButtonRow() {
+		const mobileButtonRow = document.createElement('div');
+		mobileButtonRow.className = 'carousel-mobile-buttons';
+		this.carouselElement.appendChild(mobileButtonRow);
+		return mobileButtonRow;
 	}
 
 	getVisibleItems() {
@@ -238,6 +248,27 @@ class CarouselManager {
 		const btn = this.leftPanel.querySelector('.left-add-cart');
 		if (btn && juice.inStock && window.cart) {
 			btn.addEventListener('click', e => {
+				e.preventDefault();
+				window.cart.addItem(juice.id);
+			});
+		}
+
+		// Render mobile buttons
+		this.renderMobileButtons(juice);
+	}
+
+	renderMobileButtons(juice) {
+		const addToCartButton = juice.inStock ? `<button class="home__button left-btn add-to-cart mobile-add-cart" data-id="${juice.id}" style="background-color:#fff;color:${juice.color};">Add to Cart</button>` : `<button class="home__button left-btn add-to-cart mobile-add-cart" data-id="${juice.id}" style="background-color:#ccc;color:#666;" disabled>Out of Stock</button>`;
+
+		this.mobileButtonRow.innerHTML = `
+			<a href="/juices/${juice.slug}" class="home__button left-btn" style="background-color:#fff;color:${juice.color};">View Product</a>
+			${addToCartButton}
+		`;
+
+		// Bind mobile add-to-cart button
+		const mobileBtn = this.mobileButtonRow.querySelector('.mobile-add-cart');
+		if (mobileBtn && juice.inStock && window.cart) {
+			mobileBtn.addEventListener('click', e => {
 				e.preventDefault();
 				window.cart.addItem(juice.id);
 			});

@@ -14,12 +14,17 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve static files with correct MIME types
+// Serve static files with no caching
 app.use(
 	'/assets',
 	express.static(path.join(__dirname, 'assets'), {
-		maxAge: '1d', // cache static assets for 24 hours
+		maxAge: 0, // no caching
 		setHeaders: (res, filePath) => {
+			// Disable all caching headers
+			res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+			res.setHeader('Pragma', 'no-cache');
+			res.setHeader('Expires', '0');
+
 			if (filePath.endsWith('.js')) {
 				res.setHeader('Content-Type', 'application/javascript');
 			} else if (filePath.endsWith('.css')) {
@@ -29,19 +34,19 @@ app.use(
 	})
 );
 
-// Serve service worker with correct MIME type and no caching
-app.get('/sw.js', (req, res) => {
-	res.setHeader('Content-Type', 'application/javascript');
-	res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-	res.sendFile(path.join(__dirname, 'sw.js'));
-});
+// Service worker removed - no caching
 
-// Serve JS files from /js directory
+// Serve JS files from /js directory with no caching
 app.use(
 	'/js',
 	express.static(path.join(__dirname, 'js'), {
-		maxAge: '1d',
+		maxAge: 0, // no caching
 		setHeaders: (res, filePath) => {
+			// Disable all caching headers
+			res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+			res.setHeader('Pragma', 'no-cache');
+			res.setHeader('Expires', '0');
+
 			if (filePath.endsWith('.js')) {
 				res.setHeader('Content-Type', 'application/javascript');
 			}
@@ -49,36 +54,60 @@ app.use(
 	})
 );
 
-// Routes
+// Routes - all with no caching
 app.get('/', (req, res) => {
+	res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+	res.setHeader('Pragma', 'no-cache');
+	res.setHeader('Expires', '0');
 	res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 app.get('/about', (req, res) => {
+	res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+	res.setHeader('Pragma', 'no-cache');
+	res.setHeader('Expires', '0');
 	res.sendFile(path.join(__dirname, 'about.html'));
 });
 
 app.get('/juices', (req, res) => {
+	res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+	res.setHeader('Pragma', 'no-cache');
+	res.setHeader('Expires', '0');
 	res.sendFile(path.join(__dirname, 'juices.html'));
 });
 
 app.get('/juices/:slug', (req, res) => {
+	res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+	res.setHeader('Pragma', 'no-cache');
+	res.setHeader('Expires', '0');
 	res.sendFile(path.join(__dirname, 'juice-details.html'));
 });
 
 app.get('/athletes', (req, res) => {
+	res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+	res.setHeader('Pragma', 'no-cache');
+	res.setHeader('Expires', '0');
 	res.sendFile(path.join(__dirname, 'athletes.html'));
 });
 
 app.get('/success', (req, res) => {
+	res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+	res.setHeader('Pragma', 'no-cache');
+	res.setHeader('Expires', '0');
 	res.sendFile(path.join(__dirname, 'success.html'));
 });
 
 app.get('/cancel', (req, res) => {
+	res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+	res.setHeader('Pragma', 'no-cache');
+	res.setHeader('Expires', '0');
 	res.sendFile(path.join(__dirname, 'cancel.html'));
 });
 
 app.get('/contact', (req, res) => {
+	res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+	res.setHeader('Pragma', 'no-cache');
+	res.setHeader('Expires', '0');
 	res.sendFile(path.join(__dirname, 'contact.html'));
 });
 

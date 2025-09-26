@@ -20,7 +20,7 @@ class Footer {
                                 Fresh pressed juices made daily with love. Embrace the sip and fuel your vitality with nature's powerhouse.
                             </p>
                             <div class="footer__social">
-                                <a href="#" class="footer__social-link" title="Instagram">
+                                <a href="https://www.instagram.com/siponpressed" class="footer__social-link" title="Instagram" target="_blank" rel="noopener noreferrer">
                                     <i class="ri-instagram-line"></i>
                                 </a>
                             </div>

@@ -78,17 +78,7 @@ window.addEventListener('load', () => {
 	loader.classList.add('hidden');
 	setTimeout(() => loader.remove(), 600); // clean up after fade-out
 
-	// Register service worker for caching
-	if ('serviceWorker' in navigator) {
-		navigator.serviceWorker
-			.register('/sw.js')
-			.then(registration => {
-				// Service Worker registered successfully
-			})
-			.catch(error => {
-				// Service Worker registration failed
-			});
-	}
+	// No caching - always fetch fresh content
 });
 
 // Enable navigation for <button href="..."> elements (used on the hero section buttons).
