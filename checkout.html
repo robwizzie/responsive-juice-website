@@ -1077,11 +1077,14 @@
                 this.setupStepNavigation();
                 this.populateOrderSummary();
                 this.setupCheckoutButton();
+                this.setupCartChangeListener();
             }
 
             populateLocations() {
                 const locationOptionsContainer = document.getElementById('locationOptions');
                 const activeLocations = getActiveLocations();
+                const totalItems = this.cart.getTotalItems();
+                const hasMinimumForDelivery = totalItems >= 5;
 
                 let locationsHTML = '';
                 activeLocations.forEach(location => {
@@ -1121,15 +1124,17 @@
                                         <span style="font-weight: bold;">Pickup</span>
                                     </label>
                                     ${deliveryAvailable ? `
-                                        <label style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem; cursor: pointer; opacity: 0.5; padding: 1rem; border: 2px solid #ddd; border-radius: 8px; min-width: 120px; transition: all 0.3s ease;" class="order-type-label">
+                                        <label style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem; cursor: ${hasMinimumForDelivery ? 'pointer' : 'not-allowed'}; opacity: ${hasMinimumForDelivery ? '0.5' : '0.3'}; padding: 1rem; border: 2px solid #ddd; border-radius: 8px; min-width: 120px; transition: all 0.3s ease;" class="order-type-label" title="${!hasMinimumForDelivery ? 'Delivery requires 5 bottles minimum' : ''}">
                                             <input type="radio" name="orderType_${location.slug}" value="delivery" disabled style="margin: 0;">
                                             <i class="ri-truck-line" style="font-size: 1.5rem; color: #28a745;"></i>
                                             <span style="font-weight: bold;">Delivery</span>
+                                            ${!hasMinimumForDelivery ? '<small style="font-size: 0.7rem; color: #dc3545; text-align: center;">(5 bottle minimum)</small>' : ''}
                                         </label>
                                     ` : ''}
                                 </div>
                                 <div class="location-selection-hint" style="font-size: 0.8rem; color: #666; margin-top: 0.5rem; font-style: italic; text-align: center;">
                                     <i class="ri-information-line"></i> Select a location above to choose order type
+                                    ${!hasMinimumForDelivery && deliveryAvailable ? '<br><span style="color: #dc3545;"><i class="ri-error-warning-line"></i> Delivery requires 5 bottles minimum</span>' : ''}
                                 </div>
                             </div>
                         </div>
@@ -1160,10 +1165,18 @@
                         const allRadioButtons = document.querySelectorAll('input[type="radio"]');
                         const allOrderTypeLabels = document.querySelectorAll('.order-type-label');
                         const allLocationHints = document.querySelectorAll('.location-selection-hint');
+                        const totalItems = this.cart.getTotalItems();
+                        const hasMinimumForDelivery = totalItems >= 5;
 
                         allRadioButtons.forEach(radio => {
                             const isCurrentLocation = radio.name === `orderType_${this.selectedLocation}`;
-                            radio.disabled = !isCurrentLocation;
+                            const isDeliveryRadio = radio.value === 'delivery';
+                            const deliveryAvailable = isDeliveryAvailable(this.selectedLocation);
+
+                            // Disable delivery radio if not enough items or not available
+                            const shouldDisableDelivery = isDeliveryRadio && (!hasMinimumForDelivery || !deliveryAvailable);
+
+                            radio.disabled = !isCurrentLocation || shouldDisableDelivery;
                             const shouldBeChecked = isCurrentLocation && radio.value === 'pickup';
                             radio.checked = shouldBeChecked;
 
@@ -1179,12 +1192,18 @@
 
                         allOrderTypeLabels.forEach(label => {
                             const isCurrentLocation = label.querySelector('input').name === `orderType_${this.selectedLocation}`;
-                            label.style.opacity = isCurrentLocation ? '1' : '0.5';
-                            label.style.cursor = isCurrentLocation ? 'pointer' : 'not-allowed';
+                            const isDeliveryLabel = label.querySelector('input').value === 'delivery';
+                            const deliveryAvailable = isDeliveryAvailable(this.selectedLocation);
+                            const shouldDisableDelivery = isDeliveryLabel && (!hasMinimumForDelivery || !deliveryAvailable);
 
                             if (isCurrentLocation) {
+                                label.style.opacity = shouldDisableDelivery ? '0.3' : '1';
+                                label.style.cursor = shouldDisableDelivery ? 'not-allowed' : 'pointer';
                                 label.style.borderColor = '#ddd';
                                 label.style.backgroundColor = 'transparent';
+                            } else {
+                                label.style.opacity = '0.5';
+                                label.style.cursor = 'not-allowed';
                             }
                         });
 
@@ -1228,7 +1247,10 @@
 
             updateDeliverySection() {
                 const deliverySection = document.getElementById('deliverySection');
-                if (this.orderType === 'delivery' && this.selectedLocation && isDeliveryAvailable(this.selectedLocation)) {
+                const totalItems = this.cart.getTotalItems();
+                const hasMinimumForDelivery = totalItems >= 5;
+
+                if (this.orderType === 'delivery' && this.selectedLocation && isDeliveryAvailable(this.selectedLocation) && hasMinimumForDelivery) {
                     deliverySection.style.display = 'block';
                 } else {
                     deliverySection.style.display = 'none';
@@ -1301,9 +1323,16 @@
                     const phone = document.getElementById('customerPhone').value.trim();
                     const date = this.getSelectedPickupDate();
                     const location = this.selectedLocation;
+                    const totalItems = this.cart.getTotalItems();
 
                     let isFormValid = name && phone && date && location && Object.keys(this.cart.items).length > 0;
                     const isDateValid = !date || !location || this.isValidPickupDate(date);
+
+                    // Check delivery minimum requirement
+                    const hasMinimumForDelivery = totalItems >= 5;
+                    if (this.orderType === 'delivery' && !hasMinimumForDelivery) {
+                        isFormValid = false;
+                    }
 
                     // If delivery is selected, validate delivery fields and zone
                     if (this.orderType === 'delivery' && location && isDeliveryAvailable(location)) {
@@ -1319,6 +1348,13 @@
                     const completeOrderButton = document.querySelector('#completeOrderButtonFromSummary');
                     if (completeOrderButton) {
                         completeOrderButton.disabled = !isValid;
+
+                        // Add tooltip for disabled state
+                        if (!isValid && this.orderType === 'delivery' && !hasMinimumForDelivery) {
+                            completeOrderButton.title = 'Delivery requires 5 bottles minimum';
+                        } else {
+                            completeOrderButton.title = '';
+                        }
                     }
                 }
 
@@ -1904,6 +1940,7 @@
             validateStep4() {
                 const name = document.getElementById('customerName').value.trim();
                 const phone = document.getElementById('customerPhone').value.trim();
+                const totalItems = this.cart.getTotalItems();
 
                 if (!name) {
                     this.showStepError('Please enter your full name.');
@@ -1914,6 +1951,13 @@
                     this.showStepError('Please enter your phone number.');
                     return false;
                 }
+
+                // Check delivery minimum requirement
+                if (this.orderType === 'delivery' && totalItems < 5) {
+                    this.showStepError('Delivery requires a minimum of 5 bottles. Please add more items to your cart or choose pickup.');
+                    return false;
+                }
+
                 return true;
             }
 
@@ -1946,6 +1990,141 @@
                         errorDiv.remove();
                     }
                 }, 5000);
+            }
+
+            setupCartChangeListener() {
+                // Listen for cart change events
+                window.addEventListener('cartChanged', (event) => {
+                    console.log('Cart change event received:', event.detail);
+                    const newTotal = event.detail.totalItems;
+                    const newItems = event.detail.items;
+                    const previousTotal = this.cart.getTotalItems();
+
+                    console.log('Previous total:', previousTotal, 'New total:', newTotal);
+
+                    // Update our cart reference
+                    this.cart.items = newItems;
+
+                    // Always update delivery radio states when cart changes
+                    console.log('Cart changed, updating delivery radio states');
+                    this.updateDeliveryRadioStates();
+
+                    // If cart total changed, update UI
+                    if (newTotal !== previousTotal) {
+                        console.log('Cart total changed, updating UI');
+
+                        // If delivery is selected and no longer meets minimum, switch to pickup
+                        if (this.orderType === 'delivery' && newTotal < 5) {
+                            console.log('Switching from delivery to pickup due to minimum requirement');
+                            this.orderType = 'pickup';
+
+                            // Update radio buttons
+                            const deliveryRadio = document.querySelector(`input[name="orderType_${this.selectedLocation}"][value="delivery"]`);
+                            const pickupRadio = document.querySelector(`input[name="orderType_${this.selectedLocation}"][value="pickup"]`);
+                            if (deliveryRadio && pickupRadio) {
+                                deliveryRadio.checked = false;
+                                pickupRadio.checked = true;
+                            }
+
+                            // Update UI
+                            this.updateDeliverySection();
+                            this.updateLocationHoursInfo();
+                            this.populateOrderSummary();
+                            this.updateStepButtons();
+                            this.updateBackButtonText();
+                            this.updateStepHeaders();
+                            this.updateProgressIndicator(this.currentStep);
+
+                            // Show warning message
+                            this.showStepError('Delivery requires 5 bottles minimum. Your order has been switched to pickup.');
+                        } else {
+                            console.log('Updating UI without changing order type');
+                            // Just update the UI without changing order type
+                            this.populateLocations();
+                            this.updateDeliverySection();
+                            this.populateOrderSummary();
+                            this.updateStepButtons();
+
+                            // If order type was changed to pickup, update the UI
+                            if (this.orderType === 'pickup') {
+                                this.updateLocationHoursInfo();
+                                this.updateBackButtonText();
+                                this.updateStepHeaders();
+                                this.updateProgressIndicator(this.currentStep);
+                            }
+                        }
+                    }
+                });
+            }
+
+            updateDeliveryRadioStates() {
+                const totalItems = this.cart.getTotalItems();
+                const hasMinimumForDelivery = totalItems >= 5;
+
+                console.log('updateDeliveryRadioStates called - totalItems:', totalItems, 'hasMinimumForDelivery:', hasMinimumForDelivery);
+
+                // Update all delivery radio buttons for all locations
+                const deliveryRadios = document.querySelectorAll('input[value="delivery"]');
+                const deliveryLabels = document.querySelectorAll('label:has(input[value="delivery"])');
+
+                console.log('Found delivery radios:', deliveryRadios.length, 'delivery labels:', deliveryLabels.length);
+
+                deliveryRadios.forEach(radio => {
+                    const locationSlug = radio.name.replace('orderType_', '').replace('_delivery', '');
+                    const deliveryAvailable = isDeliveryAvailable(locationSlug);
+                    const isCurrentLocation = locationSlug === this.selectedLocation;
+
+                    console.log('Processing radio for location:', locationSlug, 'deliveryAvailable:', deliveryAvailable, 'isCurrentLocation:', isCurrentLocation);
+
+                    if (deliveryAvailable) {
+                        // Always update the disabled state based on minimum requirement
+                        radio.disabled = !hasMinimumForDelivery;
+                        console.log('Set radio disabled to:', !hasMinimumForDelivery, 'for location:', locationSlug);
+
+                        // If this is the current location and delivery is selected but no longer valid, switch to pickup
+                        if (isCurrentLocation && this.orderType === 'delivery' && !hasMinimumForDelivery) {
+                            const pickupRadio = document.querySelector(`input[name="orderType_${locationSlug}"][value="pickup"]`);
+                            if (pickupRadio) {
+                                pickupRadio.checked = true;
+                                radio.checked = false;
+                                this.orderType = 'pickup';
+                                console.log('Switched to pickup for location:', locationSlug);
+                            }
+                        }
+                    } else {
+                        // If delivery is not available for this location, disable the radio
+                        radio.disabled = true;
+                        console.log('Delivery not available for location:', locationSlug, 'disabled radio');
+                    }
+                });
+
+                deliveryLabels.forEach(label => {
+                    const radio = label.querySelector('input[value="delivery"]');
+                    if (radio) {
+                        const locationSlug = radio.name.replace('orderType_', '').replace('_delivery', '');
+                        const deliveryAvailable = isDeliveryAvailable(locationSlug);
+                        const isCurrentLocation = locationSlug === this.selectedLocation;
+
+                        if (deliveryAvailable) {
+                            if (hasMinimumForDelivery) {
+                                label.style.opacity = isCurrentLocation ? '1' : '0.5';
+                                label.style.cursor = 'pointer';
+                                label.title = '';
+                            } else {
+                                label.style.opacity = '0.3';
+                                label.style.cursor = 'not-allowed';
+                                label.title = 'Delivery requires 5 bottles minimum';
+                            }
+                            console.log('Updated label for location:', locationSlug, 'opacity:', label.style.opacity, 'cursor:', label.style.cursor, 'title:', label.title);
+                        } else {
+                            // If delivery is not available for this location, style accordingly
+                            label.style.opacity = '0.3';
+                            label.style.cursor = 'not-allowed';
+                            label.title = 'Delivery not available for this location';
+                            console.log('Delivery not available for location:', locationSlug, 'styled label as disabled');
+                        }
+                    }
+                });
             }
 
             populateOrderSummaryReview() {
@@ -2705,6 +2884,17 @@
                 if (button) {
                     button.disabled = true;
                     button.textContent = 'Processing...';
+                }
+
+                // Final validation check for delivery minimum
+                const totalItems = this.cart.getTotalItems();
+                if (this.orderType === 'delivery' && totalItems < 5) {
+                    if (button) {
+                        button.disabled = false;
+                        button.textContent = 'Proceed to Payment';
+                    }
+                    this.showStepError('Delivery requires a minimum of 5 bottles. Please add more items to your cart or choose pickup.');
+                    return;
                 }
 
                 try {
