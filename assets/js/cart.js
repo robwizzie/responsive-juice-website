@@ -351,6 +351,17 @@ class Cart {
 
 	saveCart() {
 		localStorage.setItem('cart', JSON.stringify(this.items));
+		// Dispatch custom event for cart changes
+		const totalItems = this.getTotalItems();
+		console.log('Cart saved, dispatching cartChanged event with totalItems:', totalItems);
+		window.dispatchEvent(
+			new CustomEvent('cartChanged', {
+				detail: {
+					totalItems: totalItems,
+					items: this.items
+				}
+			})
+		);
 	}
 
 	getTotal() {
@@ -358,6 +369,10 @@ class Cart {
 			const juice = juices.find(j => j.id === parseInt(juiceId));
 			return total + juice.price * quantity;
 		}, 0);
+	}
+
+	getTotalItems() {
+		return Object.values(this.items).reduce((total, quantity) => total + quantity, 0);
 	}
 
 	getTomorrowDate() {

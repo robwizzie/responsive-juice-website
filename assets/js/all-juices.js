@@ -162,27 +162,27 @@ function setupScrollAnimations() {
 					});
 
 					// Smooth entrance animation
-					tl.to(card, 1.2, {
+					tl.to(card, 0.8, {
 						opacity: 1,
 						y: 0,
 						scale: 1,
 						rotationX: 0,
 						ease: Power3.easeOut,
-						delay: index * 0.15 // Stagger animations more smoothly
+						delay: index * 0.1 // Faster stagger for quicker loading
 					});
 
 					// Add a subtle bounce at the end for juice-like freshness
 					tl.to(
 						card,
-						0.3,
+						0.2,
 						{
 							scale: 1.02,
 							ease: Power2.easeOut
 						},
-						'-=0.2'
+						'-=0.1'
 					);
 
-					tl.to(card, 0.3, {
+					tl.to(card, 0.2, {
 						scale: 1,
 						ease: Power2.easeInOut
 					});
@@ -195,25 +195,25 @@ function setupScrollAnimations() {
 						// Animate image with a gentle float
 						tl.from(
 							juiceImage,
-							0.8,
+							0.5,
 							{
 								y: 30,
 								opacity: 0,
 								ease: Power2.easeOut
 							},
-							'-=0.8'
+							'-=0.5'
 						);
 
 						// Animate info with a smooth slide
 						tl.from(
 							juiceInfo,
-							0.6,
+							0.4,
 							{
 								y: 20,
 								opacity: 0,
 								ease: Power2.easeOut
 							},
-							'-=0.6'
+							'-=0.4'
 						);
 					}
 
@@ -223,8 +223,8 @@ function setupScrollAnimations() {
 			});
 		},
 		{
-			threshold: 0.2,
-			rootMargin: '150px 0px -100px 0px' // Start loading earlier for smoother experience
+			threshold: 0.1,
+			rootMargin: '200px 0px -50px 0px' // Start loading much earlier for smoother experience
 		}
 	);
 
