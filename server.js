@@ -80,7 +80,64 @@ app.get('/juices/:slug', (req, res) => {
 	res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
 	res.setHeader('Pragma', 'no-cache');
 	res.setHeader('Expires', '0');
-	res.sendFile(path.join(__dirname, 'juice-details.html'));
+
+	// Import juices data
+	const { juices } = require('./assets/js/juices-database.js');
+
+	// Find the juice by slug
+	const juice = juices.find(j => j.slug === req.params.slug);
+
+	if (!juice) {
+		// If juice not found, redirect to home
+		res.redirect('/');
+		return;
+	}
+
+	// Read the HTML template
+	const fs = require('fs');
+	const htmlPath = path.join(__dirname, 'juice-details.html');
+	let html = fs.readFileSync(htmlPath, 'utf8');
+
+	// Replace meta tags with juice-specific content
+	const baseUrl = `${req.protocol}://${req.get('host')}`;
+	const metaImage = juice.metaImage ? `${baseUrl}${juice.metaImage}` : `${baseUrl}/assets/img/branding/logo.png`;
+
+	// Replace title
+	html = html.replace('<title>Product Details</title>', `<title>${juice.name} - Premium Cold-Pressed Juice | Sip On Pressed</title>`);
+
+	// Replace meta description
+	html = html.replace('<meta name="description" content="Discover our fresh, cold-pressed juices made with premium organic ingredients.">', `<meta name="description" content="${juice.metaDescription}">`);
+
+	// Replace meta keywords
+	html = html.replace('<meta name="keywords" content="cold-pressed juice, organic juice, fresh juice, healthy drinks">', `<meta name="keywords" content="${juice.metaKeywords}">`);
+
+	// Replace OG title
+	html = html.replace('<meta property="og:title" content="Product Details">', `<meta property="og:title" content="${juice.name} - Premium Cold-Pressed Juice">`);
+
+	// Replace OG description
+	html = html.replace('<meta property="og:description" content="Discover our fresh, cold-pressed juices made with premium organic ingredients.">', `<meta property="og:description" content="${juice.metaDescription}">`);
+
+	// Replace OG image
+	html = html.replace('<meta property="og:image" content="/assets/img/branding/logo.png">', `<meta property="og:image" content="${metaImage}">`);
+
+	// Replace OG URL
+	html = html.replace('<meta property="og:url" content="">', `<meta property="og:url" content="${baseUrl}/juices/${juice.slug}">`);
+
+	// Replace Twitter title
+	html = html.replace('<meta name="twitter:title" content="Product Details">', `<meta name="twitter:title" content="${juice.name} - Premium Cold-Pressed Juice">`);
+
+	// Replace Twitter description
+	html = html.replace('<meta name="twitter:description" content="Discover our fresh, cold-pressed juices made with premium organic ingredients.">', `<meta name="twitter:description" content="${juice.metaDescription}">`);
+
+	// Replace Twitter image
+	html = html.replace('<meta name="twitter:image" content="/assets/img/branding/logo.png">', `<meta name="twitter:image" content="${metaImage}">`);
+
+	// Replace canonical URL
+	html = html.replace('<link rel="canonical" href="">', `<link rel="canonical" href="${baseUrl}/juices/${juice.slug}">`);
+
+	// Set content type and send the modified HTML
+	res.setHeader('Content-Type', 'text/html');
+	res.send(html);
 });
 
 app.get('/athletes', (req, res) => {

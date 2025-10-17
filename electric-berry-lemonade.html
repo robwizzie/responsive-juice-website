@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!--=============== FAVICON ===============-->
+    <link rel="shortcut icon" href="/assets/img/favicon.png" type="image/x-icon">
+
+    <!--=============== REMIXICONS ===============-->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
+
+    <!--=============== CSS ===============-->
+    <link rel="preload" href="/assets/css/styles.css" as="style" onload="this.rel='stylesheet'">
+    <noscript>
+        <link rel="stylesheet" href="/assets/css/styles.css">
+    </noscript>
+
+    <!-- Preconnects for Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap');
+    </style>
+
+    <script>
+        const loaderCss = '<style>html.page-loading body>*:not(#page-loader){visibility:hidden;opacity:0}#page-loader{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#ffffff;z-index:10000}#page-loader .spinner{width:48px;height:48px;border:5px solid #f3f3f3;border-top:5px solid #ff9700;border-radius:50%;animation:pl-spin 1s linear infinite}@keyframes pl-spin{to{transform:rotate(360deg)}}</style>';
+        document.write(loaderCss + '<div id="page-loader"><div class="spinner"></div></div>');
+        document.documentElement.classList.add('page-loading');
+    </script>
+    <!--=============== JS ===============-->
+    <script type="module" src="/assets/js/main.js"></script>
+
+    <!-- Dynamic SEO meta tags will be inserted here -->
+    <title>Electric Berry Lemonade - Premium Cold-Pressed Juice | Sip On Pressed</title>
+    <meta name="description" content="Feel the electric energy with our vibrant Electric Berry Lemonade cold-pressed juice. A powerful blend of strawberry, blueberry, pineapple, and lemon that delivers an energizing burst of flavor and nutrients.">
+    <meta name="keywords" content="electric berry lemonade, berry lemonade, strawberry lemonade, blueberry juice, energy juice, vitamin C, antioxidants, refreshing drink, coming soon">
+
+    <!-- Open Graph meta tags -->
+    <meta property="og:title" content="Electric Berry Lemonade - Premium Cold-Pressed Juice">
+    <meta property="og:description" content="Feel the electric energy with our vibrant Electric Berry Lemonade cold-pressed juice. A powerful blend of strawberry, blueberry, pineapple, and lemon that delivers an energizing burst of flavor and nutrients.">
+    <meta property="og:image" content="/assets/img/og-images/electric-berry-lemonade-og.png">
+    <meta property="og:url" content="https://siponpressed.com/juices/electric-berry-lemonade">
+    <meta property="og:type" content="product">
+    <meta property="og:site_name" content="Sip On Pressed">
+
+    <!-- Twitter Card meta tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Electric Berry Lemonade - Premium Cold-Pressed Juice">
+    <meta name="twitter:description" content="Feel the electric energy with our vibrant Electric Berry Lemonade cold-pressed juice. A powerful blend of strawberry, blueberry, pineapple, and lemon that delivers an energizing burst of flavor and nutrients.">
+    <meta name="twitter:image" content="/assets/img/og-images/electric-berry-lemonade-og.png">
+
+    <!-- Additional SEO meta tags -->
+    <meta name="robots" content="index, follow">
+    <meta name="author" content="Sip On Pressed">
+    <link rel="canonical" href="https://siponpressed.com/juices/electric-berry-lemonade">
+</head>
+
+<body>
+    <!--==================== HEADER ====================-->
+
+    <main class="main">
+        <div class="background-shapes">
+            <div class="home__shape-small"></div>
+            <div class="home__shape-big"></div>
+            <img src="/assets/img/shape-bg.png" alt="" class="home__shape-bg">
+        </div>
+
+        <section class="home product-details">
+            <div class="home__container container"
+                style="column-gap: 0rem; padding-top: 10rem; max-width: 100%; position: relative; display: flex;"
+                id="juicePage">
+                <!-- Dynamic content will be inserted here -->
+            </div>
+        </section>
+
+        <!-- Show the specific juice nutritional facts image -->
+        <section class="nutrition-section">
+            <h3 class="home__title" style="text-align: center; padding-top: 2rem;">
+                Nutritional Facts
+            </h3>
+            <div class="container" style="max-width: 700px;">
+                <div class="nutrition-content">
+                    <!-- Content will be dynamically inserted here -->
+                </div>
+            </div>
+        </section>
+
+        <section class="related-products">
+            <div class="carousel-container">
+                <h1 class="home__title" style="text-align: center;">
+                    Other <span id="dynamic-other-juices-word">Juices</span>
+                </h1>
+                <div class="carousel" id="relatedCarousel">
+
+                    <div class="carousel-button-container">
+                        <button class="carousel-button prev">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="15 18 9 12 15 6"></polyline>
+                            </svg>
+                        </button>
+
+                        <button class="carousel-button next">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="9 18 15 12 9 6"></polyline>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div class="carousel-track" id="relatedJuices">
+                        <!-- Related juices will be inserted here -->
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!--=============== GSAP ===============-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.10.4/gsap.min.js"></script>
+
+    <!--=============== MAIN JS ===============-->
+    <script src="/assets/js/juices-database.js"></script>
+    <script src="/assets/js/locations-database.js"></script>
+    <script src="/assets/js/cart.js"></script>
+    <script src="/assets/js/components/footer.js"></script>
+    <script type="module" src="/assets/js/juice.js"></script>
+</body>
+
+</html>

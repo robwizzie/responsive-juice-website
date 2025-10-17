@@ -112,3 +112,8 @@ const juices = [
 		metaKeywords: 'cinnamon green apple juice, apple juice, pear juice, cinnamon juice, warming spices, vitamin C, fiber rich, hydrating, comfort drink'
 	}
 ];
+
+// Export for CommonJS (server-side usage)
+if (typeof module !== 'undefined' && module.exports) {
+	module.exports = { juices };
+}
