@@ -174,7 +174,7 @@ function updateSEOMetadata(juice) {
 	// Use database metadata if available, otherwise fallback to generated content
 	const description = juice.metaDescription || `Try our delicious ${juice.name} cold-pressed juice made with ${juice.ingredients.join(', ')}. Fresh, organic, and packed with nutrients. Only $${juice.price.toFixed(2)} - ${juice.inStock ? 'Available now' : 'Coming soon'}!`;
 	const keywords = juice.metaKeywords || `${juice.name}, ${juice.ingredients.join(', ')}, cold-pressed juice, organic juice, fresh juice, healthy drinks, nutrient-rich, ${juice.inStock ? 'buy online' : 'coming soon'}`;
-	const metaImage = juice.metaImage ? `${baseUrl}${juice.metaImage}` : `${baseUrl}/.netlify/functions/generate-og-image?slug=${juice.slug}`;
+	const metaImage = juice.metaImage ? `${baseUrl}${juice.metaImage}` : `${baseUrl}/assets/img/branding/logo.png`;
 
 	// Update meta description
 	updateMetaTag('name', 'description', description);
@@ -231,7 +231,7 @@ function addStructuredData(juice) {
 	}
 
 	const baseUrl = window.location.origin;
-	const metaImage = juice.metaImage ? `${baseUrl}${juice.metaImage}` : `${baseUrl}/.netlify/functions/generate-og-image?slug=${juice.slug}`;
+	const metaImage = juice.metaImage ? `${baseUrl}${juice.metaImage}` : `${baseUrl}/assets/img/branding/logo.png`;
 
 	const structuredData = {
 		'@context': 'https://schema.org/',
