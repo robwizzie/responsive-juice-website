@@ -5,6 +5,14 @@
 /checkout/         /checkout.html     200
 /juices            /juices.html        200
 /juices/           /juices.html        200
+/juices/tropical-storm /tropical-storm.html 200
+/juices/sweet-green /sweet-green.html 200
+/juices/sour-punch /sour-punch.html 200
+/juices/strawberry-banana /strawberry-banana.html 200
+/juices/electric-berry-lemonade /electric-berry-lemonade.html 200
+/juices/strawberry-lemonade /strawberry-lemonade.html 200
+/juices/midnight-rush /midnight-rush.html 200
+/juices/cinnamon-green-apple /cinnamon-green-apple.html 200
 /juices/:slug      /juice-details.html 200
 /juices/*          /juices.html        200
 /about            /about.html        200
