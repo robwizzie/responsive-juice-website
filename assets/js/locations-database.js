@@ -38,7 +38,7 @@ const locations = [
 		active: true,
 		deliveryAvailable: true,
 		deliveryRadius: 30, // 30 mile radius
-		deliveryFee: 5.0, // $5 delivery fee
+		deliveryFee: 7.0, // $7 delivery fee
 		pickupHours: {
 			monday: '10:00 AM - 9:00 PM',
 			tuesday: '10:00 AM - 9:00 PM',

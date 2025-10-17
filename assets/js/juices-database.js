@@ -9,7 +9,7 @@ const juices = [
 		price: 7.5,
 		color: '#ff8902',
 		inStock: true,
-		metaDescription: 'Experience the perfect blend of tropical flavors with our Tropical Storm cold-pressed juice. Made with fresh pineapple, carrot, mango, orange, ginger, and turmeric - a refreshing burst of vitamins and antioxidants.',
+		metaDescription: 'Experience the perfect blend of tropical flavors with our Tropical Storm cold-pressed juice. Made with fresh pineapple, carrot, mango, orange, ginger, and tumeric - a refreshing burst of vitamins and antioxidants.',
 		metaImage: '/assets/img/og-images/tropical-storm-og.png',
 		metaKeywords: 'tropical storm juice, pineapple juice, mango juice, cold-pressed juice, tropical flavors, vitamin C, antioxidants, fresh juice'
 	},
@@ -66,7 +66,7 @@ const juices = [
 		color: '#8b2986',
 		inStock: false,
 		metaDescription: 'Feel the electric energy with our vibrant Electric Berry Lemonade cold-pressed juice. A powerful blend of strawberry, blueberry, pineapple, and lemon that delivers an energizing burst of flavor and nutrients.',
-		metaImage: '/assets/img/og-images/electric-berry-lemonade-og.png',
+		metaImage: '/assets/img/og-images/electric-berry-lemonade.png',
 		metaKeywords: 'electric berry lemonade, berry lemonade, strawberry lemonade, blueberry juice, energy juice, vitamin C, antioxidants, refreshing drink, coming soon'
 	},
 	{
