@@ -1551,7 +1551,7 @@
                     };
                 }
 
-                // Check if ZIP is in reasonable range (within ~30 miles of Blackwood)
+                // Check if ZIP is in reasonable range (within ~30 miles of either store)
                 const zipDifference = Math.abs(userZip - blackwoodZip);
 
                 if (zipDifference <= 50) { // Allow some flexibility in ZIP range
@@ -1562,7 +1562,7 @@
                 } else {
                     return {
                         isValid: false,
-                        message: 'ZIP code is outside our 30-mile delivery zone from Blackwood.'
+                        message: 'ZIP code is outside our 30-mile delivery zone from our locations.'
                     };
                 }
             }
@@ -2866,13 +2866,13 @@
 
             populateOrderSummary() {
                 const orderItemsContainer = document.getElementById('orderItems');
-                let subtotal = this.cart.getTotal();
+                const cartSubtotal = this.cart.getTotal();
+                let subtotal = cartSubtotal;
 
                 // Add delivery fee if delivery is selected (FREE shipping over $50)
                 let deliveryFee = 0;
                 let isFreeShipping = false;
                 if (this.orderType === 'delivery' && this.selectedLocation && isDeliveryAvailable(this.selectedLocation)) {
-                    const cartSubtotal = this.cart.getTotal();
                     if (cartSubtotal >= 50) {
                         deliveryFee = 0;
                         isFreeShipping = true;
@@ -2912,7 +2912,6 @@
                 orderItemsContainer.innerHTML = itemsHTML;
 
                 // Update totals
-                const cartSubtotal = this.cart.getTotal();
                 document.getElementById('subtotalAmount').textContent = `$${cartSubtotal.toFixed(2)}`;
 
                 // Add delivery fee line if applicable
