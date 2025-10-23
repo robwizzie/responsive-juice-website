@@ -817,6 +817,12 @@
     </script>
     <script type="module" src="assets/js/main.js"></script>
 
+    <!-- Google Places API for Address Autocomplete -->
+    <!-- TODO: Replace YOUR_GOOGLE_MAPS_API_KEY with your actual Google Maps API key -->
+    <!-- Get your API key from: https://developers.google.com/maps/documentation/javascript/get-api-key -->
+    <!-- Enable the Places API in your Google Cloud Console -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&libraries=places&callback=initAutocomplete" async defer></script>
+
     <title>Checkout - Pressed By J & H</title>
 
     <!--=============== SEO META TAGS ===============-->
@@ -944,7 +950,10 @@
                             <div class="delivery-option">
                                 <strong style="color: #28a745;"><i class="ri-truck-line"></i> Delivery
                                     Available</strong>
-                                <div class="delivery-fee">Delivery fee: $7.00 (within 30 miles of Blackwood)</div>
+                                <div class="delivery-fee">Delivery fee: $7.00 (within 30 miles of either store)</div>
+                                <div class="free-shipping-notice" style="color: #ff9700; font-weight: bold; margin-top: 0.5rem;">
+                                    <i class="ri-gift-line"></i> FREE shipping on orders $50+
+                                </div>
                             </div>
                         </div>
                         <div class="step-actions">
@@ -1506,18 +1515,22 @@
                         };
                     }
 
-                    // Check distance from Blackwood
-                    const distance = this.calculateDistanceFromBlackwood(data[0].lat, data[0].lon);
+                    // Check distance from both stores (Blackwood and Woodbury)
+                    const distanceBlackwood = this.calculateDistanceFromStore(data[0].lat, data[0].lon, 39.8021, -75.0649);
+                    const distanceWoodbury = this.calculateDistanceFromStore(data[0].lat, data[0].lon, 39.8187, -75.16145);
 
-                    if (distance <= 30) {
+                    const nearestStore = distanceBlackwood < distanceWoodbury ? 'Blackwood' : 'Woodbury';
+                    const minDistance = Math.min(distanceBlackwood, distanceWoodbury);
+
+                    if (minDistance <= 30) {
                         return {
                             isValid: true,
-                            message: 'Address is within delivery zone.'
+                            message: `Address is within delivery zone (${Math.round(minDistance)} miles from ${nearestStore}).`
                         };
                     } else {
                         return {
                             isValid: false,
-                            message: `Address is ${Math.round(distance)} miles away. We only deliver within 30 miles of Blackwood.`
+                            message: `Address is ${Math.round(minDistance)} miles from the nearest store. We only deliver within 30 miles of our locations.`
                         };
                     }
                 } catch (error) {
@@ -1554,12 +1567,8 @@
                 }
             }
 
-            calculateDistanceFromBlackwood(lat, lon) {
-                // Blackwood coordinates (approximate)
-                const blackwoodLat = 39.8021;
-                const blackwoodLng = -75.0649;
-
-                return this.calculateDistance(blackwoodLat, blackwoodLng, parseFloat(lat), parseFloat(lon));
+            calculateDistanceFromStore(lat, lon, storeLat, storeLng) {
+                return this.calculateDistance(storeLat, storeLng, parseFloat(lat), parseFloat(lon));
             }
 
             calculateDistance(lat1, lon1, lat2, lon2) {
@@ -1629,6 +1638,72 @@
                         this.updateStepButtons();
                     });
                 }
+            }
+
+            initializeAddressAutocomplete() {
+                // Initialize Google Places Autocomplete
+                // NOTE: This requires a valid Google Maps API key in the script tag above
+
+                if (typeof google === 'undefined' || !google.maps || !google.maps.places) {
+                    console.warn('Google Places API not loaded. Address autocomplete will not be available.');
+                    console.warn('Please add a valid Google Maps API key to enable address autocomplete.');
+                    return;
+                }
+
+                const addressInput = document.getElementById('deliveryAddress');
+                if (!addressInput) return;
+
+                // Create autocomplete object restricted to USA
+                const autocomplete = new google.maps.places.Autocomplete(addressInput, {
+                    componentRestrictions: { country: 'us' },
+                    fields: ['address_components', 'geometry', 'formatted_address'],
+                    types: ['address']
+                });
+
+                // When user selects an address from dropdown, populate form fields
+                autocomplete.addListener('place_changed', () => {
+                    const place = autocomplete.getPlace();
+
+                    if (!place.geometry) {
+                        console.error('No details available for input: ' + place.name);
+                        return;
+                    }
+
+                    // Parse address components
+                    let streetNumber = '';
+                    let route = '';
+                    let city = '';
+                    let state = '';
+                    let zipCode = '';
+
+                    place.address_components.forEach(component => {
+                        const types = component.types;
+                        if (types.includes('street_number')) {
+                            streetNumber = component.long_name;
+                        }
+                        if (types.includes('route')) {
+                            route = component.long_name;
+                        }
+                        if (types.includes('locality')) {
+                            city = component.long_name;
+                        }
+                        if (types.includes('administrative_area_level_1')) {
+                            state = component.short_name;
+                        }
+                        if (types.includes('postal_code')) {
+                            zipCode = component.long_name;
+                        }
+                    });
+
+                    // Update form fields with parsed address
+                    const fullAddress = `${streetNumber} ${route}`.trim();
+                    document.getElementById('deliveryAddress').value = fullAddress;
+                    document.getElementById('deliveryCity').value = city;
+                    document.getElementById('deliveryZip').value = zipCode;
+
+                    // Validate the selected address automatically
+                    this.checkDeliveryZone();
+                });
             }
 
             setupStepNavigation() {
@@ -2630,16 +2705,16 @@
                 const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
                 const currentDay = dayNames[dayOfWeek];
 
-                // New schedule: Orders by Friday, prep Saturday, ship Sunday, pickup Monday
-                let message = `New ordering schedule: Orders by Friday, prep Saturday, ship Sunday, pickup Monday. `;
+                // New schedule: Orders by Thursday, prep Saturday, ship Sunday, pickup Monday
+                let message = `New ordering schedule: Orders by Thursday at midnight, prep Saturday, ship Sunday, pickup Monday. `;
 
                 // Add deadline information based on current day
-                if (dayOfWeek <= 4) { // Monday to Thursday
-                    const daysUntilFriday = 5 - dayOfWeek;
-                    message += `Orders must be placed by Friday. `;
-                } else if (dayOfWeek === 5) { // Friday
-                    message += `⚠️ Today is the order deadline! Orders must be placed today. `;
-                } else { // Weekend
+                if (dayOfWeek <= 3) { // Monday to Wednesday
+                    const daysUntilThursday = 4 - dayOfWeek;
+                    message += `Orders must be placed by Thursday at midnight. `;
+                } else if (dayOfWeek === 4) { // Thursday
+                    message += `⚠️ Today is the order deadline! Orders must be placed by midnight tonight. `;
+                } else { // Friday through Weekend
                     message += `⚠️ Order deadline has passed. Next available pickup is the Monday after next. `;
                 }
 
@@ -2793,10 +2868,17 @@
                 const orderItemsContainer = document.getElementById('orderItems');
                 let subtotal = this.cart.getTotal();
 
-                // Add delivery fee if delivery is selected
+                // Add delivery fee if delivery is selected (FREE shipping over $50)
                 let deliveryFee = 0;
+                let isFreeShipping = false;
                 if (this.orderType === 'delivery' && this.selectedLocation && isDeliveryAvailable(this.selectedLocation)) {
-                    deliveryFee = getDeliveryFee(this.selectedLocation);
+                    const cartSubtotal = this.cart.getTotal();
+                    if (cartSubtotal >= 50) {
+                        deliveryFee = 0;
+                        isFreeShipping = true;
+                    } else {
+                        deliveryFee = getDeliveryFee(this.selectedLocation);
+                    }
                     subtotal += deliveryFee;
                 }
 
@@ -2842,15 +2924,24 @@
                     existingDeliveryLine.remove();
                 }
 
-                // Add delivery fee line only if delivery is selected and fee > 0
-                if (deliveryFee > 0) {
+                // Add delivery fee line if delivery is selected
+                if (this.orderType === 'delivery' && this.selectedLocation && isDeliveryAvailable(this.selectedLocation)) {
                     const deliveryLine = document.createElement('div');
                     deliveryLine.id = 'deliveryFeeLine';
                     deliveryLine.className = 'summary-line';
-                    deliveryLine.innerHTML = `
-                        <span>Delivery Fee:</span>
-                        <span>$${deliveryFee.toFixed(2)}</span>
-                    `;
+
+                    if (isFreeShipping) {
+                        deliveryLine.innerHTML = `
+                            <span>Delivery Fee:</span>
+                            <span style="color: #28a745; font-weight: bold;">FREE <i class="ri-gift-line"></i></span>
+                        `;
+                    } else {
+                        const amountNeeded = (50 - cartSubtotal).toFixed(2);
+                        deliveryLine.innerHTML = `
+                            <span>Delivery Fee:<br><small style="color: #ff9700; font-size: 0.75rem;">Add $${amountNeeded} for FREE shipping!</small></span>
+                            <span>$${deliveryFee.toFixed(2)}</span>
+                        `;
+                    }
                     summaryTotals.insertBefore(deliveryLine, summaryTotals.querySelector('.summary-line.total'));
                 }
 
@@ -2957,6 +3048,14 @@
                 }
             }
         }
+
+        // Global callback for Google Places API
+        // This is called when the Google Maps API finishes loading
+        window.initAutocomplete = function() {
+            if (window.checkoutPage) {
+                window.checkoutPage.initializeAddressAutocomplete();
+            }
+        };
 
         // Initialize checkout page when DOM is loaded
         document.addEventListener('DOMContentLoaded', () => {
