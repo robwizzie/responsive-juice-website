@@ -882,7 +882,7 @@
         <div class="checkout-container">
             <div class="order-notice-checkout">
                 <strong><i class="ri-shopping-cart-line"></i> ORDER OPTIONS</strong> - Choose pickup or delivery
-                (delivery available within 30 miles of Blackwood)
+                (delivery available within 30 miles of either store)
             </div>
 
             <!-- Progress Steps -->
@@ -1093,6 +1093,8 @@
                 this.deliveryZoneValid = false; // Track if delivery address is in zone
                 this.currentStep = 1; // Track current step
                 this.cart = window.cart || new Cart();
+                this.autocomplete = null; // Store autocomplete instance
+                this.addressSelectedFromAutocomplete = false; // Track if address was selected from Google Places
                 this.init();
             }
 
@@ -1673,20 +1675,24 @@
                 if (!addressInput) return;
 
                 // Create autocomplete object restricted to USA
-                const autocomplete = new google.maps.places.Autocomplete(addressInput, {
+                this.autocomplete = new google.maps.places.Autocomplete(addressInput, {
                     componentRestrictions: { country: 'us' },
                     fields: ['address_components', 'geometry', 'formatted_address'],
                     types: ['address']
                 });
 
                 // When user selects an address from dropdown, populate form fields
-                autocomplete.addListener('place_changed', () => {
-                    const place = autocomplete.getPlace();
+                this.autocomplete.addListener('place_changed', () => {
+                    const place = this.autocomplete.getPlace();
 
                     if (!place.geometry) {
                         console.error('No details available for input: ' + place.name);
+                        this.addressSelectedFromAutocomplete = false;
                         return;
                     }
+
+                    // Mark that address was selected from autocomplete
+                    this.addressSelectedFromAutocomplete = true;
 
                     // Parse address components
                     let streetNumber = '';
@@ -1722,6 +1728,19 @@
 
                     // Validate the selected address automatically
                     this.checkDeliveryZone();
+                });
+
+                // Track manual edits to address field - invalidate autocomplete selection
+                addressInput.addEventListener('input', (e) => {
+                    // If user manually types or edits, clear the autocomplete flag
+                    this.addressSelectedFromAutocomplete = false;
+                    this.deliveryZoneValid = false;
+
+                    // Clear validation message when user starts editing
+                    const messageDiv = document.getElementById('deliveryZoneMessage');
+                    if (messageDiv) {
+                        messageDiv.style.display = 'none';
+                    }
                 });
             }
 
@@ -2006,6 +2025,12 @@
 
                     if (!deliveryAddress || !deliveryCity || !deliveryZip) {
                         this.showStepError('Please fill in all delivery address fields.');
+                        return false;
+                    }
+
+                    // Require address to be selected from Google Places autocomplete
+                    if (!this.addressSelectedFromAutocomplete) {
+                        this.showStepError('Please select your address from the Google Places dropdown suggestions. Manually typed addresses are not allowed.');
                         return false;
                     }
 
@@ -3070,8 +3095,12 @@
         // Global callback for Google Places API
         // This is called when the Google Maps API finishes loading
         window.initAutocomplete = function () {
+            console.log('Google Places API loaded');
             if (window.checkoutPage) {
                 window.checkoutPage.initializeAddressAutocomplete();
+            } else {
+                // If checkoutPage isn't ready yet, mark that API is loaded
+                window.googleMapsApiLoaded = true;
             }
         };
 
@@ -3104,6 +3133,11 @@
             }
 
             window.checkoutPage = new CheckoutPage();
+
+            // If Google Maps API was already loaded before checkout page was ready, initialize autocomplete now
+            if (window.googleMapsApiLoaded) {
+                window.checkoutPage.initializeAddressAutocomplete();
+            }
         });
     </script>
 </body>
