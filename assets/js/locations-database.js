@@ -11,8 +11,9 @@ const locations = [
 		description: 'Located inside of Clean Meal Prep in Giant Fitness',
 		color: '#ff9700', // Primary brand color
 		active: true,
-		deliveryAvailable: false,
+		deliveryAvailable: true,
 		deliveryRadius: 30, // 30 mile radius for delivery zone checking
+		deliveryFee: 7.0, // $7 delivery fee
 		pickupHours: {
 			monday: '10:00 AM - 9:00 PM',
 			tuesday: '10:00 AM - 9:00 PM',
@@ -24,7 +25,7 @@ const locations = [
 		},
 		contactPhone: '(856) 537-1906',
 		googleMapsLink: 'https://maps.app.goo.gl/TYcVsdRCeTf4Kjfs8',
-		specialInstructions: 'Fridge inventory available - no prep required'
+		specialInstructions: 'Orders by Thursday at midnight, prep Saturday, ship Sunday, pickup Monday'
 	},
 	{
 		id: 2,
