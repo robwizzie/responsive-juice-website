@@ -818,10 +818,28 @@
     <script type="module" src="assets/js/main.js"></script>
 
     <!-- Google Places API for Address Autocomplete -->
-    <!-- TODO: Replace YOUR_GOOGLE_MAPS_API_KEY with your actual Google Maps API key -->
-    <!-- Get your API key from: https://developers.google.com/maps/documentation/javascript/get-api-key -->
     <!-- Enable the Places API in your Google Cloud Console -->
-    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&libraries=places&callback=initAutocomplete" async defer></script>
+    <script>
+        // Dynamically load Google Maps API with key from environment variable
+        (async function loadGoogleMapsAPI() {
+            try {
+                const response = await fetch('/.netlify/functions/get-maps-api-key');
+                const data = await response.json();
+
+                if (data.apiKey) {
+                    const script = document.createElement('script');
+                    script.src = `https://maps.googleapis.com/maps/api/js?key=${data.apiKey}&libraries=places&callback=initAutocomplete`;
+                    script.async = true;
+                    script.defer = true;
+                    document.head.appendChild(script);
+                } else {
+                    console.error('Failed to load Google Maps API key');
+                }
+            } catch (error) {
+                console.error('Error loading Google Maps API key:', error);
+            }
+        })();
+    </script>
 
     <title>Checkout - Pressed By J & H</title>
 
@@ -951,7 +969,8 @@
                                 <strong style="color: #28a745;"><i class="ri-truck-line"></i> Delivery
                                     Available</strong>
                                 <div class="delivery-fee">Delivery fee: $7.00 (within 30 miles of either store)</div>
-                                <div class="free-shipping-notice" style="color: #ff9700; font-weight: bold; margin-top: 0.5rem;">
+                                <div class="free-shipping-notice"
+                                    style="color: #ff9700; font-weight: bold; margin-top: 0.5rem;">
                                     <i class="ri-gift-line"></i> FREE shipping on orders $50+
                                 </div>
                             </div>
@@ -3050,7 +3069,7 @@
 
         // Global callback for Google Places API
         // This is called when the Google Maps API finishes loading
-        window.initAutocomplete = function() {
+        window.initAutocomplete = function () {
             if (window.checkoutPage) {
                 window.checkoutPage.initializeAddressAutocomplete();
             }
