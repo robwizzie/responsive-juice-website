@@ -7,11 +7,12 @@ const locations = [
 		state: 'NJ',
 		fullLocation: 'Gloucester County, NJ',
 		address: '880 Mantua Pike, Woodbury Heights, NJ 08097',
+		coordinates: { lat: 39.8187, lng: -75.16145 },
 		description: 'Located inside of Clean Meal Prep in Giant Fitness',
 		color: '#ff9700', // Primary brand color
 		active: true,
 		deliveryAvailable: false,
-		deliveryRadius: 0,
+		deliveryRadius: 30, // 30 mile radius for delivery zone checking
 		pickupHours: {
 			monday: '10:00 AM - 9:00 PM',
 			tuesday: '10:00 AM - 9:00 PM',
@@ -33,6 +34,7 @@ const locations = [
 		state: 'NJ',
 		fullLocation: 'Camden County, NJ',
 		address: '1281 Blackwood-Clementon Rd, Clementon, NJ 08021',
+		coordinates: { lat: 39.8021, lng: -75.0649 },
 		description: 'Located inside of Clean Meal Prep',
 		color: '#ff7700',
 		active: true,
@@ -51,7 +53,7 @@ const locations = [
 		contactPhone: '(609) 828-6626',
 		website: 'https://www.cleanplatemealprep.com/',
 		googleMapsLink: 'https://maps.app.goo.gl/D1YhSAWWwFT8kcu48',
-		specialInstructions: 'Orders by Friday, prep Saturday, ship Sunday, pickup Monday'
+		specialInstructions: 'Orders by Thursday at midnight, prep Saturday, ship Sunday, pickup Monday'
 	}
 ];
 
