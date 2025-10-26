@@ -1671,12 +1671,13 @@
             }
 
             async initializeAddressAutocomplete() {
-                // Initialize Google Places Autocomplete using the new Places API
-                // Using importLibrary for modern, non-deprecated implementation
-                // NOTE: This requires a valid Google Maps API key
+                // Initialize Google Places Autocomplete using PlaceAutocompleteElement
+                // This is the recommended approach as of March 2025
+                // NOTE: Requires both Places API AND Maps JavaScript API to be enabled
 
                 if (typeof google === 'undefined' || !google.maps) {
                     console.warn('Google Maps API not loaded. Address autocomplete will not be available.');
+                    console.warn('Please ensure both Places API and Maps JavaScript API are enabled in Google Cloud Console.');
                     return;
                 }
 
@@ -1685,80 +1686,115 @@
 
                 try {
                     // Use the new Places API with importLibrary
-                    const { Autocomplete } = await google.maps.importLibrary("places");
+                    const { PlaceAutocompleteElement } = await google.maps.importLibrary("places");
 
-                    // Create autocomplete object restricted to USA addresses
-                    this.autocomplete = new Autocomplete(addressInput, {
-                        componentRestrictions: { country: 'us' },
-                        fields: ['address_components', 'geometry', 'formatted_address'],
+                    // Create the PlaceAutocompleteElement web component
+                    this.autocomplete = new PlaceAutocompleteElement({
+                        componentRestrictions: { country: ['US'] },
                         types: ['address']
                     });
 
-                    console.log('Google Places Autocomplete initialized successfully');
+                    // Get the original input's attributes
+                    const placeholder = addressInput.getAttribute('placeholder') || 'Enter your full address';
 
-                    // When user selects an address from dropdown, populate form fields
-                    this.autocomplete.addListener('place_changed', () => {
-                        const place = this.autocomplete.getPlace();
+                    // Replace the input with the autocomplete element
+                    addressInput.parentNode.replaceChild(this.autocomplete, addressInput);
 
-                        if (!place.geometry) {
-                            console.error('No details available for input: ' + place.name);
+                    // Wait for the web component to initialize and get the input element
+                    setTimeout(() => {
+                        const inputElement = this.autocomplete.querySelector('input');
+                        if (inputElement) {
+                            // Configure the input element
+                            inputElement.placeholder = placeholder;
+                            inputElement.id = 'deliveryAddress';
+                            inputElement.name = 'deliveryAddress';
+
+                            console.log('Google Places Autocomplete (PlaceAutocompleteElement) initialized successfully');
+
+                            // Track manual edits to address field - invalidate autocomplete selection
+                            inputElement.addEventListener('input', (e) => {
+                                // If user manually types or edits, clear the autocomplete flag
+                                this.addressSelectedFromAutocomplete = false;
+                                this.deliveryZoneValid = false;
+
+                                // Clear validation message when user starts editing
+                                const messageDiv = document.getElementById('deliveryZoneMessage');
+                                if (messageDiv) {
+                                    messageDiv.style.display = 'none';
+                                }
+                            });
+                        }
+                    }, 100);
+
+                    // Listen for place selection events
+                    this.autocomplete.addEventListener('gmp-placeselect', async (event) => {
+                        const place = event.place;
+
+                        if (!place) {
+                            console.error('No place details available');
                             this.addressSelectedFromAutocomplete = false;
                             return;
                         }
 
-                        // Mark that address was selected from autocomplete
-                        this.addressSelectedFromAutocomplete = true;
+                        try {
+                            // Fetch the place details we need
+                            await place.fetchFields({
+                                fields: ['addressComponents', 'location', 'formattedAddress']
+                            });
 
-                        // Parse address components
-                        let streetNumber = '';
-                        let route = '';
-                        let city = '';
-                        let state = '';
-                        let zipCode = '';
+                            // Mark that address was selected from autocomplete
+                            this.addressSelectedFromAutocomplete = true;
 
-                        place.address_components.forEach(component => {
-                            const types = component.types;
-                            if (types.includes('street_number')) {
-                                streetNumber = component.long_name;
+                            // Parse address components
+                            let streetNumber = '';
+                            let route = '';
+                            let city = '';
+                            let state = '';
+                            let zipCode = '';
+
+                            if (place.addressComponents) {
+                                place.addressComponents.forEach(component => {
+                                    const types = component.types;
+                                    if (types.includes('street_number')) {
+                                        streetNumber = component.longText;
+                                    }
+                                    if (types.includes('route')) {
+                                        route = component.longText;
+                                    }
+                                    if (types.includes('locality')) {
+                                        city = component.longText;
+                                    }
+                                    if (types.includes('administrative_area_level_1')) {
+                                        state = component.shortText;
+                                    }
+                                    if (types.includes('postal_code')) {
+                                        zipCode = component.longText;
+                                    }
+                                });
                             }
-                            if (types.includes('route')) {
-                                route = component.long_name;
-                            }
-                            if (types.includes('locality')) {
-                                city = component.long_name;
-                            }
-                            if (types.includes('administrative_area_level_1')) {
-                                state = component.short_name;
-                            }
-                            if (types.includes('postal_code')) {
-                                zipCode = component.long_name;
-                            }
-                        });
 
-                        // Update form fields with parsed address
-                        const fullAddress = `${streetNumber} ${route}`.trim();
-                        document.getElementById('deliveryAddress').value = fullAddress;
-                        document.getElementById('deliveryCity').value = city;
-                        document.getElementById('deliveryZip').value = zipCode;
+                            // Update form fields with parsed address
+                            const fullAddress = `${streetNumber} ${route}`.trim();
 
-                        // Validate the selected address automatically
-                        this.checkDeliveryZone();
-                    });
+                            // Update the input value in the PlaceAutocompleteElement
+                            const inputElement = this.autocomplete.querySelector('input');
+                            if (inputElement) {
+                                inputElement.value = fullAddress;
+                            }
 
-                    // Track manual edits to address field - invalidate autocomplete selection
-                    addressInput.addEventListener('input', (e) => {
-                        // If user manually types or edits, clear the autocomplete flag
-                        this.addressSelectedFromAutocomplete = false;
-                        this.deliveryZoneValid = false;
+                            document.getElementById('deliveryCity').value = city;
+                            document.getElementById('deliveryZip').value = zipCode;
 
-                        // Clear validation message when user starts editing
-                        const messageDiv = document.getElementById('deliveryZoneMessage');
-                        if (messageDiv) {
-                            messageDiv.style.display = 'none';
+                            // Validate the selected address automatically
+                            this.checkDeliveryZone();
+                        } catch (error) {
+                            console.error('Error fetching place details:', error);
+                            this.addressSelectedFromAutocomplete = false;
                         }
                     });
                 } catch (error) {
-                    console.error('Error initializing Autocomplete:', error);
+                    console.error('Error initializing PlaceAutocompleteElement:', error);
+                    console.error('Make sure both Places API and Maps JavaScript API are enabled in Google Cloud Console');
                     console.warn('Address autocomplete will not be available');
                 }
             }
@@ -2524,23 +2560,48 @@
                     const dateString = currentDate.toISOString().split('T')[0];
                     const isPast = currentDate < today;
                     const isToday = currentDate.toDateString() === today.toDateString();
-                    const isTomorrow = currentDate > today;
+                    const isFuture = currentDate > today;
                     const dayOfWeek = currentDate.getDay();
                     const isMonday = dayOfWeek === 1;
-                    const isOpen = isTomorrow && isMonday && isLocationOpenOnDate(this.selectedLocation, currentDate);
+
+                    // Check if this Monday is available based on Thursday cutoff
+                    let isAvailableMonday = false;
+                    let unavailableReason = '';
+
+                    if (isMonday && isFuture) {
+                        // Calculate the Thursday before this Monday (Monday minus 4 days)
+                        const thursdayBeforeMonday = new Date(currentDate);
+                        thursdayBeforeMonday.setDate(currentDate.getDate() - 4);
+                        thursdayBeforeMonday.setHours(23, 59, 59, 999);
+
+                        const todayDate = new Date();
+                        todayDate.setHours(0, 0, 0, 0);
+
+                        // Check if we're still before the Thursday cutoff
+                        const beforeCutoff = todayDate <= thursdayBeforeMonday;
+                        const locationOpen = isLocationOpenOnDate(this.selectedLocation, currentDate);
+
+                        if (!beforeCutoff) {
+                            unavailableReason = 'Order deadline passed (must order by Thursday)';
+                        } else if (!locationOpen) {
+                            unavailableReason = `${location.name} is closed on this Monday`;
+                        } else {
+                            isAvailableMonday = true;
+                        }
+                    }
 
                     let classes = 'calendar-day';
                     if (isPast) classes += ' past';
                     if (isToday) classes += ' today';
-                    if (!isMonday && isTomorrow) classes += ' closed';
-                    if (isMonday && isTomorrow && !isLocationOpenOnDate(this.selectedLocation, currentDate)) classes += ' closed';
-                    if (isOpen) classes += ' available';
+                    if (!isMonday && isFuture) classes += ' closed';
+                    if (isMonday && isFuture && !isAvailableMonday) classes += ' closed';
+                    if (isAvailableMonday) classes += ' available';
 
-                    const clickable = isOpen ? `onclick="checkoutPage.selectDate('${dateString}')"` : '';
+                    const clickable = isAvailableMonday ? `onclick="checkoutPage.selectDate('${dateString}')"` : '';
                     const title = isPast ? 'Past date' :
                         isToday ? 'Today (select Monday or later)' :
                             !isMonday ? 'Only Mondays available for pickup/delivery' :
-                                !isLocationOpenOnDate(this.selectedLocation, currentDate) ? `${location.name} is closed on Monday` :
+                                unavailableReason ? unavailableReason :
                                     'Available for pickup/delivery';
 
                     html += `<div class="${classes}" ${clickable} title="${title}" data-date="${dateString}">${day}</div>`;
@@ -2767,8 +2828,8 @@
                 const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
                 const currentDay = dayNames[dayOfWeek];
 
-                // New schedule: Orders by Thursday, prep Saturday, ship Sunday, pickup Monday
-                let message = `New ordering schedule: Orders by Thursday at midnight, prep Saturday, ship Sunday, pickup Monday. `;
+                // New ordering schedule
+                let message = `New ordering schedule: Orders must be placed by Thursday at midnight. Prep Saturday, ship Sunday, ${this.orderType === 'delivery' ? 'deliver' : 'pickup'} Monday. `;
 
                 // Add deadline information based on current day
                 if (dayOfWeek <= 3) { // Monday to Wednesday
@@ -2776,17 +2837,17 @@
                     message += `Orders must be placed by Thursday at midnight. `;
                 } else if (dayOfWeek === 4) { // Thursday
                     message += `⚠️ Today is the order deadline! Orders must be placed by midnight tonight. `;
-                } else { // Friday through Weekend
-                    message += `⚠️ Order deadline has passed. Next available pickup is the Monday after next. `;
+                } else { // Friday through Monday
+                    message += `⚠️ Order deadline has passed. Next available ${this.orderType === 'delivery' ? 'delivery' : 'pickup'} is the Monday after next. `;
                 }
 
                 if (this.orderType === 'delivery') {
                     message += `Only Mondays are available for delivery. `;
                     message += `Delivery within ${getDeliveryRadius(this.selectedLocation)} miles of ${location.name}. `;
-                    message += `${location.name} is open on Mondays: ${location.pickupHours.monday || 'Closed'}`;
+                    message += `${location.name} is open on Mondays: ${location.pickupHours.monday || 'Closed'}.`;
                 } else {
                     message += `Only Mondays are available for pickup. `;
-                    message += `${location.name} is open on Mondays: ${location.pickupHours.monday || 'Closed'}`;
+                    message += `${location.name} is open on Mondays: ${location.pickupHours.monday || 'Closed'}.`;
                 }
 
                 infoSpan.textContent = message;
@@ -2801,6 +2862,22 @@
 
                     // New schedule: Only allow Mondays for pickup/delivery
                     if (dayOfWeek !== 1) { // Not Monday
+                        return false;
+                    }
+
+                    // Check if this Monday is eligible based on Thursday cutoff
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0); // Reset to start of day for comparison
+
+                    // Calculate the Thursday before this Monday
+                    // If the Monday is on day X, the Thursday before it is on day X-4
+                    const thursdayBeforeMonday = new Date(selectedDate);
+                    thursdayBeforeMonday.setDate(selectedDate.getDate() - 4);
+                    thursdayBeforeMonday.setHours(23, 59, 59, 999); // Set to end of Thursday (11:59:59 PM)
+
+                    // Order must be placed before or on Thursday 11:59 PM to qualify for that Monday
+                    // If today is after Thursday 11:59 PM, this Monday is not available
+                    if (today > thursdayBeforeMonday) {
                         return false;
                     }
 
