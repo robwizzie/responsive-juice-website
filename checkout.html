@@ -834,11 +834,8 @@
                     script.defer = true;
                     script.onload = () => {
                         console.log('Google Places API loaded');
-                        if (window.checkoutPage) {
-                            window.checkoutPage.initializeAddressAutocomplete();
-                        } else {
-                            window.googleMapsApiLoaded = true;
-                        }
+                        // Don't auto-initialize autocomplete - wait for location selection
+                        window.googleMapsApiLoaded = true;
                     };
                     document.head.appendChild(script);
                 } else {
@@ -1124,19 +1121,42 @@
 
             // Helper method to get delivery address value (handles PlaceAutocompleteElement)
             getDeliveryAddressValue() {
-                // If autocomplete is active, get value from the autocomplete element's internal input
+                // If autocomplete is active, get value from the autocomplete element
                 if (this.autocomplete) {
-                    // PlaceAutocompleteElement is a web component with an internal input
-                    const input = this.autocomplete.querySelector('input');
-                    if (input) {
-                        return input.value?.trim() || '';
+                    // PlaceAutocompleteElement is a web component - try to access the internal input
+                    try {
+                        // Try to access the shadow DOM input
+                        const shadowRoot = this.autocomplete.shadowRoot;
+                        if (shadowRoot) {
+                            const input = shadowRoot.querySelector('input');
+                            if (input && input.value) {
+                                console.log('📝 Got value from shadow DOM:', input.value);
+                                return input.value.trim();
+                            }
+                        }
+
+                        // Fallback: try the value property directly
+                        if (this.autocomplete.value) {
+                            console.log('📝 Got value from autocomplete.value:', this.autocomplete.value);
+                            return this.autocomplete.value.trim();
+                        }
+
+                        // Another fallback: try to get the text content
+                        if (this.autocomplete.textContent) {
+                            console.log('📝 Got value from textContent:', this.autocomplete.textContent);
+                            return this.autocomplete.textContent.trim();
+                        }
+
+                        console.log('📝 No value found in autocomplete element');
+                    } catch (error) {
+                        console.warn('Could not access autocomplete input:', error);
                     }
-                    // Fallback: try the value property
-                    return this.autocomplete.value?.trim() || '';
                 }
                 // Otherwise, get from the regular input field (fallback mode)
                 const addressInput = document.getElementById('deliveryAddress');
-                return addressInput?.value?.trim() || '';
+                const value = addressInput ? addressInput.value.trim() : '';
+                console.log('📝 Got value from fallback input:', value);
+                return value;
             }
 
             populateLocations() {
@@ -1283,6 +1303,11 @@
                         this.updateBackButtonText();
                         this.updateStepHeaders();
                         this.updateProgressIndicator(this.currentStep);
+
+                        // Initialize autocomplete now that location is selected
+                        if (this.orderType === 'delivery' && isDeliveryAvailable(this.selectedLocation)) {
+                            this.initializeAddressAutocomplete();
+                        }
                     });
 
                     // Handle order type radio button changes using event delegation
@@ -1298,6 +1323,11 @@
                                 this.updateBackButtonText();
                                 this.updateStepHeaders();
                                 this.updateProgressIndicator(this.currentStep);
+
+                                // Initialize autocomplete if switching to delivery
+                                if (this.orderType === 'delivery' && isDeliveryAvailable(this.selectedLocation)) {
+                                    this.initializeAddressAutocomplete();
+                                }
                             }
                         }
                     });
@@ -1754,12 +1784,18 @@
                     if (this.selectedLocation) {
                         const location = getLocationBySlug(this.selectedLocation);
                         if (location && location.coordinates) {
+                            console.log('📍 Setting location bias for:', location.name, location.coordinates);
                             // Create a circular bias around the location (30 mile radius = ~48 km)
                             locationBias = {
                                 center: location.coordinates,
-                                radius: 48000 // 30 miles in meters
+                                radius: 48280.3 // 30 miles in meters (more precise)
                             };
+                            console.log('🎯 Location bias configured:', locationBias);
+                        } else {
+                            console.warn('⚠️ No coordinates found for location:', this.selectedLocation);
                         }
+                    } else {
+                        console.warn('⚠️ No location selected for autocomplete bias');
                     }
 
                     // Create the PlaceAutocompleteElement web component
@@ -1771,7 +1807,12 @@
                     // Add location bias if available
                     if (locationBias) {
                         options.locationBias = locationBias;
+                        console.log('✅ Added locationBias to options:', options);
+                    } else {
+                        console.log('⚠️ No locationBias added to options');
                     }
+
+                    console.log('🔧 Creating PlaceAutocompleteElement with options:', options);
 
                     this.autocomplete = new PlaceAutocompleteElement(options);
 
@@ -1790,6 +1831,11 @@
                     ['click', 'change', 'input', 'gmp-placeselect', 'place_changed'].forEach(eventName => {
                         this.autocomplete.addEventListener(eventName, (e) => {
                             console.log(`🔔 Event fired: ${eventName}`, e);
+                            // Additional debug for input events
+                            if (eventName === 'input') {
+                                console.log('📝 Input value:', e.target?.value || 'no value');
+                                console.log('📝 Current address value:', this.getDeliveryAddressValue());
+                            }
                         });
                     });
 
@@ -3320,10 +3366,7 @@
 
             window.checkoutPage = new CheckoutPage();
 
-            // If Google Maps API was already loaded before checkout page was ready, initialize autocomplete now
-            if (window.googleMapsApiLoaded) {
-                window.checkoutPage.initializeAddressAutocomplete();
-            }
+            // Autocomplete will be initialized when location is selected and delivery is chosen
         });
     </script>
 </body>
