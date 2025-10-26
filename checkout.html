@@ -1124,9 +1124,14 @@
 
             // Helper method to get delivery address value (handles PlaceAutocompleteElement)
             getDeliveryAddressValue() {
-                // If autocomplete is active, get value from the autocomplete element
+                // If autocomplete is active, get value from the autocomplete element's internal input
                 if (this.autocomplete) {
-                    // PlaceAutocompleteElement has a value property
+                    // PlaceAutocompleteElement is a web component with an internal input
+                    const input = this.autocomplete.querySelector('input');
+                    if (input) {
+                        return input.value?.trim() || '';
+                    }
+                    // Fallback: try the value property
                     return this.autocomplete.value?.trim() || '';
                 }
                 // Otherwise, get from the regular input field (fallback mode)
@@ -1782,6 +1787,7 @@
 
                     // Listen for place selection events
                     this.autocomplete.addEventListener('gmp-placeselect', async (event) => {
+                        console.log('🎯 Place selected from autocomplete!', event);
                         const place = event.place;
 
                         if (!place) {
@@ -1795,6 +1801,8 @@
                             await place.fetchFields({
                                 fields: ['addressComponents', 'location', 'formattedAddress']
                             });
+
+                            console.log('📍 Place details fetched:', place);
 
                             // Mark that address was selected from autocomplete
                             this.addressSelectedFromAutocomplete = true;
@@ -1827,6 +1835,9 @@
                                 });
                             }
 
+                            const fullAddress = `${streetNumber} ${route}`.trim();
+                            console.log('🏠 Parsed address:', { fullAddress, city, state, zipCode });
+
                             // Store city and ZIP internally (not in visible fields since they're hidden)
                             this.deliveryCity = city;
                             this.deliveryZip = zipCode;
@@ -1838,11 +1849,17 @@
                             if (cityField) cityField.value = city;
                             if (zipField) zipField.value = zipCode;
 
+                            console.log('✅ Fields updated. Checking delivery zone...');
+
                             // Validate the selected address automatically
                             await this.checkDeliveryZone();
 
+                            console.log('✅ Delivery zone checked. Updating buttons...');
+
                             // Update step buttons after validation completes
                             this.updateStepButtons();
+
+                            console.log('✅ Buttons updated. deliveryZoneValid:', this.deliveryZoneValid);
                         } catch (error) {
                             console.error('Error fetching place details:', error);
                             this.addressSelectedFromAutocomplete = false;
