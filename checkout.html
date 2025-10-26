@@ -1686,6 +1686,12 @@
             }
 
             async initializeAddressAutocomplete() {
+                // Don't reinitialize if already set up
+                if (this.autocomplete) {
+                    console.log('Autocomplete already initialized, skipping reinitialization');
+                    return;
+                }
+
                 // Initialize Google Places Autocomplete using PlaceAutocompleteElement
                 // This is the recommended approach as of March 2025
                 // NOTE: Requires both Places API (New) AND Maps JavaScript API to be enabled
@@ -1710,9 +1716,17 @@
                     }
                 };
 
-                // Check if Google Maps is loaded
+                // Check if Google Maps is loaded and has importLibrary
                 if (typeof google === 'undefined' || !google.maps) {
                     showFallbackUI('Google Maps API not loaded');
+                    return;
+                }
+
+                // Check if importLibrary is available (needed for new Places API)
+                if (typeof google.maps.importLibrary !== 'function') {
+                    console.warn('google.maps.importLibrary not available yet, waiting...');
+                    // Try again after a short delay
+                    setTimeout(() => this.initializeAddressAutocomplete(), 500);
                     return;
                 }
 
@@ -1720,14 +1734,31 @@
                     // Use the new Places API with importLibrary
                     const { PlaceAutocompleteElement } = await google.maps.importLibrary("places");
 
+                    // Get the selected location's coordinates for location bias
+                    let locationBias = null;
+                    if (this.selectedLocation) {
+                        const location = getLocationBySlug(this.selectedLocation);
+                        if (location && location.coordinates) {
+                            // Create a circular bias around the location (30 mile radius = ~48 km)
+                            locationBias = {
+                                center: location.coordinates,
+                                radius: 48000 // 30 miles in meters
+                            };
+                        }
+                    }
+
                     // Create the PlaceAutocompleteElement web component
-                    this.autocomplete = new PlaceAutocompleteElement({
+                    const options = {
                         componentRestrictions: { country: ['US'] },
                         types: ['address']
-                    });
+                    };
 
-                    // Get the original input's attributes
-                    const placeholder = addressInput.getAttribute('placeholder') || 'Start typing your address...';
+                    // Add location bias if available
+                    if (locationBias) {
+                        options.locationBias = locationBias;
+                    }
+
+                    this.autocomplete = new PlaceAutocompleteElement(options);
 
                     // Replace the input with the autocomplete element
                     addressInput.parentNode.replaceChild(this.autocomplete, addressInput);
@@ -1798,7 +1829,10 @@
                             if (zipField) zipField.value = zipCode;
 
                             // Validate the selected address automatically
-                            this.checkDeliveryZone();
+                            await this.checkDeliveryZone();
+
+                            // Update step buttons after validation completes
+                            this.updateStepButtons();
                         } catch (error) {
                             console.error('Error fetching place details:', error);
                             this.addressSelectedFromAutocomplete = false;
@@ -1816,6 +1850,9 @@
                         if (messageDiv) {
                             messageDiv.style.display = 'none';
                         }
+
+                        // Update buttons
+                        this.updateStepButtons();
                     });
 
                 } catch (error) {
