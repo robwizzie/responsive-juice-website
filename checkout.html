@@ -2560,23 +2560,48 @@
                     const dateString = currentDate.toISOString().split('T')[0];
                     const isPast = currentDate < today;
                     const isToday = currentDate.toDateString() === today.toDateString();
-                    const isTomorrow = currentDate > today;
+                    const isFuture = currentDate > today;
                     const dayOfWeek = currentDate.getDay();
                     const isMonday = dayOfWeek === 1;
-                    const isOpen = isTomorrow && isMonday && isLocationOpenOnDate(this.selectedLocation, currentDate);
+
+                    // Check if this Monday is available based on Thursday cutoff
+                    let isAvailableMonday = false;
+                    let unavailableReason = '';
+
+                    if (isMonday && isFuture) {
+                        // Calculate the Thursday before this Monday (Monday minus 4 days)
+                        const thursdayBeforeMonday = new Date(currentDate);
+                        thursdayBeforeMonday.setDate(currentDate.getDate() - 4);
+                        thursdayBeforeMonday.setHours(23, 59, 59, 999);
+
+                        const todayDate = new Date();
+                        todayDate.setHours(0, 0, 0, 0);
+
+                        // Check if we're still before the Thursday cutoff
+                        const beforeCutoff = todayDate <= thursdayBeforeMonday;
+                        const locationOpen = isLocationOpenOnDate(this.selectedLocation, currentDate);
+
+                        if (!beforeCutoff) {
+                            unavailableReason = 'Order deadline passed (must order by Thursday)';
+                        } else if (!locationOpen) {
+                            unavailableReason = `${location.name} is closed on this Monday`;
+                        } else {
+                            isAvailableMonday = true;
+                        }
+                    }
 
                     let classes = 'calendar-day';
                     if (isPast) classes += ' past';
                     if (isToday) classes += ' today';
-                    if (!isMonday && isTomorrow) classes += ' closed';
-                    if (isMonday && isTomorrow && !isLocationOpenOnDate(this.selectedLocation, currentDate)) classes += ' closed';
-                    if (isOpen) classes += ' available';
+                    if (!isMonday && isFuture) classes += ' closed';
+                    if (isMonday && isFuture && !isAvailableMonday) classes += ' closed';
+                    if (isAvailableMonday) classes += ' available';
 
-                    const clickable = isOpen ? `onclick="checkoutPage.selectDate('${dateString}')"` : '';
+                    const clickable = isAvailableMonday ? `onclick="checkoutPage.selectDate('${dateString}')"` : '';
                     const title = isPast ? 'Past date' :
                         isToday ? 'Today (select Monday or later)' :
                             !isMonday ? 'Only Mondays available for pickup/delivery' :
-                                !isLocationOpenOnDate(this.selectedLocation, currentDate) ? `${location.name} is closed on Monday` :
+                                unavailableReason ? unavailableReason :
                                     'Available for pickup/delivery';
 
                     html += `<div class="${classes}" ${clickable} title="${title}" data-date="${dateString}">${day}</div>`;
@@ -2803,8 +2828,8 @@
                 const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
                 const currentDay = dayNames[dayOfWeek];
 
-                // New schedule: Orders by Thursday, prep Saturday, ship Sunday, pickup Monday
-                let message = `New ordering schedule: Orders by Thursday at midnight, prep Saturday, ship Sunday, pickup Monday. `;
+                // New ordering schedule
+                let message = `New ordering schedule: Orders must be placed by Thursday at midnight. Prep Saturday, ship Sunday, ${this.orderType === 'delivery' ? 'deliver' : 'pickup'} Monday. `;
 
                 // Add deadline information based on current day
                 if (dayOfWeek <= 3) { // Monday to Wednesday
@@ -2812,17 +2837,17 @@
                     message += `Orders must be placed by Thursday at midnight. `;
                 } else if (dayOfWeek === 4) { // Thursday
                     message += `⚠️ Today is the order deadline! Orders must be placed by midnight tonight. `;
-                } else { // Friday through Weekend
-                    message += `⚠️ Order deadline has passed. Next available pickup is the Monday after next. `;
+                } else { // Friday through Monday
+                    message += `⚠️ Order deadline has passed. Next available ${this.orderType === 'delivery' ? 'delivery' : 'pickup'} is the Monday after next. `;
                 }
 
                 if (this.orderType === 'delivery') {
                     message += `Only Mondays are available for delivery. `;
                     message += `Delivery within ${getDeliveryRadius(this.selectedLocation)} miles of ${location.name}. `;
-                    message += `${location.name} is open on Mondays: ${location.pickupHours.monday || 'Closed'}`;
+                    message += `${location.name} is open on Mondays: ${location.pickupHours.monday || 'Closed'}.`;
                 } else {
                     message += `Only Mondays are available for pickup. `;
-                    message += `${location.name} is open on Mondays: ${location.pickupHours.monday || 'Closed'}`;
+                    message += `${location.name} is open on Mondays: ${location.pickupHours.monday || 'Closed'}.`;
                 }
 
                 infoSpan.textContent = message;
@@ -2837,6 +2862,22 @@
 
                     // New schedule: Only allow Mondays for pickup/delivery
                     if (dayOfWeek !== 1) { // Not Monday
+                        return false;
+                    }
+
+                    // Check if this Monday is eligible based on Thursday cutoff
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0); // Reset to start of day for comparison
+
+                    // Calculate the Thursday before this Monday
+                    // If the Monday is on day X, the Thursday before it is on day X-4
+                    const thursdayBeforeMonday = new Date(selectedDate);
+                    thursdayBeforeMonday.setDate(selectedDate.getDate() - 4);
+                    thursdayBeforeMonday.setHours(23, 59, 59, 999); // Set to end of Thursday (11:59:59 PM)
+
+                    // Order must be placed before or on Thursday 11:59 PM to qualify for that Monday
+                    // If today is after Thursday 11:59 PM, this Monday is not available
+                    if (today > thursdayBeforeMonday) {
                         return false;
                     }
 
