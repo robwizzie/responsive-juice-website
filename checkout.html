@@ -1340,7 +1340,17 @@
                         const deliveryAddress = this.getDeliveryAddressValue();
                         const deliveryCity = document.getElementById('deliveryCity')?.value?.trim() || '';
                         const deliveryZip = document.getElementById('deliveryZip')?.value?.trim() || '';
+
+                        // Debug logging
+                        console.log('Step 2 validation:', {
+                            deliveryAddress: deliveryAddress,
+                            deliveryCity: deliveryCity,
+                            deliveryZip: deliveryZip,
+                            deliveryZoneValid: this.deliveryZoneValid
+                        });
+
                         step2Next.disabled = !deliveryAddress || !deliveryCity || !deliveryZip || !this.deliveryZoneValid;
+                        console.log('Step 2 button disabled:', step2Next.disabled);
                     } else {
                         step2Next.disabled = false; // Skip delivery step for pickup
                     }
