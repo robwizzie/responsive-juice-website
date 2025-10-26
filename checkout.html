@@ -956,21 +956,20 @@
                                 <label for="deliveryAddress">Delivery Address:</label>
                                 <input type="text" id="deliveryAddress" name="deliveryAddress"
                                     placeholder="Start typing your address...">
-                                <div class="auto-check-notice"
+                                <div class="auto-check-notice" id="autocompleteHint"
                                     style="font-size: 0.8rem; color: #666; margin-top: 0.5rem; font-style: italic;">
-                                    <i class="ri-information-line"></i> Select an address from the dropdown. City and ZIP will be filled automatically.
+                                    <i class="ri-information-line"></i> Loading address autocomplete...
                                 </div>
                             </div>
-                            <div class="form-group" style="display: flex; gap: 1rem;">
+                            <!-- City and ZIP fields - hidden by default, shown only if autocomplete fails -->
+                            <div class="form-group" id="manualAddressFields" style="display: none; gap: 1rem;">
                                 <div style="flex: 2;">
                                     <label for="deliveryCity">City:</label>
-                                    <input type="text" id="deliveryCity" name="deliveryCity" placeholder="Auto-filled" readonly
-                                        style="background-color: #f5f5f5; cursor: not-allowed;">
+                                    <input type="text" id="deliveryCity" name="deliveryCity" placeholder="Enter city">
                                 </div>
                                 <div style="flex: 1;">
                                     <label for="deliveryZip">ZIP Code:</label>
-                                    <input type="text" id="deliveryZip" name="deliveryZip" placeholder="Auto-filled" readonly
-                                        style="background-color: #f5f5f5; cursor: not-allowed;">
+                                    <input type="text" id="deliveryZip" name="deliveryZip" placeholder="Enter ZIP">
                                 </div>
                             </div>
                             <div id="deliveryZoneMessage"
@@ -1106,6 +1105,8 @@
                 this.cart = window.cart || new Cart();
                 this.autocomplete = null; // Store autocomplete instance
                 this.addressSelectedFromAutocomplete = false; // Track if address was selected from Google Places
+                this.deliveryCity = ''; // Store city from autocomplete
+                this.deliveryZip = ''; // Store ZIP from autocomplete
                 this.init();
             }
 
@@ -1123,12 +1124,14 @@
 
             // Helper method to get delivery address value (handles PlaceAutocompleteElement)
             getDeliveryAddressValue() {
-                let deliveryAddressElement = document.getElementById('deliveryAddress');
-                if (!deliveryAddressElement && this.autocomplete) {
-                    // Address input is inside PlaceAutocompleteElement
-                    deliveryAddressElement = this.autocomplete.querySelector('input');
+                // If autocomplete is active, get value from the autocomplete element
+                if (this.autocomplete) {
+                    // PlaceAutocompleteElement has a value property
+                    return this.autocomplete.value?.trim() || '';
                 }
-                return deliveryAddressElement?.value?.trim() || '';
+                // Otherwise, get from the regular input field (fallback mode)
+                const addressInput = document.getElementById('deliveryAddress');
+                return addressInput?.value?.trim() || '';
             }
 
             populateLocations() {
@@ -1685,16 +1688,33 @@
             async initializeAddressAutocomplete() {
                 // Initialize Google Places Autocomplete using PlaceAutocompleteElement
                 // This is the recommended approach as of March 2025
-                // NOTE: Requires both Places API AND Maps JavaScript API to be enabled
-
-                if (typeof google === 'undefined' || !google.maps) {
-                    console.warn('Google Maps API not loaded. Address autocomplete will not be available.');
-                    console.warn('Please ensure both Places API and Maps JavaScript API are enabled in Google Cloud Console.');
-                    return;
-                }
+                // NOTE: Requires both Places API (New) AND Maps JavaScript API to be enabled
 
                 const addressInput = document.getElementById('deliveryAddress');
+                const autocompleteHint = document.getElementById('autocompleteHint');
+                const manualFields = document.getElementById('manualAddressFields');
+
                 if (!addressInput) return;
+
+                // Helper to show fallback UI
+                const showFallbackUI = (reason = '') => {
+                    console.warn('Falling back to manual address entry:', reason);
+                    if (autocompleteHint) {
+                        autocompleteHint.innerHTML = '<i class="ri-information-line"></i> Enter your address manually. Fill in all fields.';
+                    }
+                    if (manualFields) {
+                        manualFields.style.display = 'flex';
+                    }
+                    if (addressInput) {
+                        addressInput.placeholder = 'Enter street address';
+                    }
+                };
+
+                // Check if Google Maps is loaded
+                if (typeof google === 'undefined' || !google.maps) {
+                    showFallbackUI('Google Maps API not loaded');
+                    return;
+                }
 
                 try {
                     // Use the new Places API with importLibrary
@@ -1707,48 +1727,17 @@
                     });
 
                     // Get the original input's attributes
-                    const placeholder = addressInput.getAttribute('placeholder') || 'Enter your full address';
+                    const placeholder = addressInput.getAttribute('placeholder') || 'Start typing your address...';
 
                     // Replace the input with the autocomplete element
                     addressInput.parentNode.replaceChild(this.autocomplete, addressInput);
 
-                    // Wait for the web component to be fully initialized
-                    // Use requestAnimationFrame to ensure DOM is ready
-                    await new Promise(resolve => requestAnimationFrame(resolve));
-
-                    // Wait for the input element to be available (with timeout)
-                    const waitForInput = async () => {
-                        for (let i = 0; i < 50; i++) { // Try for up to 1 second
-                            const inputElement = this.autocomplete.querySelector('input');
-                            if (inputElement) {
-                                return inputElement;
-                            }
-                            await new Promise(resolve => setTimeout(resolve, 20));
-                        }
-                        throw new Error('Autocomplete input element not found');
-                    };
-
-                    const inputElement = await waitForInput();
-
-                    // Configure the input element
-                    inputElement.placeholder = placeholder;
-                    inputElement.id = 'deliveryAddress';
-                    inputElement.name = 'deliveryAddress';
+                    // Update the hint text
+                    if (autocompleteHint) {
+                        autocompleteHint.innerHTML = '<i class="ri-information-line"></i> Start typing your address and select from dropdown. City and ZIP will auto-fill.';
+                    }
 
                     console.log('Google Places Autocomplete (PlaceAutocompleteElement) initialized successfully');
-
-                    // Track manual edits to address field - invalidate autocomplete selection
-                    inputElement.addEventListener('input', (e) => {
-                        // If user manually types or edits, clear the autocomplete flag
-                        this.addressSelectedFromAutocomplete = false;
-                        this.deliveryZoneValid = false;
-
-                        // Clear validation message when user starts editing
-                        const messageDiv = document.getElementById('deliveryZoneMessage');
-                        if (messageDiv) {
-                            messageDiv.style.display = 'none';
-                        }
-                    });
 
                     // Listen for place selection events
                     this.autocomplete.addEventListener('gmp-placeselect', async (event) => {
@@ -1797,15 +1786,11 @@
                                 });
                             }
 
-                            // Update form fields with parsed address
-                            const fullAddress = `${streetNumber} ${route}`.trim();
+                            // Store city and ZIP internally (not in visible fields since they're hidden)
+                            this.deliveryCity = city;
+                            this.deliveryZip = zipCode;
 
-                            // Update the input value in the PlaceAutocompleteElement
-                            const inputElement = this.autocomplete.querySelector('input');
-                            if (inputElement) {
-                                inputElement.value = fullAddress;
-                            }
-
+                            // Update hidden fields for form submission
                             const cityField = document.getElementById('deliveryCity');
                             const zipField = document.getElementById('deliveryZip');
 
@@ -1819,10 +1804,29 @@
                             this.addressSelectedFromAutocomplete = false;
                         }
                     });
+
+                    // Listen for input changes to track manual edits
+                    this.autocomplete.addEventListener('input', (e) => {
+                        // If user manually types or edits, clear the autocomplete flag
+                        this.addressSelectedFromAutocomplete = false;
+                        this.deliveryZoneValid = false;
+
+                        // Clear validation message when user starts editing
+                        const messageDiv = document.getElementById('deliveryZoneMessage');
+                        if (messageDiv) {
+                            messageDiv.style.display = 'none';
+                        }
+                    });
+
                 } catch (error) {
                     console.error('Error initializing PlaceAutocompleteElement:', error);
-                    console.error('Make sure both Places API and Maps JavaScript API are enabled in Google Cloud Console');
-                    console.warn('Address autocomplete will not be available');
+
+                    // Check if it's an API not enabled error
+                    if (error.message && error.message.includes('Places API')) {
+                        showFallbackUI('Places API (New) not enabled. Enable it in Google Cloud Console.');
+                    } else {
+                        showFallbackUI('Failed to initialize autocomplete: ' + error.message);
+                    }
                 }
             }
 
