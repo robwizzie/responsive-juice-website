@@ -1493,7 +1493,7 @@
                 }
 
                 // Show loading state
-                this.showDeliveryZoneMessage('🔍 Validating address and checking delivery zone...', 'info');
+                this.showDeliveryZoneMessage('🔍  Validating address and checking delivery zone...', 'info');
 
                 try {
                     // Enhanced validation with multiple checks
@@ -1501,10 +1501,10 @@
 
                     if (validationResult.isValid) {
                         this.deliveryZoneValid = true;
-                        this.showDeliveryZoneMessage('✅ Great! Your address is within our 30-mile delivery zone.', 'success');
+                        this.showDeliveryZoneMessage('✅  Great! Your address is within our 30-mile delivery zone.', 'success');
                     } else {
                         this.deliveryZoneValid = false;
-                        this.showDeliveryZoneMessage(`❌ ${validationResult.message}`, 'error');
+                        this.showDeliveryZoneMessage(`❌  ${validationResult.message}`, 'error');
                     }
                 } catch (error) {
                     console.error('Error validating delivery zone:', error);
@@ -1619,7 +1619,7 @@
             fallbackZipValidation(zipCode) {
                 const validation = this.validateZipCode(zipCode);
                 this.deliveryZoneValid = validation.isValid;
-                this.showDeliveryZoneMessage(validation.isValid ? '✅ Address validated (ZIP code check).' : `❌ ${validation.message}`, validation.isValid ? 'success' : 'error');
+                this.showDeliveryZoneMessage(validation.isValid ? '✅  Address validated (ZIP code check).' : `❌  ${validation.message}`, validation.isValid ? 'success' : 'error');
                 this.updateStepButtons();
                 return validation.isValid;
             }
@@ -2077,14 +2077,13 @@
                         return false;
                     }
 
-                    // Require address to be selected from Google Places autocomplete
-                    if (!this.addressSelectedFromAutocomplete) {
-                        this.showStepError('Please select your address from the Google Places dropdown suggestions. Manually typed addresses are not allowed.');
-                        return false;
-                    }
-
+                    // Require address to be validated (either from autocomplete or manually typed and validated)
                     if (!this.deliveryZoneValid) {
-                        this.showStepError('Please verify your delivery address is within our delivery zone.');
+                        if (!this.addressSelectedFromAutocomplete && !deliveryAddress) {
+                            this.showStepError('Please enter your delivery address.');
+                        } else {
+                            this.showStepError('Please wait for your delivery address to be validated, or check that all address fields are filled correctly.');
+                        }
                         return false;
                     }
                 }
