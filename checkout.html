@@ -955,20 +955,22 @@
                             <div class="form-group">
                                 <label for="deliveryAddress">Delivery Address:</label>
                                 <input type="text" id="deliveryAddress" name="deliveryAddress"
-                                    placeholder="Enter your full address">
-                            </div>
-                            <div class="form-group">
-                                <label for="deliveryCity">City:</label>
-                                <input type="text" id="deliveryCity" name="deliveryCity" placeholder="Enter your city">
-                            </div>
-                            <div class="form-group">
-                                <label for="deliveryZip">ZIP Code:</label>
-                                <input type="text" id="deliveryZip" name="deliveryZip"
-                                    placeholder="Enter your ZIP code">
+                                    placeholder="Start typing your address...">
                                 <div class="auto-check-notice"
                                     style="font-size: 0.8rem; color: #666; margin-top: 0.5rem; font-style: italic;">
-                                    <i class="ri-information-line"></i> Delivery zone will be checked automatically when
-                                    all fields are filled
+                                    <i class="ri-information-line"></i> Select an address from the dropdown. City and ZIP will be filled automatically.
+                                </div>
+                            </div>
+                            <div class="form-group" style="display: flex; gap: 1rem;">
+                                <div style="flex: 2;">
+                                    <label for="deliveryCity">City:</label>
+                                    <input type="text" id="deliveryCity" name="deliveryCity" placeholder="Auto-filled" readonly
+                                        style="background-color: #f5f5f5; cursor: not-allowed;">
+                                </div>
+                                <div style="flex: 1;">
+                                    <label for="deliveryZip">ZIP Code:</label>
+                                    <input type="text" id="deliveryZip" name="deliveryZip" placeholder="Auto-filled" readonly
+                                        style="background-color: #f5f5f5; cursor: not-allowed;">
                                 </div>
                             </div>
                             <div id="deliveryZoneMessage"
@@ -1710,31 +1712,43 @@
                     // Replace the input with the autocomplete element
                     addressInput.parentNode.replaceChild(this.autocomplete, addressInput);
 
-                    // Wait for the web component to initialize and get the input element
-                    setTimeout(() => {
-                        const inputElement = this.autocomplete.querySelector('input');
-                        if (inputElement) {
-                            // Configure the input element
-                            inputElement.placeholder = placeholder;
-                            inputElement.id = 'deliveryAddress';
-                            inputElement.name = 'deliveryAddress';
+                    // Wait for the web component to be fully initialized
+                    // Use requestAnimationFrame to ensure DOM is ready
+                    await new Promise(resolve => requestAnimationFrame(resolve));
 
-                            console.log('Google Places Autocomplete (PlaceAutocompleteElement) initialized successfully');
-
-                            // Track manual edits to address field - invalidate autocomplete selection
-                            inputElement.addEventListener('input', (e) => {
-                                // If user manually types or edits, clear the autocomplete flag
-                                this.addressSelectedFromAutocomplete = false;
-                                this.deliveryZoneValid = false;
-
-                                // Clear validation message when user starts editing
-                                const messageDiv = document.getElementById('deliveryZoneMessage');
-                                if (messageDiv) {
-                                    messageDiv.style.display = 'none';
-                                }
-                            });
+                    // Wait for the input element to be available (with timeout)
+                    const waitForInput = async () => {
+                        for (let i = 0; i < 50; i++) { // Try for up to 1 second
+                            const inputElement = this.autocomplete.querySelector('input');
+                            if (inputElement) {
+                                return inputElement;
+                            }
+                            await new Promise(resolve => setTimeout(resolve, 20));
                         }
-                    }, 100);
+                        throw new Error('Autocomplete input element not found');
+                    };
+
+                    const inputElement = await waitForInput();
+
+                    // Configure the input element
+                    inputElement.placeholder = placeholder;
+                    inputElement.id = 'deliveryAddress';
+                    inputElement.name = 'deliveryAddress';
+
+                    console.log('Google Places Autocomplete (PlaceAutocompleteElement) initialized successfully');
+
+                    // Track manual edits to address field - invalidate autocomplete selection
+                    inputElement.addEventListener('input', (e) => {
+                        // If user manually types or edits, clear the autocomplete flag
+                        this.addressSelectedFromAutocomplete = false;
+                        this.deliveryZoneValid = false;
+
+                        // Clear validation message when user starts editing
+                        const messageDiv = document.getElementById('deliveryZoneMessage');
+                        if (messageDiv) {
+                            messageDiv.style.display = 'none';
+                        }
+                    });
 
                     // Listen for place selection events
                     this.autocomplete.addEventListener('gmp-placeselect', async (event) => {
@@ -1792,8 +1806,11 @@
                                 inputElement.value = fullAddress;
                             }
 
-                            document.getElementById('deliveryCity').value = city;
-                            document.getElementById('deliveryZip').value = zipCode;
+                            const cityField = document.getElementById('deliveryCity');
+                            const zipField = document.getElementById('deliveryZip');
+
+                            if (cityField) cityField.value = city;
+                            if (zipField) zipField.value = zipCode;
 
                             // Validate the selected address automatically
                             this.checkDeliveryZone();
