@@ -1671,12 +1671,12 @@
             }
 
             async initializeAddressAutocomplete() {
-                // Initialize Google Places Autocomplete with new PlaceAutocompleteElement API
-                // NOTE: This requires a valid Google Maps API key in the script tag above
+                // Initialize Google Places Autocomplete using the new Places API
+                // Using importLibrary for modern, non-deprecated implementation
+                // NOTE: This requires a valid Google Maps API key
 
-                if (typeof google === 'undefined' || !google.maps || !google.maps.places) {
-                    console.warn('Google Places API not loaded. Address autocomplete will not be available.');
-                    console.warn('Please add a valid Google Maps API key to enable address autocomplete.');
+                if (typeof google === 'undefined' || !google.maps) {
+                    console.warn('Google Maps API not loaded. Address autocomplete will not be available.');
                     return;
                 }
 
@@ -1685,111 +1685,81 @@
 
                 try {
                     // Use the new Places API with importLibrary
-                    const { PlaceAutocompleteElement } = await google.maps.importLibrary("places");
+                    const { Autocomplete } = await google.maps.importLibrary("places");
 
-                    // Create the new PlaceAutocompleteElement
-                    this.autocomplete = new PlaceAutocompleteElement({
-                        includedRegionCodes: ['us'],
+                    // Create autocomplete object restricted to USA addresses
+                    this.autocomplete = new Autocomplete(addressInput, {
+                        componentRestrictions: { country: 'us' },
+                        fields: ['address_components', 'geometry', 'formatted_address'],
                         types: ['address']
                     });
 
-                    // Style the autocomplete element to match the original input
-                    this.autocomplete.style.width = '100%';
-
-                    // Replace the input with the autocomplete element
-                    addressInput.parentNode.replaceChild(this.autocomplete, addressInput);
-
-                    // Store reference to the internal input for easier access
-                    // Note: We need to wait a bit for the web component to initialize
-                    setTimeout(() => {
-                        const inputElement = this.autocomplete.querySelector('input');
-                        if (inputElement) {
-                            inputElement.placeholder = 'Enter your full address';
-                            inputElement.id = 'deliveryAddress';
-                            inputElement.name = 'deliveryAddress';
-
-                            // Track manual edits to address field - invalidate autocomplete selection
-                            inputElement.addEventListener('input', (e) => {
-                                // If user manually types or edits, clear the autocomplete flag
-                                this.addressSelectedFromAutocomplete = false;
-                                this.deliveryZoneValid = false;
-
-                                // Clear validation message when user starts editing
-                                const messageDiv = document.getElementById('deliveryZoneMessage');
-                                if (messageDiv) {
-                                    messageDiv.style.display = 'none';
-                                }
-                            });
-                        }
-                    }, 100);
+                    console.log('Google Places Autocomplete initialized successfully');
 
                     // When user selects an address from dropdown, populate form fields
-                    this.autocomplete.addEventListener('gmp-placeselect', async ({ place }) => {
-                        if (!place) {
-                            console.error('No place details available');
+                    this.autocomplete.addListener('place_changed', () => {
+                        const place = this.autocomplete.getPlace();
+
+                        if (!place.geometry) {
+                            console.error('No details available for input: ' + place.name);
                             this.addressSelectedFromAutocomplete = false;
                             return;
                         }
 
-                        try {
-                            // Fetch the place details we need
-                            await place.fetchFields({
-                                fields: ['addressComponents', 'location', 'formattedAddress']
-                            });
+                        // Mark that address was selected from autocomplete
+                        this.addressSelectedFromAutocomplete = true;
 
-                            // Mark that address was selected from autocomplete
-                            this.addressSelectedFromAutocomplete = true;
+                        // Parse address components
+                        let streetNumber = '';
+                        let route = '';
+                        let city = '';
+                        let state = '';
+                        let zipCode = '';
 
-                            // Parse address components using the new API format
-                            let streetNumber = '';
-                            let route = '';
-                            let city = '';
-                            let state = '';
-                            let zipCode = '';
-
-                            if (place.addressComponents) {
-                                place.addressComponents.forEach(component => {
-                                    const types = component.types;
-                                    if (types.includes('street_number')) {
-                                        streetNumber = component.longText;
-                                    }
-                                    if (types.includes('route')) {
-                                        route = component.longText;
-                                    }
-                                    if (types.includes('locality')) {
-                                        city = component.longText;
-                                    }
-                                    if (types.includes('administrative_area_level_1')) {
-                                        state = component.shortText;
-                                    }
-                                    if (types.includes('postal_code')) {
-                                        zipCode = component.longText;
-                                    }
-                                });
+                        place.address_components.forEach(component => {
+                            const types = component.types;
+                            if (types.includes('street_number')) {
+                                streetNumber = component.long_name;
                             }
-
-                            // Update form fields with parsed address
-                            const fullAddress = `${streetNumber} ${route}`.trim();
-
-                            // Update the address input field
-                            const addressField = document.getElementById('deliveryAddress');
-                            if (addressField) {
-                                addressField.value = fullAddress;
+                            if (types.includes('route')) {
+                                route = component.long_name;
                             }
+                            if (types.includes('locality')) {
+                                city = component.long_name;
+                            }
+                            if (types.includes('administrative_area_level_1')) {
+                                state = component.short_name;
+                            }
+                            if (types.includes('postal_code')) {
+                                zipCode = component.long_name;
+                            }
+                        });
 
-                            document.getElementById('deliveryCity').value = city;
-                            document.getElementById('deliveryZip').value = zipCode;
+                        // Update form fields with parsed address
+                        const fullAddress = `${streetNumber} ${route}`.trim();
+                        document.getElementById('deliveryAddress').value = fullAddress;
+                        document.getElementById('deliveryCity').value = city;
+                        document.getElementById('deliveryZip').value = zipCode;
 
-                            // Validate the selected address automatically
-                            this.checkDeliveryZone();
-                        } catch (error) {
-                            console.error('Error fetching place details:', error);
-                            this.addressSelectedFromAutocomplete = false;
+                        // Validate the selected address automatically
+                        this.checkDeliveryZone();
+                    });
+
+                    // Track manual edits to address field - invalidate autocomplete selection
+                    addressInput.addEventListener('input', (e) => {
+                        // If user manually types or edits, clear the autocomplete flag
+                        this.addressSelectedFromAutocomplete = false;
+                        this.deliveryZoneValid = false;
+
+                        // Clear validation message when user starts editing
+                        const messageDiv = document.getElementById('deliveryZoneMessage');
+                        if (messageDiv) {
+                            messageDiv.style.display = 'none';
                         }
                     });
                 } catch (error) {
-                    console.error('Error initializing PlaceAutocompleteElement:', error);
-                    console.warn('Falling back to regular input field');
+                    console.error('Error initializing Autocomplete:', error);
+                    console.warn('Address autocomplete will not be available');
                 }
             }
 
