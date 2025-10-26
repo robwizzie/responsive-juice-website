@@ -1784,6 +1784,14 @@
                     }
 
                     console.log('Google Places Autocomplete (PlaceAutocompleteElement) initialized successfully');
+                    console.log('Autocomplete element:', this.autocomplete);
+
+                    // Debug: Log all events that fire on this element
+                    ['click', 'change', 'input', 'gmp-placeselect', 'place_changed'].forEach(eventName => {
+                        this.autocomplete.addEventListener(eventName, (e) => {
+                            console.log(`🔔 Event fired: ${eventName}`, e);
+                        });
+                    });
 
                     // Listen for place selection events
                     this.autocomplete.addEventListener('gmp-placeselect', async (event) => {
