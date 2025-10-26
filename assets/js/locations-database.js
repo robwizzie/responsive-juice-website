@@ -25,7 +25,7 @@ const locations = [
 		},
 		contactPhone: '(856) 537-1906',
 		googleMapsLink: 'https://maps.app.goo.gl/TYcVsdRCeTf4Kjfs8',
-		specialInstructions: 'Orders by Thursday at midnight, prep Saturday, ship Sunday, pickup Monday'
+		specialInstructions: 'Orders must be placed by Thursday at midnight. Prep Saturday, ship Sunday, pickup/delivery Monday. Only Mondays available for delivery within 30 miles. Monday hours: 10:00 AM - 9:00 PM.'
 	},
 	{
 		id: 2,
@@ -54,7 +54,7 @@ const locations = [
 		contactPhone: '(609) 828-6626',
 		website: 'https://www.cleanplatemealprep.com/',
 		googleMapsLink: 'https://maps.app.goo.gl/D1YhSAWWwFT8kcu48',
-		specialInstructions: 'Orders by Thursday at midnight, prep Saturday, ship Sunday, pickup Monday'
+		specialInstructions: 'Orders must be placed by Thursday at midnight. Prep Saturday, ship Sunday, pickup/delivery Monday. Only Mondays available for delivery within 30 miles. Monday hours: 10:00 AM - 9:00 PM.'
 	}
 ];
 
