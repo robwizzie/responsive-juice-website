@@ -1119,6 +1119,16 @@
                 this.setupCartChangeListener();
             }
 
+            // Helper method to get delivery address value (handles PlaceAutocompleteElement)
+            getDeliveryAddressValue() {
+                let deliveryAddressElement = document.getElementById('deliveryAddress');
+                if (!deliveryAddressElement && this.autocomplete) {
+                    // Address input is inside PlaceAutocompleteElement
+                    deliveryAddressElement = this.autocomplete.querySelector('input');
+                }
+                return deliveryAddressElement?.value?.trim() || '';
+            }
+
             populateLocations() {
                 const locationOptionsContainer = document.getElementById('locationOptions');
                 const activeLocations = getActiveLocations();
@@ -1322,9 +1332,9 @@
                 if (step2Next) {
                     step2Next.textContent = 'Continue to Date Selection';
                     if (this.orderType === 'delivery' && this.selectedLocation && isDeliveryAvailable(this.selectedLocation)) {
-                        const deliveryAddress = document.getElementById('deliveryAddress').value.trim();
-                        const deliveryCity = document.getElementById('deliveryCity').value.trim();
-                        const deliveryZip = document.getElementById('deliveryZip').value.trim();
+                        const deliveryAddress = this.getDeliveryAddressValue();
+                        const deliveryCity = document.getElementById('deliveryCity')?.value?.trim() || '';
+                        const deliveryZip = document.getElementById('deliveryZip')?.value?.trim() || '';
                         step2Next.disabled = !deliveryAddress || !deliveryCity || !deliveryZip || !this.deliveryZoneValid;
                     } else {
                         step2Next.disabled = false; // Skip delivery step for pickup
@@ -1375,9 +1385,9 @@
 
                     // If delivery is selected, validate delivery fields and zone
                     if (this.orderType === 'delivery' && location && isDeliveryAvailable(location)) {
-                        const deliveryAddress = document.getElementById('deliveryAddress').value.trim();
-                        const deliveryCity = document.getElementById('deliveryCity').value.trim();
-                        const deliveryZip = document.getElementById('deliveryZip').value.trim();
+                        const deliveryAddress = this.getDeliveryAddressValue();
+                        const deliveryCity = document.getElementById('deliveryCity')?.value?.trim() || '';
+                        const deliveryZip = document.getElementById('deliveryZip')?.value?.trim() || '';
                         isFormValid = isFormValid && deliveryAddress && deliveryCity && deliveryZip && this.deliveryZoneValid;
                     }
 
@@ -1483,9 +1493,9 @@
             }
 
             async checkDeliveryZone() {
-                const zipCode = document.getElementById('deliveryZip').value.trim();
-                const city = document.getElementById('deliveryCity').value.trim();
-                const address = document.getElementById('deliveryAddress').value.trim();
+                const zipCode = document.getElementById('deliveryZip')?.value?.trim() || '';
+                const city = document.getElementById('deliveryCity')?.value?.trim() || '';
+                const address = this.getDeliveryAddressValue();
 
                 if (!zipCode || !city || !address) {
                     this.showDeliveryZoneMessage('Please fill in all delivery address fields before checking the delivery zone.', 'error');
@@ -1657,9 +1667,9 @@
                 // Only auto-check if we're on step 2 and delivery is selected
                 if (this.currentStep !== 2 || this.orderType !== 'delivery') return;
 
-                const deliveryAddress = document.getElementById('deliveryAddress').value.trim();
-                const deliveryCity = document.getElementById('deliveryCity').value.trim();
-                const deliveryZip = document.getElementById('deliveryZip').value.trim();
+                const deliveryAddress = this.getDeliveryAddressValue();
+                const deliveryCity = document.getElementById('deliveryCity')?.value?.trim() || '';
+                const deliveryZip = document.getElementById('deliveryZip')?.value?.trim() || '';
 
                 // Auto-check if all fields are filled
                 if (deliveryAddress && deliveryCity && deliveryZip) {
@@ -2074,9 +2084,9 @@
             validateStep2() {
                 // Only validate if delivery is selected
                 if (this.orderType === 'delivery' && this.selectedLocation && isDeliveryAvailable(this.selectedLocation)) {
-                    const deliveryAddress = document.getElementById('deliveryAddress').value.trim();
-                    const deliveryCity = document.getElementById('deliveryCity').value.trim();
-                    const deliveryZip = document.getElementById('deliveryZip').value.trim();
+                    const deliveryAddress = this.getDeliveryAddressValue();
+                    const deliveryCity = document.getElementById('deliveryCity')?.value?.trim() || '';
+                    const deliveryZip = document.getElementById('deliveryZip')?.value?.trim() || '';
 
                     if (!deliveryAddress || !deliveryCity || !deliveryZip) {
                         this.showStepError('Please fill in all delivery address fields.');
@@ -2325,9 +2335,9 @@
                 `;
 
                 if (this.orderType === 'delivery') {
-                    const address = document.getElementById('deliveryAddress').value;
-                    const city = document.getElementById('deliveryCity').value;
-                    const zip = document.getElementById('deliveryZip').value;
+                    const address = this.getDeliveryAddressValue();
+                    const city = document.getElementById('deliveryCity')?.value || '';
+                    const zip = document.getElementById('deliveryZip')?.value || '';
                     reviewHTML += `
                         <p><strong>Delivery Address:</strong> ${address}, ${city}, ${zip}</p>
                     `;
@@ -2982,8 +2992,8 @@
             }
 
             validateForm() {
-                const name = document.getElementById('customerName').value;
-                const phone = document.getElementById('customerPhone').value;
+                const name = document.getElementById('customerName')?.value;
+                const phone = document.getElementById('customerPhone')?.value;
                 const date = this.getSelectedPickupDate();
                 const location = this.selectedLocation;
 
@@ -2993,9 +3003,9 @@
 
                 // If delivery is selected, validate delivery fields and zone
                 if (this.orderType === 'delivery' && location && isDeliveryAvailable(location)) {
-                    const deliveryAddress = document.getElementById('deliveryAddress').value;
-                    const deliveryCity = document.getElementById('deliveryCity').value;
-                    const deliveryZip = document.getElementById('deliveryZip').value;
+                    const deliveryAddress = this.getDeliveryAddressValue();
+                    const deliveryCity = document.getElementById('deliveryCity')?.value?.trim() || '';
+                    const deliveryZip = document.getElementById('deliveryZip')?.value?.trim() || '';
                     isBasicDataValid = isBasicDataValid && deliveryAddress && deliveryCity && deliveryZip && this.deliveryZoneValid;
                 }
 
@@ -3152,9 +3162,9 @@
 
                     // Add delivery information if delivery is selected
                     if (this.orderType === 'delivery') {
-                        checkoutData.deliveryAddress = document.getElementById('deliveryAddress').value;
-                        checkoutData.deliveryCity = document.getElementById('deliveryCity').value;
-                        checkoutData.deliveryZip = document.getElementById('deliveryZip').value;
+                        checkoutData.deliveryAddress = this.getDeliveryAddressValue();
+                        checkoutData.deliveryCity = document.getElementById('deliveryCity')?.value || '';
+                        checkoutData.deliveryZip = document.getElementById('deliveryZip')?.value || '';
                         checkoutData.deliveryFee = getDeliveryFee(this.selectedLocation);
                     }
 
