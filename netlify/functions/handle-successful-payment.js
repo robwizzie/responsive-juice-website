@@ -83,68 +83,127 @@ exports.handler = async event => {
 				const orderTypeIcon = isDelivery ? '🚚' : '📍';
 
 				const customerEmailHtml = `
-                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-                    <div style="text-align: center; margin-bottom: 30px;">
-                        <h1 style="color: #ff9700; margin-bottom: 10px;">Order Confirmed!</h1>
-                        <p style="color: #666; font-size: 18px;">Thank you for your order with Pressed By J & H</p>
+                <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff;">
+                    <!-- Header with gradient -->
+                    <div style="background: linear-gradient(135deg, #ff9700, #ff7700); padding: 40px 20px; text-align: center; border-radius: 0;">
+                        <h1 style="color: #ffffff; margin: 0 0 10px 0; font-size: 32px; font-weight: bold; text-shadow: 0 2px 4px rgba(0,0,0,0.1);">✓ Order Confirmed!</h1>
+                        <p style="color: #ffffff; font-size: 18px; margin: 0; opacity: 0.95;">Thank you for your order with Pressed By J & H</p>
                     </div>
+
+                    <!-- Main content -->
+                    <div style="padding: 30px 20px;">
                     
-                    <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
-                        <h2 style="color: #333; margin-top: 0;">${orderTypeIcon} ${orderTypeText} Details</h2>
-                        <p><strong>Customer:</strong> ${customerName}</p>
-                        <p><strong>Phone:</strong> ${customerPhone}</p>
-                        <p><strong>${orderTypeText} Date:</strong> ${formattedPickupDate}</p>
-                        
+                    <!-- Order Details Card -->
+                    <div style="background: #ffffff; padding: 25px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border: 1px solid #e8e8e8;">
+                        <h2 style="color: #ff9700; margin: 0 0 20px 0; font-size: 24px; border-bottom: 2px solid #ff9700; padding-bottom: 10px;">${orderTypeIcon} ${orderTypeText} Details</h2>
+
+                        <div style="margin-bottom: 20px;">
+                            <p style="margin: 8px 0; color: #333; font-size: 15px;"><strong style="color: #555;">Customer:</strong> ${customerName}</p>
+                            <p style="margin: 8px 0; color: #333; font-size: 15px;"><strong style="color: #555;">Phone:</strong> ${customerPhone}</p>
+                            <p style="margin: 8px 0; color: #333; font-size: 15px;"><strong style="color: #555;">${orderTypeText} Date:</strong> ${formattedPickupDate}</p>
+                        </div>
+
                         ${
 							isDelivery
 								? `
-                        <div style="margin: 15px 0; padding: 15px; background: white; border-radius: 8px; border: 1px solid #e0e0e0;">
-                            <h3 style="color: #28a745; margin-top: 0; margin-bottom: 10px;">🚚 Delivery Address</h3>
-                            <p style="margin: 5px 0;"><strong>📍 Address:</strong> ${deliveryAddress}</p>
-                            <p style="margin: 5px 0;"><strong>🏙️ City:</strong> ${deliveryCity}</p>
-                            <p style="margin: 5px 0;"><strong>📮 ZIP Code:</strong> ${deliveryZip}</p>
-                            <p style="margin: 5px 0;"><strong>💰 Delivery Fee:</strong> $${deliveryFee}</p>
+                        <!-- Delivery Address Card -->
+                        <div style="margin: 20px 0 0 0; padding: 20px; background: linear-gradient(135deg, #f0fdf4, #dcfce7); border-radius: 10px; border-left: 4px solid #22c55e;">
+                            <h3 style="color: #15803d; margin: 0 0 15px 0; font-size: 18px; display: flex; align-items: center;">
+                                <span style="font-size: 24px; margin-right: 8px;">🚚</span>
+                                Delivery Address
+                            </h3>
+                            <div style="background: white; padding: 15px; border-radius: 8px; margin-top: 10px;">
+                                <p style="margin: 8px 0; color: #333; font-size: 15px; line-height: 1.6;">
+                                    <strong style="color: #555; display: inline-block; width: 100px;">📍 Address:</strong>
+                                    <span style="color: #111;">${deliveryAddress}</span>
+                                </p>
+                                <p style="margin: 8px 0; color: #333; font-size: 15px; line-height: 1.6;">
+                                    <strong style="color: #555; display: inline-block; width: 100px;">🏙️ City:</strong>
+                                    <span style="color: #111;">${deliveryCity}</span>
+                                </p>
+                                <p style="margin: 8px 0; color: #333; font-size: 15px; line-height: 1.6;">
+                                    <strong style="color: #555; display: inline-block; width: 100px;">📮 ZIP Code:</strong>
+                                    <span style="color: #111;">${deliveryZip}</span>
+                                </p>
+                                <p style="margin: 8px 0; color: #333; font-size: 15px; line-height: 1.6;">
+                                    <strong style="color: #555; display: inline-block; width: 100px;">💰 Delivery Fee:</strong>
+                                    <span style="color: #22c55e; font-weight: bold;">$${deliveryFee}</span>
+                                </p>
+                            </div>
                         </div>
                         `
 								: `
-                        <div style="margin: 15px 0; padding: 15px; background: white; border-radius: 8px; border: 1px solid #e0e0e0;">
-                            <h3 style="color: #ff9700; margin-top: 0; margin-bottom: 10px;">${locationName} Location</h3>
-                            <p style="margin: 5px 0;"><strong>📍 Address:</strong> ${locationAddress}</p>
-                            <p style="margin: 5px 0;"><strong>📞 Phone:</strong> <a href="tel:${locationPhone}" style="color: #ff9700; text-decoration: none;">${locationPhone}</a></p>
-                            <p style="margin: 5px 0;"><strong>🏢 Details:</strong> ${locationDescription}</p>
-                            <p style="margin: 5px 0;"><strong>🕒 Today's Hours:</strong> ${todaysHours}</p>
+                        <!-- Pickup Location Card -->
+                        <div style="margin: 20px 0 0 0; padding: 20px; background: linear-gradient(135deg, #fff7ed, #ffedd5); border-radius: 10px; border-left: 4px solid #ff9700;">
+                            <h3 style="color: #c2410c; margin: 0 0 15px 0; font-size: 18px; display: flex; align-items: center;">
+                                <span style="font-size: 24px; margin-right: 8px;">📍</span>
+                                ${locationName} Location
+                            </h3>
+                            <div style="background: white; padding: 15px; border-radius: 8px; margin-top: 10px;">
+                                <p style="margin: 8px 0; color: #333; font-size: 15px; line-height: 1.6;">
+                                    <strong style="color: #555; display: inline-block; min-width: 90px;">📍 Address:</strong>
+                                    <span style="color: #111;">${locationAddress}</span>
+                                </p>
+                                <p style="margin: 8px 0; color: #333; font-size: 15px; line-height: 1.6;">
+                                    <strong style="color: #555; display: inline-block; min-width: 90px;">📞 Phone:</strong>
+                                    <a href="tel:${locationPhone}" style="color: #ff9700; text-decoration: none; font-weight: 500;">${locationPhone}</a>
+                                </p>
+                                <p style="margin: 8px 0; color: #333; font-size: 15px; line-height: 1.6;">
+                                    <strong style="color: #555; display: inline-block; min-width: 90px;">🏢 Details:</strong>
+                                    <span style="color: #111;">${locationDescription}</span>
+                                </p>
+                                <p style="margin: 8px 0; color: #333; font-size: 15px; line-height: 1.6;">
+                                    <strong style="color: #555; display: inline-block; min-width: 90px;">🕒 Hours:</strong>
+                                    <span style="color: #111;">${todaysHours}</span>
+                                </p>
+                            </div>
                         </div>
                         `
 						}
-                        
-                        <p style="margin-top: 15px;"><strong>📞 We'll call you</strong> to confirm the exact ${isDelivery ? 'delivery' : 'pickup'} time before your scheduled date.</p>
                     </div>
-                    
-                    <div style="background: #fff3cd; padding: 15px; border-radius: 8px; border-left: 4px solid #ff9700; margin-bottom: 20px;">
-                        <p style="margin: 0; color: #856d03;"><strong>Important:</strong> ${isDelivery ? 'Please ensure someone is available at the delivery address on the scheduled date.' : 'Please bring this confirmation email when picking up your order.'}</p>
+
+                    <!-- Important Notice -->
+                    <div style="background: linear-gradient(135deg, #fef3c7, #fde68a); padding: 18px 20px; border-radius: 10px; border-left: 4px solid #ff9700; margin-bottom: 20px;">
+                        <p style="margin: 0; color: #92400e; font-size: 15px; line-height: 1.6;">
+                            <strong style="font-size: 16px;">📞 We'll call you</strong><br>
+                            <span style="font-size: 14px;">to confirm the exact ${isDelivery ? 'delivery' : 'pickup'} time before your scheduled date.</span>
+                        </p>
                     </div>
-                    
-                    <div style="border: 1px solid #ddd; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
-                        <h3 style="color: #333; margin-top: 0;">Order Summary</h3>
-                        <div style="border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 10px;">
-                            <div style="display: flex; justify-content: space-between;">
-                                <span>Subtotal:</span>
-                                <span>$${subtotal}</span>
+
+                    <!-- Additional Notice -->
+                    <div style="background: linear-gradient(135deg, #fff3e0, #ffe0b2); padding: 15px 18px; border-radius: 8px; border-left: 4px solid #f57c00; margin-bottom: 20px;">
+                        <p style="margin: 0; color: #e65100; font-size: 14px; line-height: 1.5;">
+                            <strong>📋 Important:</strong> ${isDelivery ? 'Please ensure someone is available at the delivery address on the scheduled date.' : 'Please bring this confirmation email when picking up your order.'}
+                        </p>
+                    </div>
+
+                    <!-- Order Summary -->
+                    <div style="background: #ffffff; padding: 25px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border: 1px solid #e8e8e8;">
+                        <h3 style="color: #333; margin: 0 0 20px 0; font-size: 20px; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px;">💰 Order Summary</h3>
+                        <div style="padding: 15px 0; border-bottom: 2px dashed #e0e0e0; margin-bottom: 15px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                <span style="color: #666; font-size: 15px;">Subtotal:</span>
+                                <span style="color: #333; font-size: 15px; font-weight: 500;">$${subtotal}</span>
                             </div>
                         </div>
-                        <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 18px;">
-                            <span>Total Paid:</span>
-                            <span style="color: #ff9700;">$${total}</span>
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0;">
+                            <span style="color: #333; font-weight: bold; font-size: 20px;">Total Paid:</span>
+                            <span style="color: #ff9700; font-weight: bold; font-size: 24px;">$${total}</span>
                         </div>
                     </div>
-                    
-                    <div style="text-align: center; margin-top: 30px;">
-                        <p style="color: #666;">Questions about your order?</p>
-                        <p style="color: #666;">Reply to this email or contact us directly</p>
+
+                    <!-- Questions Section -->
+                    <div style="background: linear-gradient(135deg, #f8f9fa, #e9ecef); padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 20px;">
+                        <p style="color: #495057; margin: 0 0 8px 0; font-size: 16px; font-weight: 500;">❓ Questions about your order?</p>
+                        <p style="color: #6c757d; margin: 0; font-size: 14px;">Reply to this email or contact us directly</p>
                     </div>
-                    
-                    <div style="text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee;">
-                        <p style="color: #999; font-size: 12px;">Pressed By J & H - Fresh Juice, Fresh Life</p>
+
+                    </div>
+
+                    <!-- Footer -->
+                    <div style="background: linear-gradient(135deg, #ff9700, #ff7700); padding: 25px 20px; text-align: center;">
+                        <p style="color: #ffffff; font-size: 16px; margin: 0; font-weight: 500; opacity: 0.95;">🍊 Pressed By J & H</p>
+                        <p style="color: #ffffff; font-size: 13px; margin: 5px 0 0 0; opacity: 0.85;">Fresh Juice, Fresh Life</p>
                     </div>
                 </div>
                 `;
@@ -159,46 +218,116 @@ exports.handler = async event => {
 
 				// Send notification to business owner
 				const businessNotificationHtml = `
-                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                    <h2 style="color: #ff9700;">New ${orderTypeText} Order Received!</h2>
-                    <div style="background: #f5f5f5; padding: 20px; border-radius: 10px;">
-                        <h3 style="color: #333; margin-top: 0;">Customer Details</h3>
-                        <p><strong>Name:</strong> ${customerName}</p>
-                        <p><strong>Email:</strong> ${customerEmail}</p>
-                        <p><strong>Phone:</strong> ${customerPhone}</p>
-                        
-                        <h3 style="color: #333; margin-top: 20px;">${orderTypeText} Information</h3>
-                        <p><strong>Date:</strong> ${formattedPickupDate}</p>
-                        <p><strong>Order Type:</strong> ${orderTypeText}</p>
-                        
+                <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff;">
+                    <!-- Header with gradient -->
+                    <div style="background: linear-gradient(135deg, #dc2626, #b91c1c); padding: 35px 20px; text-align: center;">
+                        <h1 style="color: #ffffff; margin: 0 0 10px 0; font-size: 28px; font-weight: bold; text-shadow: 0 2px 4px rgba(0,0,0,0.1);">🔔 New ${orderTypeText} Order!</h1>
+                        <p style="color: #ffffff; font-size: 16px; margin: 0; opacity: 0.95;">Order Received - Action Required</p>
+                    </div>
+
+                    <!-- Main content -->
+                    <div style="padding: 30px 20px;">
+
+                    <!-- Customer Details Card -->
+                    <div style="background: #ffffff; padding: 25px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border: 1px solid #e8e8e8;">
+                        <h2 style="color: #dc2626; margin: 0 0 20px 0; font-size: 22px; border-bottom: 2px solid #dc2626; padding-bottom: 10px;">👤 Customer Details</h2>
+                        <p style="margin: 8px 0; color: #333; font-size: 15px;"><strong style="color: #555;">Name:</strong> ${customerName}</p>
+                        <p style="margin: 8px 0; color: #333; font-size: 15px;"><strong style="color: #555;">Email:</strong> <a href="mailto:${customerEmail}" style="color: #dc2626; text-decoration: none;">${customerEmail}</a></p>
+                        <p style="margin: 8px 0; color: #333; font-size: 15px;"><strong style="color: #555;">Phone:</strong> <a href="tel:${customerPhone}" style="color: #dc2626; text-decoration: none; font-weight: 500;">${customerPhone}</a></p>
+                    </div>
+
+                    <!-- Order Information Card -->
+                    <div style="background: #ffffff; padding: 25px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border: 1px solid #e8e8e8;">
+                        <h2 style="color: #ff9700; margin: 0 0 20px 0; font-size: 22px; border-bottom: 2px solid #ff9700; padding-bottom: 10px;">${orderTypeIcon} ${orderTypeText} Information</h2>
+                        <p style="margin: 8px 0; color: #333; font-size: 15px;"><strong style="color: #555;">Date:</strong> ${formattedPickupDate}</p>
+                        <p style="margin: 8px 0; color: #333; font-size: 15px;"><strong style="color: #555;">Order Type:</strong> <span style="background: ${isDelivery ? '#dcfce7' : '#fed7aa'}; color: ${isDelivery ? '#15803d' : '#c2410c'}; padding: 4px 12px; border-radius: 12px; font-weight: 500;">${orderTypeText}</span></p>
+
                         ${
 							isDelivery
 								? `
-                        <div style="margin: 15px 0; padding: 15px; background: white; border-radius: 8px; border: 1px solid #e0e0e0;">
-                            <h4 style="color: #28a745; margin-top: 0; margin-bottom: 10px;">🚚 Delivery Address</h4>
-                            <p style="margin: 5px 0;"><strong>Address:</strong> ${deliveryAddress}</p>
-                            <p style="margin: 5px 0;"><strong>City:</strong> ${deliveryCity}</p>
-                            <p style="margin: 5px 0;"><strong>ZIP Code:</strong> ${deliveryZip}</p>
-                            <p style="margin: 5px 0;"><strong>Delivery Fee:</strong> $${deliveryFee}</p>
+                        <!-- Delivery Details -->
+                        <div style="margin: 20px 0 0 0; padding: 20px; background: linear-gradient(135deg, #f0fdf4, #dcfce7); border-radius: 10px; border-left: 4px solid #22c55e;">
+                            <h3 style="color: #15803d; margin: 0 0 15px 0; font-size: 18px;">🚚 Delivery Address</h3>
+                            <div style="background: white; padding: 15px; border-radius: 8px;">
+                                <p style="margin: 8px 0; color: #333; font-size: 15px; line-height: 1.6;">
+                                    <strong style="color: #555; display: inline-block; width: 110px;">📍 Address:</strong>
+                                    <span style="color: #111; font-weight: 500;">${deliveryAddress}</span>
+                                </p>
+                                <p style="margin: 8px 0; color: #333; font-size: 15px; line-height: 1.6;">
+                                    <strong style="color: #555; display: inline-block; width: 110px;">🏙️ City:</strong>
+                                    <span style="color: #111;">${deliveryCity}</span>
+                                </p>
+                                <p style="margin: 8px 0; color: #333; font-size: 15px; line-height: 1.6;">
+                                    <strong style="color: #555; display: inline-block; width: 110px;">📮 ZIP Code:</strong>
+                                    <span style="color: #111;">${deliveryZip}</span>
+                                </p>
+                                <p style="margin: 8px 0; color: #333; font-size: 15px; line-height: 1.6;">
+                                    <strong style="color: #555; display: inline-block; width: 110px;">💰 Delivery Fee:</strong>
+                                    <span style="color: #22c55e; font-weight: bold;">$${deliveryFee}</span>
+                                </p>
+                            </div>
                         </div>
-                        <p><strong>Location:</strong> ${locationName} - ${locationDescription}</p>
-                        <p><strong>Location Address:</strong> ${locationAddress}</p>
-                        <p><strong>Location Phone:</strong> ${locationPhone}</p>
+
+                        <!-- Fulfilling Location -->
+                        <div style="margin: 15px 0 0 0; padding: 15px; background: #f8f9fa; border-radius: 8px; border-left: 3px solid #6c757d;">
+                            <h4 style="color: #495057; margin: 0 0 10px 0; font-size: 16px;">🏪 Fulfilling Location</h4>
+                            <p style="margin: 5px 0; color: #333; font-size: 14px;"><strong>Location:</strong> ${locationName}</p>
+                            <p style="margin: 5px 0; color: #333; font-size: 14px;"><strong>Details:</strong> ${locationDescription}</p>
+                            <p style="margin: 5px 0; color: #333; font-size: 14px;"><strong>Address:</strong> ${locationAddress}</p>
+                            <p style="margin: 5px 0; color: #333; font-size: 14px;"><strong>Phone:</strong> ${locationPhone}</p>
+                        </div>
                         `
 								: `
-                        <p><strong>Location:</strong> ${locationName} - ${locationDescription}</p>
-                        <p><strong>Address:</strong> ${locationAddress}</p>
-                        <p><strong>Location Phone:</strong> ${locationPhone}</p>
-                        <p><strong>Today's Hours:</strong> ${todaysHours}</p>
+                        <!-- Pickup Location -->
+                        <div style="margin: 20px 0 0 0; padding: 20px; background: linear-gradient(135deg, #fff7ed, #ffedd5); border-radius: 10px; border-left: 4px solid #ff9700;">
+                            <h3 style="color: #c2410c; margin: 0 0 15px 0; font-size: 18px;">📍 Pickup Location</h3>
+                            <div style="background: white; padding: 15px; border-radius: 8px;">
+                                <p style="margin: 8px 0; color: #333; font-size: 15px; line-height: 1.6;">
+                                    <strong style="color: #555; display: inline-block; min-width: 90px;">Location:</strong>
+                                    <span style="color: #111; font-weight: 500;">${locationName}</span>
+                                </p>
+                                <p style="margin: 8px 0; color: #333; font-size: 15px; line-height: 1.6;">
+                                    <strong style="color: #555; display: inline-block; min-width: 90px;">Details:</strong>
+                                    <span style="color: #111;">${locationDescription}</span>
+                                </p>
+                                <p style="margin: 8px 0; color: #333; font-size: 15px; line-height: 1.6;">
+                                    <strong style="color: #555; display: inline-block; min-width: 90px;">Address:</strong>
+                                    <span style="color: #111;">${locationAddress}</span>
+                                </p>
+                                <p style="margin: 8px 0; color: #333; font-size: 15px; line-height: 1.6;">
+                                    <strong style="color: #555; display: inline-block; min-width: 90px;">Phone:</strong>
+                                    <span style="color: #111;">${locationPhone}</span>
+                                </p>
+                                <p style="margin: 8px 0; color: #333; font-size: 15px; line-height: 1.6;">
+                                    <strong style="color: #555; display: inline-block; min-width: 90px;">Hours:</strong>
+                                    <span style="color: #111;">${todaysHours}</span>
+                                </p>
+                            </div>
+                        </div>
                         `
 						}
-                        
-                        <h3 style="color: #333; margin-top: 20px;">Order Details</h3>
-                        <p><strong>Order Total:</strong> $${total}</p>
-                        <p><strong>Session ID:</strong> ${session.id}</p>
                     </div>
-                    <div style="background: #fff3cd; padding: 15px; border-radius: 8px; border-left: 4px solid #ff9700; margin-top: 20px;">
-                        <p style="margin: 0; color: #856d03;"><strong>Action Required:</strong> ${isDelivery ? 'Contact the customer to confirm delivery time and prepare for delivery.' : 'Reply to the customer with the exact pickup address and time confirmation.'}</p>
+
+                    <!-- Order Details Card -->
+                    <div style="background: #ffffff; padding: 25px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border: 1px solid #e8e8e8;">
+                        <h2 style="color: #333; margin: 0 0 20px 0; font-size: 22px; border-bottom: 2px solid #e8e8e8; padding-bottom: 10px;">📦 Order Details</h2>
+                        <p style="margin: 12px 0; color: #333; font-size: 16px;"><strong style="color: #555;">Order Total:</strong> <span style="color: #22c55e; font-weight: bold; font-size: 18px;">$${total}</span></p>
+                        <p style="margin: 8px 0; color: #666; font-size: 13px;"><strong>Session ID:</strong> <code style="background: #f1f5f9; padding: 4px 8px; border-radius: 4px; font-size: 12px;">${session.id}</code></p>
+                    </div>
+
+                    <!-- Action Required Alert -->
+                    <div style="background: linear-gradient(135deg, #fef3c7, #fde68a); padding: 20px; border-radius: 10px; border-left: 4px solid #f59e0b; margin-bottom: 20px;">
+                        <p style="margin: 0; color: #92400e; font-size: 15px; line-height: 1.6;">
+                            <strong style="font-size: 17px;">⚠️ Action Required:</strong><br>
+                            <span style="font-size: 14px; margin-top: 8px; display: inline-block;">${isDelivery ? 'Contact the customer to confirm delivery time and prepare for delivery.' : 'Reply to the customer with the exact pickup time confirmation.'}</span>
+                        </p>
+                    </div>
+
+                    </div>
+
+                    <!-- Footer -->
+                    <div style="background: linear-gradient(135deg, #dc2626, #b91c1c); padding: 20px; text-align: center;">
+                        <p style="color: #ffffff; font-size: 14px; margin: 0; opacity: 0.9;">🍊 Pressed By J & H - Order Management System</p>
                     </div>
                 </div>
                 `;

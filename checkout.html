@@ -1130,7 +1130,7 @@
                 const locationOptionsContainer = document.getElementById('locationOptions');
                 const activeLocations = getActiveLocations();
                 const totalItems = this.cart.getTotalItems();
-                const hasMinimumForDelivery = totalItems >= 5;
+                const hasMinimumForDelivery = totalItems >= 6;
 
                 let locationsHTML = '';
                 activeLocations.forEach(location => {
@@ -1170,17 +1170,17 @@
                                         <span style="font-weight: bold;">Pickup</span>
                                     </label>
                                     ${deliveryAvailable ? `
-                                        <label style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem; cursor: ${hasMinimumForDelivery ? 'pointer' : 'not-allowed'}; opacity: ${hasMinimumForDelivery ? '0.5' : '0.3'}; padding: 1rem; border: 2px solid #ddd; border-radius: 8px; min-width: 120px; transition: all 0.3s ease;" class="order-type-label" title="${!hasMinimumForDelivery ? 'Delivery requires 5 bottles minimum' : ''}">
+                                        <label style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem; cursor: ${hasMinimumForDelivery ? 'pointer' : 'not-allowed'}; opacity: ${hasMinimumForDelivery ? '0.5' : '0.3'}; padding: 1rem; border: 2px solid #ddd; border-radius: 8px; min-width: 120px; transition: all 0.3s ease;" class="order-type-label" title="${!hasMinimumForDelivery ? 'Delivery requires 6 bottles minimum' : ''}">
                                             <input type="radio" name="orderType_${location.slug}" value="delivery" disabled style="margin: 0;">
                                             <i class="ri-truck-line" style="font-size: 1.5rem; color: #28a745;"></i>
                                             <span style="font-weight: bold;">Delivery</span>
-                                            ${!hasMinimumForDelivery ? '<small style="font-size: 0.7rem; color: #dc3545; text-align: center;">(5 bottle minimum)</small>' : ''}
+                                            ${!hasMinimumForDelivery ? '<small style="font-size: 0.7rem; color: #dc3545; text-align: center;">(6 bottle minimum)</small>' : ''}
                                         </label>
                                     ` : ''}
                                 </div>
                                 <div class="location-selection-hint" style="font-size: 0.8rem; color: #666; margin-top: 0.5rem; font-style: italic; text-align: center;">
                                     <i class="ri-information-line"></i> Select a location above to choose order type
-                                    ${!hasMinimumForDelivery && deliveryAvailable ? '<br><span style="color: #dc3545;"><i class="ri-error-warning-line"></i> Delivery requires 5 bottles minimum</span>' : ''}
+                                    ${!hasMinimumForDelivery && deliveryAvailable ? '<br><span style="color: #dc3545;"><i class="ri-error-warning-line"></i> Delivery requires 6 bottles minimum</span>' : ''}
                                 </div>
                             </div>
                         </div>
@@ -1212,7 +1212,7 @@
                         const allOrderTypeLabels = document.querySelectorAll('.order-type-label');
                         const allLocationHints = document.querySelectorAll('.location-selection-hint');
                         const totalItems = this.cart.getTotalItems();
-                        const hasMinimumForDelivery = totalItems >= 5;
+                        const hasMinimumForDelivery = totalItems >= 6;
 
                         allRadioButtons.forEach(radio => {
                             const isCurrentLocation = radio.name === `orderType_${this.selectedLocation}`;
@@ -1304,7 +1304,7 @@
             updateDeliverySection() {
                 const deliverySection = document.getElementById('deliverySection');
                 const totalItems = this.cart.getTotalItems();
-                const hasMinimumForDelivery = totalItems >= 5;
+                const hasMinimumForDelivery = totalItems >= 6;
 
                 if (this.orderType === 'delivery' && this.selectedLocation && isDeliveryAvailable(this.selectedLocation) && hasMinimumForDelivery) {
                     deliverySection.style.display = 'block';
@@ -1395,7 +1395,7 @@
                     const isDateValid = !date || !location || this.isValidPickupDate(date);
 
                     // Check delivery minimum requirement
-                    const hasMinimumForDelivery = totalItems >= 5;
+                    const hasMinimumForDelivery = totalItems >= 6;
                     if (this.orderType === 'delivery' && !hasMinimumForDelivery) {
                         isFormValid = false;
                     }
@@ -1417,7 +1417,7 @@
 
                         // Add tooltip for disabled state
                         if (!isValid && this.orderType === 'delivery' && !hasMinimumForDelivery) {
-                            completeOrderButton.title = 'Delivery requires 5 bottles minimum';
+                            completeOrderButton.title = 'Delivery requires 6 bottles minimum';
                         } else {
                             completeOrderButton.title = '';
                         }
@@ -2316,7 +2316,7 @@
                             this.updateProgressIndicator(this.currentStep);
 
                             // Show warning message
-                            this.showStepError('Delivery requires 5 bottles minimum. Your order has been switched to pickup.');
+                            this.showStepError('Delivery requires 6 bottles minimum. Your order has been switched to pickup.');
                         } else {
                             console.log('Updating UI without changing order type');
                             // Just update the UI without changing order type
@@ -2339,7 +2339,7 @@
 
             updateDeliveryRadioStates() {
                 const totalItems = this.cart.getTotalItems();
-                const hasMinimumForDelivery = totalItems >= 5;
+                const hasMinimumForDelivery = totalItems >= 6;
 
                 console.log('updateDeliveryRadioStates called - totalItems:', totalItems, 'hasMinimumForDelivery:', hasMinimumForDelivery);
 
@@ -2393,7 +2393,7 @@
                             } else {
                                 label.style.opacity = '0.3';
                                 label.style.cursor = 'not-allowed';
-                                label.title = 'Delivery requires 5 bottles minimum';
+                                label.title = 'Delivery requires 6 bottles minimum';
                             }
                             console.log('Updated label for location:', locationSlug, 'opacity:', label.style.opacity, 'cursor:', label.style.cursor, 'title:', label.title);
                         } else {
