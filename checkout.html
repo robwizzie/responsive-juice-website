@@ -1102,6 +1102,7 @@
                 this.cart = window.cart || new Cart();
                 this.autocomplete = null; // Store autocomplete instance
                 this.addressSelectedFromAutocomplete = false; // Track if address was selected from Google Places
+                this.deliveryAddress = ''; // Store address from autocomplete
                 this.deliveryCity = ''; // Store city from autocomplete
                 this.deliveryZip = ''; // Store ZIP from autocomplete
                 this.init();
@@ -1119,44 +1120,10 @@
                 this.setupCartChangeListener();
             }
 
-            // Helper method to get delivery address value (handles PlaceAutocompleteElement)
+            // Helper method to get delivery address value
             getDeliveryAddressValue() {
-                // If autocomplete is active, get value from the autocomplete element
-                if (this.autocomplete) {
-                    // PlaceAutocompleteElement is a web component - try to access the internal input
-                    try {
-                        // Try to access the shadow DOM input
-                        const shadowRoot = this.autocomplete.shadowRoot;
-                        if (shadowRoot) {
-                            const input = shadowRoot.querySelector('input');
-                            if (input && input.value) {
-                                console.log('📝 Got value from shadow DOM:', input.value);
-                                return input.value.trim();
-                            }
-                        }
-
-                        // Fallback: try the value property directly
-                        if (this.autocomplete.value) {
-                            console.log('📝 Got value from autocomplete.value:', this.autocomplete.value);
-                            return this.autocomplete.value.trim();
-                        }
-
-                        // Another fallback: try to get the text content
-                        if (this.autocomplete.textContent) {
-                            console.log('📝 Got value from textContent:', this.autocomplete.textContent);
-                            return this.autocomplete.textContent.trim();
-                        }
-
-                        console.log('📝 No value found in autocomplete element');
-                    } catch (error) {
-                        console.warn('Could not access autocomplete input:', error);
-                    }
-                }
-                // Otherwise, get from the regular input field (fallback mode)
-                const addressInput = document.getElementById('deliveryAddress');
-                const value = addressInput ? addressInput.value.trim() : '';
-                console.log('📝 Got value from fallback input:', value);
-                return value;
+                // Return the stored address value (set when user selects from autocomplete)
+                return this.deliveryAddress || '';
             }
 
             populateLocations() {
@@ -1825,19 +1792,6 @@
                     }
 
                     console.log('Google Places Autocomplete (PlaceAutocompleteElement) initialized successfully');
-                    console.log('Autocomplete element:', this.autocomplete);
-
-                    // Debug: Log all events that fire on this element
-                    ['click', 'change', 'input', 'gmp-placeselect', 'place_changed'].forEach(eventName => {
-                        this.autocomplete.addEventListener(eventName, (e) => {
-                            console.log(`🔔 Event fired: ${eventName}`, e);
-                            // Additional debug for input events
-                            if (eventName === 'input') {
-                                console.log('📝 Input value:', e.target?.value || 'no value');
-                                console.log('📝 Current address value:', this.getDeliveryAddressValue());
-                            }
-                        });
-                    });
 
                     // Listen for place selection events
                     this.autocomplete.addEventListener('gmp-placeselect', async (event) => {
@@ -1892,7 +1846,8 @@
                             const fullAddress = `${streetNumber} ${route}`.trim();
                             console.log('🏠 Parsed address:', { fullAddress, city, state, zipCode });
 
-                            // Store city and ZIP internally (not in visible fields since they're hidden)
+                            // Store the selected address, city and ZIP internally
+                            this.deliveryAddress = fullAddress;
                             this.deliveryCity = city;
                             this.deliveryZip = zipCode;
 
@@ -1922,9 +1877,12 @@
 
                     // Listen for input changes to track manual edits
                     this.autocomplete.addEventListener('input', (e) => {
-                        // If user manually types or edits, clear the autocomplete flag
+                        // If user manually types or edits, clear the stored values and flags
                         this.addressSelectedFromAutocomplete = false;
                         this.deliveryZoneValid = false;
+                        this.deliveryAddress = '';
+                        this.deliveryCity = '';
+                        this.deliveryZip = '';
 
                         // Clear validation message when user starts editing
                         const messageDiv = document.getElementById('deliveryZoneMessage');
@@ -1932,7 +1890,7 @@
                             messageDiv.style.display = 'none';
                         }
 
-                        // Update buttons
+                        // Update buttons (will be disabled since no address is selected)
                         this.updateStepButtons();
                     });
 
