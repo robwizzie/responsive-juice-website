@@ -59,6 +59,18 @@ exports.handler = async event => {
 			const deliveryZip = session.metadata && session.metadata.delivery_zip;
 			const deliveryFee = session.metadata && session.metadata.delivery_fee;
 
+			// Fetch line items from the session
+			let lineItems = [];
+			try {
+				const lineItemsResponse = await stripe.checkout.sessions.listLineItems(session.id, { limit: 100 });
+				lineItems = lineItemsResponse.data;
+			} catch (error) {
+				console.error('Error fetching line items:', error);
+			}
+
+			// Get base URL for images
+			const baseURL = process.env.URL || 'https://pressedbyjandh.com';
+
 			if (customerEmail && pickupDate && pickupLocation) {
 				// Format the pickup date
 				const formattedPickupDate = new Date(pickupDate).toLocaleDateString('en-US', {
@@ -81,17 +93,70 @@ exports.handler = async event => {
 				const isDelivery = orderType === 'delivery';
 				const orderTypeText = isDelivery ? 'Delivery' : 'Pickup';
 
+				// Helper function to get juice image URL from product name
+				const getJuiceImageUrl = productName => {
+					const juiceImageMap = {
+						'Sweet Green': `${baseURL}/assets/img/juices/sweet-green.png`,
+						'Midnight Rush': `${baseURL}/assets/img/juices/midnight-rush.png`,
+						'Tropical Storm': `${baseURL}/assets/img/juices/tropical-storm.png`,
+						'Electric Berry Lemonade': `${baseURL}/assets/img/juices/electric-berry-lemonade.png`,
+						'Strawberry Lemonade': `${baseURL}/assets/img/juices/strawberry-lemonade.png`,
+						'Cinnamon Green Apple': `${baseURL}/assets/img/juices/cinnamon-green-apple.png`,
+						'Sour Punch': `${baseURL}/assets/img/juices/sour-punch.png`,
+						'Strawberry Banana': `${baseURL}/assets/img/juices/strawberry-banana.png`
+					};
+					return juiceImageMap[productName] || `${baseURL}/assets/img/juices/sweet-green.png`;
+				};
+
+				// Build order items HTML
+				let orderItemsHtml = '';
+				lineItems.forEach(item => {
+					// Skip delivery fee items
+					if (item.description && item.description.name !== 'Delivery Fee') {
+						const itemPrice = ((item.amount_total || 0) / 100).toFixed(2);
+						const juiceImage = getJuiceImageUrl(item.description.name);
+						orderItemsHtml += `
+						<tr>
+							<td style="padding: 15px; border-bottom: 1px solid #eeeeee;">
+								<table style="width: 100%; border-collapse: collapse;">
+									<tr>
+										<td style="width: 70px; vertical-align: middle;">
+											<img src="${juiceImage}" alt="${item.description.name}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; display: block;">
+										</td>
+										<td style="vertical-align: middle; padding-left: 15px;">
+											<p style="margin: 0; color: #222; font-size: 15px; font-weight: 500;">${item.description.name}</p>
+											<p style="margin: 5px 0 0 0; color: #666; font-size: 13px;">Quantity: ${item.quantity}</p>
+										</td>
+										<td style="vertical-align: middle; text-align: right; width: 80px;">
+											<p style="margin: 0; color: #222; font-size: 15px; font-weight: 500;">$${itemPrice}</p>
+										</td>
+									</tr>
+								</table>
+							</td>
+						</tr>`;
+					}
+				});
+
 				const customerEmailHtml = `
                 <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff;">
 
                     <!-- Header -->
-                    <div style="background: linear-gradient(135deg, #ff9700, #ff7700); padding: 50px 30px; text-align: center;">
+                    <div style="background: linear-gradient(135deg, #ff9700, #ff7700); padding: 30px 30px 40px 30px; text-align: center;">
+                        <img src="${baseURL}/assets/img/branding/logo.png" alt="Pressed By J & H" style="height: 50px; margin-bottom: 20px;">
                         <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 300; letter-spacing: 1px;">ORDER CONFIRMED</h1>
                         <p style="color: #ffffff; font-size: 15px; margin: 12px 0 0 0; opacity: 0.9; font-weight: 300;">Thank you for choosing Pressed By J & H</p>
                     </div>
 
                     <!-- Main Content -->
                     <div style="padding: 40px 30px; background: #fafafa;">
+
+                        <!-- Order Items -->
+                        <div style="background: #ffffff; padding: 30px; margin-bottom: 20px;">
+                            <h2 style="color: #222; margin: 0 0 20px 0; font-size: 18px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">Your Order</h2>
+                            <table style="width: 100%; border-collapse: collapse;">
+                                ${orderItemsHtml}
+                            </table>
+                        </div>
 
                         <!-- Order Information -->
                         <div style="background: #ffffff; padding: 30px; margin-bottom: 20px;">
@@ -187,13 +252,22 @@ exports.handler = async event => {
                 <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff;">
 
                     <!-- Header -->
-                    <div style="background: #222; padding: 40px 30px; text-align: center; border-bottom: 4px solid #ff9700;">
+                    <div style="background: #222; padding: 30px 30px 40px 30px; text-align: center; border-bottom: 4px solid #ff9700;">
+                        <img src="${baseURL}/assets/img/branding/logo.png" alt="Pressed By J & H" style="height: 45px; margin-bottom: 20px;">
                         <h1 style="color: #ff9700; margin: 0; font-size: 24px; font-weight: 500; letter-spacing: 1px;">NEW ORDER RECEIVED</h1>
                         <p style="color: #999; font-size: 14px; margin: 10px 0 0 0;">${orderTypeText} • ${formattedPickupDate}</p>
                     </div>
 
                     <!-- Main Content -->
                     <div style="padding: 40px 30px; background: #fafafa;">
+
+                        <!-- Order Items -->
+                        <div style="background: #fff; padding: 30px; margin-bottom: 20px;">
+                            <h2 style="color: #222; margin: 0 0 20px 0; font-size: 14px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">Order Items</h2>
+                            <table style="width: 100%; border-collapse: collapse;">
+                                ${orderItemsHtml}
+                            </table>
+                        </div>
 
                         <!-- Order Summary -->
                         <div style="background: #fff; padding: 25px; margin-bottom: 20px; border-left: 4px solid #ff9700;">
