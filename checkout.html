@@ -2108,15 +2108,12 @@
             }
 
             goToStep(stepNumber, forceStep = false) {
-                console.log('🎯 goToStep called with stepNumber:', stepNumber, 'orderType:', this.orderType, 'forceStep:', forceStep);
 
                 // Handle step skipping for pickup orders (unless forced)
                 if (stepNumber === 2 && this.orderType === 'pickup' && !forceStep) {
-                    console.log('⚠️ Skipping step 2 for pickup order, going to step 3 instead');
                     stepNumber = 3; // Skip delivery step for pickup
                 }
 
-                console.log('📍 Final step number:', stepNumber);
 
                 // Hide all steps
                 document.querySelectorAll('.checkout-step').forEach(step => {
@@ -2128,9 +2125,6 @@
                 const step2Element = document.getElementById('step2');
                 if (step2Element && this.orderType === 'pickup' && !forceStep) {
                     step2Element.style.display = 'none';
-                    console.log('🚫 Hidden step 2 for pickup order');
-                } else if (step2Element && forceStep) {
-                    console.log('✅ Showing step 2 (forced)');
                 }
 
                 // Show current step
@@ -2138,9 +2132,6 @@
                 if (currentStepElement) {
                     currentStepElement.classList.add('active');
                     currentStepElement.style.display = 'block';
-                    console.log('✅ Showing step', stepNumber);
-                } else {
-                    console.log('❌ Could not find step element for step', stepNumber);
                 }
 
                 // Auto-scroll to the next step button after a short delay
