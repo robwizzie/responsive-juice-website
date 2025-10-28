@@ -121,7 +121,7 @@ exports.handler = async event => {
 								<table style="width: 100%; border-collapse: collapse;">
 									<tr>
 										<td style="width: 70px; vertical-align: middle;">
-											<img src="${juiceImage}" alt="${item.description.name}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; display: block;">
+											<img src="${juiceImage}" alt="${item.description.name}" style="width: 60px; height: 60px; object-fit: contain; border-radius: 8px; display: block;">
 										</td>
 										<td style="vertical-align: middle; padding-left: 15px;">
 											<p style="margin: 0; color: #222; font-size: 15px; font-weight: 500;">${item.description.name}</p>
