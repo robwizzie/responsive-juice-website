@@ -1102,6 +1102,7 @@
                 this.cart = window.cart || new Cart();
                 this.autocomplete = null; // Store autocomplete instance
                 this.addressSelectedFromAutocomplete = false; // Track if address was selected from Google Places
+                this.deliveryAddress = ''; // Store address from autocomplete
                 this.deliveryCity = ''; // Store city from autocomplete
                 this.deliveryZip = ''; // Store ZIP from autocomplete
                 this.init();
@@ -1119,51 +1120,17 @@
                 this.setupCartChangeListener();
             }
 
-            // Helper method to get delivery address value (handles PlaceAutocompleteElement)
+            // Helper method to get delivery address value
             getDeliveryAddressValue() {
-                // If autocomplete is active, get value from the autocomplete element
-                if (this.autocomplete) {
-                    // PlaceAutocompleteElement is a web component - try to access the internal input
-                    try {
-                        // Try to access the shadow DOM input
-                        const shadowRoot = this.autocomplete.shadowRoot;
-                        if (shadowRoot) {
-                            const input = shadowRoot.querySelector('input');
-                            if (input && input.value) {
-                                console.log('📝 Got value from shadow DOM:', input.value);
-                                return input.value.trim();
-                            }
-                        }
-
-                        // Fallback: try the value property directly
-                        if (this.autocomplete.value) {
-                            console.log('📝 Got value from autocomplete.value:', this.autocomplete.value);
-                            return this.autocomplete.value.trim();
-                        }
-
-                        // Another fallback: try to get the text content
-                        if (this.autocomplete.textContent) {
-                            console.log('📝 Got value from textContent:', this.autocomplete.textContent);
-                            return this.autocomplete.textContent.trim();
-                        }
-
-                        console.log('📝 No value found in autocomplete element');
-                    } catch (error) {
-                        console.warn('Could not access autocomplete input:', error);
-                    }
-                }
-                // Otherwise, get from the regular input field (fallback mode)
-                const addressInput = document.getElementById('deliveryAddress');
-                const value = addressInput ? addressInput.value.trim() : '';
-                console.log('📝 Got value from fallback input:', value);
-                return value;
+                // Return the stored address value (set when user selects from autocomplete)
+                return this.deliveryAddress || '';
             }
 
             populateLocations() {
                 const locationOptionsContainer = document.getElementById('locationOptions');
                 const activeLocations = getActiveLocations();
                 const totalItems = this.cart.getTotalItems();
-                const hasMinimumForDelivery = totalItems >= 5;
+                const hasMinimumForDelivery = totalItems >= 6;
 
                 let locationsHTML = '';
                 activeLocations.forEach(location => {
@@ -1203,17 +1170,17 @@
                                         <span style="font-weight: bold;">Pickup</span>
                                     </label>
                                     ${deliveryAvailable ? `
-                                        <label style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem; cursor: ${hasMinimumForDelivery ? 'pointer' : 'not-allowed'}; opacity: ${hasMinimumForDelivery ? '0.5' : '0.3'}; padding: 1rem; border: 2px solid #ddd; border-radius: 8px; min-width: 120px; transition: all 0.3s ease;" class="order-type-label" title="${!hasMinimumForDelivery ? 'Delivery requires 5 bottles minimum' : ''}">
+                                        <label style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem; cursor: ${hasMinimumForDelivery ? 'pointer' : 'not-allowed'}; opacity: ${hasMinimumForDelivery ? '0.5' : '0.3'}; padding: 1rem; border: 2px solid #ddd; border-radius: 8px; min-width: 120px; transition: all 0.3s ease;" class="order-type-label" title="${!hasMinimumForDelivery ? 'Delivery requires 6 bottles minimum' : ''}">
                                             <input type="radio" name="orderType_${location.slug}" value="delivery" disabled style="margin: 0;">
                                             <i class="ri-truck-line" style="font-size: 1.5rem; color: #28a745;"></i>
                                             <span style="font-weight: bold;">Delivery</span>
-                                            ${!hasMinimumForDelivery ? '<small style="font-size: 0.7rem; color: #dc3545; text-align: center;">(5 bottle minimum)</small>' : ''}
+                                            ${!hasMinimumForDelivery ? '<small style="font-size: 0.7rem; color: #dc3545; text-align: center;">(6 bottle minimum)</small>' : ''}
                                         </label>
                                     ` : ''}
                                 </div>
                                 <div class="location-selection-hint" style="font-size: 0.8rem; color: #666; margin-top: 0.5rem; font-style: italic; text-align: center;">
                                     <i class="ri-information-line"></i> Select a location above to choose order type
-                                    ${!hasMinimumForDelivery && deliveryAvailable ? '<br><span style="color: #dc3545;"><i class="ri-error-warning-line"></i> Delivery requires 5 bottles minimum</span>' : ''}
+                                    ${!hasMinimumForDelivery && deliveryAvailable ? '<br><span style="color: #dc3545;"><i class="ri-error-warning-line"></i> Delivery requires 6 bottles minimum</span>' : ''}
                                 </div>
                             </div>
                         </div>
@@ -1245,7 +1212,7 @@
                         const allOrderTypeLabels = document.querySelectorAll('.order-type-label');
                         const allLocationHints = document.querySelectorAll('.location-selection-hint');
                         const totalItems = this.cart.getTotalItems();
-                        const hasMinimumForDelivery = totalItems >= 5;
+                        const hasMinimumForDelivery = totalItems >= 6;
 
                         allRadioButtons.forEach(radio => {
                             const isCurrentLocation = radio.name === `orderType_${this.selectedLocation}`;
@@ -1337,7 +1304,7 @@
             updateDeliverySection() {
                 const deliverySection = document.getElementById('deliverySection');
                 const totalItems = this.cart.getTotalItems();
-                const hasMinimumForDelivery = totalItems >= 5;
+                const hasMinimumForDelivery = totalItems >= 6;
 
                 if (this.orderType === 'delivery' && this.selectedLocation && isDeliveryAvailable(this.selectedLocation) && hasMinimumForDelivery) {
                     deliverySection.style.display = 'block';
@@ -1428,7 +1395,7 @@
                     const isDateValid = !date || !location || this.isValidPickupDate(date);
 
                     // Check delivery minimum requirement
-                    const hasMinimumForDelivery = totalItems >= 5;
+                    const hasMinimumForDelivery = totalItems >= 6;
                     if (this.orderType === 'delivery' && !hasMinimumForDelivery) {
                         isFormValid = false;
                     }
@@ -1450,7 +1417,7 @@
 
                         // Add tooltip for disabled state
                         if (!isValid && this.orderType === 'delivery' && !hasMinimumForDelivery) {
-                            completeOrderButton.title = 'Delivery requires 5 bottles minimum';
+                            completeOrderButton.title = 'Delivery requires 6 bottles minimum';
                         } else {
                             completeOrderButton.title = '';
                         }
@@ -1825,19 +1792,6 @@
                     }
 
                     console.log('Google Places Autocomplete (PlaceAutocompleteElement) initialized successfully');
-                    console.log('Autocomplete element:', this.autocomplete);
-
-                    // Debug: Log all events that fire on this element
-                    ['click', 'change', 'input', 'gmp-placeselect', 'place_changed'].forEach(eventName => {
-                        this.autocomplete.addEventListener(eventName, (e) => {
-                            console.log(`🔔 Event fired: ${eventName}`, e);
-                            // Additional debug for input events
-                            if (eventName === 'input') {
-                                console.log('📝 Input value:', e.target?.value || 'no value');
-                                console.log('📝 Current address value:', this.getDeliveryAddressValue());
-                            }
-                        });
-                    });
 
                     // Listen for place selection events
                     this.autocomplete.addEventListener('gmp-placeselect', async (event) => {
@@ -1892,7 +1846,8 @@
                             const fullAddress = `${streetNumber} ${route}`.trim();
                             console.log('🏠 Parsed address:', { fullAddress, city, state, zipCode });
 
-                            // Store city and ZIP internally (not in visible fields since they're hidden)
+                            // Store the selected address, city and ZIP internally
+                            this.deliveryAddress = fullAddress;
                             this.deliveryCity = city;
                             this.deliveryZip = zipCode;
 
@@ -1922,9 +1877,12 @@
 
                     // Listen for input changes to track manual edits
                     this.autocomplete.addEventListener('input', (e) => {
-                        // If user manually types or edits, clear the autocomplete flag
+                        // If user manually types or edits, clear the stored values and flags
                         this.addressSelectedFromAutocomplete = false;
                         this.deliveryZoneValid = false;
+                        this.deliveryAddress = '';
+                        this.deliveryCity = '';
+                        this.deliveryZip = '';
 
                         // Clear validation message when user starts editing
                         const messageDiv = document.getElementById('deliveryZoneMessage');
@@ -1932,7 +1890,7 @@
                             messageDiv.style.display = 'none';
                         }
 
-                        // Update buttons
+                        // Update buttons (will be disabled since no address is selected)
                         this.updateStepButtons();
                     });
 
@@ -2358,7 +2316,7 @@
                             this.updateProgressIndicator(this.currentStep);
 
                             // Show warning message
-                            this.showStepError('Delivery requires 5 bottles minimum. Your order has been switched to pickup.');
+                            this.showStepError('Delivery requires 6 bottles minimum. Your order has been switched to pickup.');
                         } else {
                             console.log('Updating UI without changing order type');
                             // Just update the UI without changing order type
@@ -2381,7 +2339,7 @@
 
             updateDeliveryRadioStates() {
                 const totalItems = this.cart.getTotalItems();
-                const hasMinimumForDelivery = totalItems >= 5;
+                const hasMinimumForDelivery = totalItems >= 6;
 
                 console.log('updateDeliveryRadioStates called - totalItems:', totalItems, 'hasMinimumForDelivery:', hasMinimumForDelivery);
 
@@ -2435,7 +2393,7 @@
                             } else {
                                 label.style.opacity = '0.3';
                                 label.style.cursor = 'not-allowed';
-                                label.title = 'Delivery requires 5 bottles minimum';
+                                label.title = 'Delivery requires 6 bottles minimum';
                             }
                             console.log('Updated label for location:', locationSlug, 'opacity:', label.style.opacity, 'cursor:', label.style.cursor, 'title:', label.title);
                         } else {
