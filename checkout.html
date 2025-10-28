@@ -833,16 +833,15 @@
                     script.async = true;
                     script.defer = true;
                     script.onload = () => {
-                        console.log('Google Places API loaded');
                         // Don't auto-initialize autocomplete - wait for location selection
                         window.googleMapsApiLoaded = true;
                     };
                     document.head.appendChild(script);
                 } else {
-                    console.error('Failed to load Google Maps API key');
+                    // Failed to load Google Maps API key
                 }
             } catch (error) {
-                console.error('Error loading Google Maps API key:', error);
+                // Error loading Google Maps API key
             }
         })();
     </script>
@@ -1102,9 +1101,10 @@
                 this.cart = window.cart || new Cart();
                 this.autocomplete = null; // Store autocomplete instance
                 this.addressSelectedFromAutocomplete = false; // Track if address was selected from Google Places
-                this.deliveryAddress = ''; // Store address from autocomplete
                 this.deliveryCity = ''; // Store city from autocomplete
                 this.deliveryZip = ''; // Store ZIP from autocomplete
+                this.currentAddressValue = ''; // Store current address value manually
+                this.manualAddressValue = ''; // Track manually typed address value
                 this.init();
             }
 
@@ -1120,10 +1120,99 @@
                 this.setupCartChangeListener();
             }
 
-            // Helper method to get delivery address value
+            // Helper method to get delivery address value (handles PlaceAutocompleteElement)
             getDeliveryAddressValue() {
-                // Return the stored address value (set when user selects from autocomplete)
-                return this.deliveryAddress || '';
+                // First check if we have a manually stored value
+                if (this.currentAddressValue) {
+                    return this.currentAddressValue;
+                }
+
+                // If autocomplete is active, get value from the autocomplete element
+                if (this.autocomplete) {
+                    try {
+                        // Check if this is the new PlaceAutocompleteElement (web component)
+                        if (this.autocomplete.tagName === 'GMP-PLACE-AUTOCOMPLETE') {
+                            // Method 1: Try the value property directly
+                            if (this.autocomplete.value) {
+                                return this.autocomplete.value.trim();
+                            }
+
+                            // Method 2: Try to access the shadow DOM input (even if closed)
+                            try {
+                                const shadowRoot = this.autocomplete.shadowRoot;
+                                if (shadowRoot) {
+                                    const input = shadowRoot.querySelector('input');
+                                    if (input && input.value) {
+                                        return input.value.trim();
+                                    }
+                                }
+                            } catch (shadowError) {
+                                // Shadow DOM access failed, continue with fallback
+                            }
+
+                            // Method 3: Try to get the text content
+                            if (this.autocomplete.textContent) {
+                                return this.autocomplete.textContent.trim();
+                            }
+                        }
+                    } catch (error) {
+                        // Autocomplete access failed, continue with fallback
+                    }
+                }
+
+                // Otherwise, get from the regular input field (fallback mode)
+                const addressInput = document.getElementById('deliveryAddress');
+                return addressInput ? addressInput.value.trim() : '';
+            }
+
+            // Check if a manually typed address looks complete and try to parse it
+            checkIfAddressIsComplete() {
+                const address = this.currentAddressValue.trim();
+
+                // Only check if address has reasonable length and looks like a street address
+                if (address.length < 15) return;
+
+                // Look for patterns like "123 Main St, City" or "123 Main St, City, NJ 12345"
+                // Updated regex to better handle comma-separated addresses
+                const addressPattern = /^(\d+)\s+([^,]+?)(?:\s*,\s*)([A-Za-z\s]+?)(?:\s*,\s*[A-Z]{2}\s*(\d{5}))?$/;
+                const match = address.match(addressPattern);
+
+                if (match) {
+                    let [, streetNumber, streetName, city, zipCode] = match;
+
+                    // Clean up the street name and city
+                    streetName = streetName.trim();
+                    city = city.trim();
+
+                    // Try to extract ZIP code if it's at the end and not already captured
+                    if (!zipCode) {
+                        const zipPattern = /\b(\d{5})\b/;
+                        const zipMatch = address.match(zipPattern);
+                        zipCode = zipMatch ? zipMatch[1] : '';
+                    }
+
+                    // Process if we have a valid city (at least 3 characters and not just numbers)
+                    if (city && city.length >= 3 && !/^\d+$/.test(city)) {
+                        // Update the stored values
+                        this.deliveryCity = city;
+                        this.deliveryZip = zipCode;
+
+                        // Update hidden fields
+                        const cityField = document.getElementById('deliveryCity');
+                        const zipField = document.getElementById('deliveryZip');
+
+                        if (cityField) cityField.value = this.deliveryCity;
+                        if (zipField) zipField.value = this.deliveryZip;
+
+                        // Auto-validate the address
+                        this.checkDeliveryZone();
+                    }
+                }
+            }
+
+            // Manual method to trigger address parsing
+            triggerAddressParsing() {
+                this.checkIfAddressIsComplete();
             }
 
             populateLocations() {
@@ -1204,6 +1293,9 @@
                         card.classList.add('selected');
                         this.selectedLocation = card.dataset.location;
 
+                        // Update location bias for autocomplete to prioritize closer addresses
+                        this.updateLocationBias();
+
                         // Reset order type to pickup when switching locations
                         this.orderType = 'pickup';
 
@@ -1281,6 +1373,19 @@
                     card.addEventListener('change', (e) => {
                         if (e.target.type === 'radio' && e.target.name.startsWith('orderType_')) {
                             if (e.target.checked && !e.target.disabled) {
+                                // Check minimum requirement for delivery
+                                const totalItems = this.cart.getTotalItems();
+                                if (e.target.value === 'delivery' && totalItems < 6) {
+                                    // Prevent switching to delivery if minimum not met
+                                    e.target.checked = false;
+                                    const pickupRadio = document.querySelector(`input[name="${e.target.name}"][value="pickup"]`);
+                                    if (pickupRadio) {
+                                        pickupRadio.checked = true;
+                                    }
+                                    this.showStepError('Delivery requires a minimum of 6 bottles. Please add more items to your cart.');
+                                    return;
+                                }
+
                                 this.orderType = e.target.value;
                                 this.updateDeliverySection();
                                 this.updateLocationHoursInfo();
@@ -1343,16 +1448,7 @@
                         const deliveryCity = document.getElementById('deliveryCity')?.value?.trim() || '';
                         const deliveryZip = document.getElementById('deliveryZip')?.value?.trim() || '';
 
-                        // Debug logging
-                        console.log('Step 2 validation:', {
-                            deliveryAddress: deliveryAddress,
-                            deliveryCity: deliveryCity,
-                            deliveryZip: deliveryZip,
-                            deliveryZoneValid: this.deliveryZoneValid
-                        });
-
                         step2Next.disabled = !deliveryAddress || !deliveryCity || !deliveryZip || !this.deliveryZoneValid;
-                        console.log('Step 2 button disabled:', step2Next.disabled);
                     } else {
                         step2Next.disabled = false; // Skip delivery step for pickup
                     }
@@ -1534,7 +1630,6 @@
                         this.showDeliveryZoneMessage(`❌  ${validationResult.message}`, 'error');
                     }
                 } catch (error) {
-                    console.error('Error validating delivery zone:', error);
                     // Fallback to ZIP code validation
                     this.fallbackZipValidation(zipCode);
                 }
@@ -1591,7 +1686,6 @@
                         };
                     }
                 } catch (error) {
-                    console.error('Geocoding error:', error);
                     // Fallback to ZIP validation
                     return this.validateZipCode(zipCode);
                 }
@@ -1697,10 +1791,33 @@
                 }
             }
 
+            // Method to update location bias when location changes
+            updateLocationBias() {
+                if (this.autocomplete && this.selectedLocation) {
+                    const location = getLocationBySlug(this.selectedLocation);
+                    if (location && location.coordinates) {
+                        try {
+                            // Update the location bias with tighter radius for better prioritization
+                            this.autocomplete.locationBias = {
+                                center: location.coordinates,
+                                radius: 24140.2 // 15 miles in meters
+                            };
+
+                            // Update the hint text to reflect the new location
+                            const autocompleteHint = document.getElementById('autocompleteHint');
+                            if (autocompleteHint) {
+                                autocompleteHint.innerHTML = `<i class="ri-information-line"></i> Start typing your address. Suggestions will prioritize addresses closest to ${location.name}. City and ZIP will auto-fill.`;
+                            }
+                        } catch (error) {
+                            // Location bias update failed, continue without error
+                        }
+                    }
+                }
+            }
+
             async initializeAddressAutocomplete() {
                 // Don't reinitialize if already set up
                 if (this.autocomplete) {
-                    console.log('Autocomplete already initialized, skipping reinitialization');
                     return;
                 }
 
@@ -1716,7 +1833,6 @@
 
                 // Helper to show fallback UI
                 const showFallbackUI = (reason = '') => {
-                    console.warn('Falling back to manual address entry:', reason);
                     if (autocompleteHint) {
                         autocompleteHint.innerHTML = '<i class="ri-information-line"></i> Enter your address manually. Fill in all fields.';
                     }
@@ -1736,86 +1852,105 @@
 
                 // Check if importLibrary is available (needed for new Places API)
                 if (typeof google.maps.importLibrary !== 'function') {
-                    console.warn('google.maps.importLibrary not available yet, waiting...');
                     // Try again after a short delay
                     setTimeout(() => this.initializeAddressAutocomplete(), 500);
                     return;
                 }
 
                 try {
-                    // Use the new Places API with importLibrary
+                    // Use the new PlaceAutocompleteElement (recommended as of March 2025)
                     const { PlaceAutocompleteElement } = await google.maps.importLibrary("places");
 
-                    // Get the selected location's coordinates for location bias
+                    // Get the selected location's coordinates for enhanced location bias
                     let locationBias = null;
                     if (this.selectedLocation) {
                         const location = getLocationBySlug(this.selectedLocation);
                         if (location && location.coordinates) {
-                            console.log('📍 Setting location bias for:', location.name, location.coordinates);
-                            // Create a circular bias around the location (30 mile radius = ~48 km)
+                            // Create a tighter bias around the selected location to prioritize closer addresses
+                            // Use a smaller radius (15 miles = ~24 km) to prioritize very close locations
                             locationBias = {
                                 center: location.coordinates,
-                                radius: 48280.3 // 30 miles in meters (more precise)
+                                radius: 24140.2 // 15 miles in meters for tighter bias
                             };
-                            console.log('🎯 Location bias configured:', locationBias);
-                        } else {
-                            console.warn('⚠️ No coordinates found for location:', this.selectedLocation);
                         }
-                    } else {
-                        console.warn('⚠️ No location selected for autocomplete bias');
                     }
 
-                    // Create the PlaceAutocompleteElement web component
-                    const options = {
-                        componentRestrictions: { country: ['US'] },
-                        types: ['address']
-                    };
+                    // Create the new PlaceAutocompleteElement
+                    this.autocomplete = new PlaceAutocompleteElement();
+
+                    // Try to set properties one by one with error handling
+                    try {
+                        this.autocomplete.types = ['address'];
+                    } catch (error) {
+                        // types not supported, continuing without type restriction
+                    }
 
                     // Add location bias if available
                     if (locationBias) {
-                        options.locationBias = locationBias;
-                        console.log('✅ Added locationBias to options:', options);
-                    } else {
-                        console.log('⚠️ No locationBias added to options');
+                        try {
+                            this.autocomplete.locationBias = locationBias;
+                        } catch (error) {
+                            // locationBias not supported
+                        }
                     }
 
-                    console.log('🔧 Creating PlaceAutocompleteElement with options:', options);
+                    // Try to set country restriction using a different approach
+                    try {
+                        this.autocomplete.componentRestrictions = { country: ['US'] };
+                    } catch (error) {
+                        // componentRestrictions not supported, continuing without country restriction
+                    }
 
-                    this.autocomplete = new PlaceAutocompleteElement(options);
-
-                    // Replace the input with the autocomplete element
+                    // Replace the input field with the web component
                     addressInput.parentNode.replaceChild(this.autocomplete, addressInput);
+
+                    // Add CSS to ensure the web component is properly styled
+                    const style = document.createElement('style');
+                    style.textContent = `
+                        gmp-place-autocomplete {
+                            width: 100%;
+                            display: block;
+                        }
+                        gmp-place-autocomplete input {
+                            width: 100%;
+                            padding: 12px;
+                            border: 1px solid #ddd;
+                            border-radius: 4px;
+                            font-size: 16px;
+                        }
+                        gmp-place-autocomplete .dropdown {
+                            position: absolute;
+                            z-index: 1000;
+                            background: white;
+                            border: 1px solid #ddd;
+                            border-radius: 4px;
+                            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                            max-height: 300px;
+                            overflow-y: auto;
+                        }
+                    `;
+                    document.head.appendChild(style);
 
                     // Update the hint text
                     if (autocompleteHint) {
-                        autocompleteHint.innerHTML = '<i class="ri-information-line"></i> Start typing your address and select from dropdown. City and ZIP will auto-fill.';
+                        const locationName = this.selectedLocation ? getLocationBySlug(this.selectedLocation)?.name : 'selected location';
+                        autocompleteHint.innerHTML = `<i class="ri-information-line"></i> Start typing your address. Suggestions will prioritize addresses closest to ${locationName}. City and ZIP will auto-fill.`;
                     }
 
-                    console.log('Google Places Autocomplete (PlaceAutocompleteElement) initialized successfully');
 
-                    // Listen for place selection events
-                    this.autocomplete.addEventListener('gmp-placeselect', async (event) => {
-                        console.log('🎯 Place selected from autocomplete!', event);
-                        const place = event.place;
-
-                        if (!place) {
-                            console.error('No place details available');
-                            this.addressSelectedFromAutocomplete = false;
-                            return;
-                        }
-
+                    // Listen for place selection events (PlaceAutocompleteElement uses 'gmp-select')
+                    this.autocomplete.addEventListener('gmp-select', async ({ placePrediction }) => {
                         try {
-                            // Fetch the place details we need
-                            await place.fetchFields({
-                                fields: ['addressComponents', 'location', 'formattedAddress']
-                            });
+                            // Convert placePrediction to Place object
+                            const place = placePrediction.toPlace();
 
-                            console.log('📍 Place details fetched:', place);
+                            // Fetch the required fields
+                            await place.fetchFields({ fields: ['displayName', 'formattedAddress', 'location', 'addressComponents'] });
 
                             // Mark that address was selected from autocomplete
                             this.addressSelectedFromAutocomplete = true;
 
-                            // Parse address components
+                            // Parse address components using the correct API structure
                             let streetNumber = '';
                             let route = '';
                             let city = '';
@@ -1844,10 +1979,12 @@
                             }
 
                             const fullAddress = `${streetNumber} ${route}`.trim();
-                            console.log('🏠 Parsed address:', { fullAddress, city, state, zipCode });
 
-                            // Store the selected address, city and ZIP internally
-                            this.deliveryAddress = fullAddress;
+                            // Update the stored address value with the complete address
+                            this.currentAddressValue = fullAddress;
+                            this.manualAddressValue = fullAddress; // Reset manual tracking
+
+                            // Store city and ZIP internally
                             this.deliveryCity = city;
                             this.deliveryZip = zipCode;
 
@@ -1858,31 +1995,43 @@
                             if (cityField) cityField.value = city;
                             if (zipField) zipField.value = zipCode;
 
-                            console.log('✅ Fields updated. Checking delivery zone...');
-
                             // Validate the selected address automatically
                             await this.checkDeliveryZone();
 
-                            console.log('✅ Delivery zone checked. Updating buttons...');
-
                             // Update step buttons after validation completes
                             this.updateStepButtons();
-
-                            console.log('✅ Buttons updated. deliveryZoneValid:', this.deliveryZoneValid);
                         } catch (error) {
-                            console.error('Error fetching place details:', error);
                             this.addressSelectedFromAutocomplete = false;
                         }
                     });
 
-                    // Listen for input changes to track manual edits
+                    // Listen for input changes to track manual edits (PlaceAutocompleteElement)
                     this.autocomplete.addEventListener('input', (e) => {
-                        // If user manually types or edits, clear the stored values and flags
+                        // Manually track the address value using input event data
+                        if (e.inputType === 'insertText' && e.data) {
+                            // User is typing - add the character
+                            this.manualAddressValue += e.data;
+                        } else if (e.inputType === 'deleteContentBackward') {
+                            // User pressed backspace - remove last character
+                            this.manualAddressValue = this.manualAddressValue.slice(0, -1);
+                        } else if (e.inputType === 'insertCompositionText' || e.inputType === 'deleteCompositionText') {
+                            // Handle composition events (for mobile keyboards, etc.)
+                            return;
+                        } else if (e.inputType === 'deleteContentForward') {
+                            // Handle delete key (forward delete)
+                            this.manualAddressValue = this.manualAddressValue.slice(1);
+                        } else if (e.inputType === 'insertFromPaste') {
+                            // Handle paste events - we can't track this precisely, so we'll need to get the current value
+                            // For paste events, we'll rely on the manual tracking being reset by the place-changed event
+                            return;
+                        }
+
+                        // Update our stored value
+                        this.currentAddressValue = this.manualAddressValue;
+
+                        // Clear autocomplete flags for manual input
                         this.addressSelectedFromAutocomplete = false;
                         this.deliveryZoneValid = false;
-                        this.deliveryAddress = '';
-                        this.deliveryCity = '';
-                        this.deliveryZip = '';
 
                         // Clear validation message when user starts editing
                         const messageDiv = document.getElementById('deliveryZoneMessage');
@@ -1890,16 +2039,17 @@
                             messageDiv.style.display = 'none';
                         }
 
-                        // Update buttons (will be disabled since no address is selected)
+                        // Check if the address looks complete (has street number, street name, and city)
+                        this.checkIfAddressIsComplete();
+
+                        // Update buttons
                         this.updateStepButtons();
                     });
 
                 } catch (error) {
-                    console.error('Error initializing PlaceAutocompleteElement:', error);
-
                     // Check if it's an API not enabled error
                     if (error.message && error.message.includes('Places API')) {
-                        showFallbackUI('Places API (New) not enabled. Enable it in Google Cloud Console.');
+                        showFallbackUI('Places API not enabled. Enable it in Google Cloud Console.');
                     } else {
                         showFallbackUI('Failed to initialize autocomplete: ' + error.message);
                     }
@@ -1957,11 +2107,16 @@
                 });
             }
 
-            goToStep(stepNumber) {
-                // Handle step skipping for pickup orders
-                if (stepNumber === 2 && this.orderType === 'pickup') {
+            goToStep(stepNumber, forceStep = false) {
+                console.log('🎯 goToStep called with stepNumber:', stepNumber, 'orderType:', this.orderType, 'forceStep:', forceStep);
+
+                // Handle step skipping for pickup orders (unless forced)
+                if (stepNumber === 2 && this.orderType === 'pickup' && !forceStep) {
+                    console.log('⚠️ Skipping step 2 for pickup order, going to step 3 instead');
                     stepNumber = 3; // Skip delivery step for pickup
                 }
+
+                console.log('📍 Final step number:', stepNumber);
 
                 // Hide all steps
                 document.querySelectorAll('.checkout-step').forEach(step => {
@@ -1969,10 +2124,13 @@
                     step.style.display = 'none';
                 });
 
-                // Hide step 2 completely for pickup orders
+                // Hide step 2 completely for pickup orders (unless forced)
                 const step2Element = document.getElementById('step2');
-                if (step2Element && this.orderType === 'pickup') {
+                if (step2Element && this.orderType === 'pickup' && !forceStep) {
                     step2Element.style.display = 'none';
+                    console.log('🚫 Hidden step 2 for pickup order');
+                } else if (step2Element && forceStep) {
+                    console.log('✅ Showing step 2 (forced)');
                 }
 
                 // Show current step
@@ -1980,6 +2138,9 @@
                 if (currentStepElement) {
                     currentStepElement.classList.add('active');
                     currentStepElement.style.display = 'block';
+                    console.log('✅ Showing step', stepNumber);
+                } else {
+                    console.log('❌ Could not find step element for step', stepNumber);
                 }
 
                 // Auto-scroll to the next step button after a short delay
@@ -2175,6 +2336,14 @@
                     this.showStepError('Please select a location and order type before continuing.');
                     return false;
                 }
+
+                // Check minimum requirement for delivery
+                const totalItems = this.cart.getTotalItems();
+                if (this.orderType === 'delivery' && totalItems < 6) {
+                    this.showStepError('Delivery requires a minimum of 6 bottles. Please add more items to your cart or choose pickup.');
+                    return false;
+                }
+
                 return true;
             }
 
@@ -2233,8 +2402,8 @@
                 }
 
                 // Check delivery minimum requirement
-                if (this.orderType === 'delivery' && totalItems < 5) {
-                    this.showStepError('Delivery requires a minimum of 5 bottles. Please add more items to your cart or choose pickup.');
+                if (this.orderType === 'delivery' && totalItems < 6) {
+                    this.showStepError('Delivery requires a minimum of 6 bottles. Please add more items to your cart or choose pickup.');
                     return false;
                 }
 
@@ -2273,29 +2442,26 @@
             }
 
             setupCartChangeListener() {
+                // Store previous cart state to detect changes
+                let previousCartState = {
+                    totalItems: this.cart.getTotalItems(),
+                    items: JSON.parse(JSON.stringify(this.cart.items))
+                };
+
                 // Listen for cart change events
                 window.addEventListener('cartChanged', (event) => {
-                    console.log('Cart change event received:', event.detail);
                     const newTotal = event.detail.totalItems;
                     const newItems = event.detail.items;
-                    const previousTotal = this.cart.getTotalItems();
+                    const previousTotal = previousCartState.totalItems;
+                    const previousItems = previousCartState.items;
 
-                    console.log('Previous total:', previousTotal, 'New total:', newTotal);
+                    // Check delivery minimum BEFORE updating cart reference
+                    const cartChanged = newTotal !== previousTotal || JSON.stringify(previousItems) !== JSON.stringify(newItems);
+                    if (cartChanged) {
 
-                    // Update our cart reference
-                    this.cart.items = newItems;
-
-                    // Always update delivery radio states when cart changes
-                    console.log('Cart changed, updating delivery radio states');
-                    this.updateDeliveryRadioStates();
-
-                    // If cart total changed, update UI
-                    if (newTotal !== previousTotal) {
-                        console.log('Cart total changed, updating UI');
-
-                        // If delivery is selected and no longer meets minimum, switch to pickup
-                        if (this.orderType === 'delivery' && newTotal < 5) {
-                            console.log('Switching from delivery to pickup due to minimum requirement');
+                        // If delivery is selected and no longer meets minimum, handle based on current step
+                        // Only check delivery minimum if user is actually in delivery mode AND on step 2 or higher
+                        if (this.orderType === 'delivery' && newTotal < 6 && this.currentStep >= 2) {
                             this.orderType = 'pickup';
 
                             // Update radio buttons
@@ -2306,6 +2472,48 @@
                                 pickupRadio.checked = true;
                             }
 
+                            // Determine reset behavior based on current step
+                            if (this.currentStep >= 3 && this.currentStep <= 5) {
+                                // If on steps 3, 4, or 5, reset to step 2 and clear subsequent step data
+                                this.currentStep = 2;
+                                this.goToStep(2, true); // Force step 2 to show even for pickup
+
+                                // Clear steps 3, 4, and 5 data
+                                this.clearSteps345Data();
+
+                                // Show specific message for steps 3-5
+                                this.showStepError('Delivery requires 6 bottles minimum. Your order has been switched to pickup and reset to step 2.');
+                            } else {
+                                // If on steps 1 or 2, reset to step 1
+                                this.currentStep = 1;
+                                this.goToStep(1);
+
+                                // Clear any delivery-specific data
+                                this.deliveryZoneValid = false;
+                                this.currentAddressValue = '';
+                                this.manualAddressValue = '';
+                                this.deliveryCity = '';
+                                this.deliveryZip = '';
+                                this.addressSelectedFromAutocomplete = false;
+
+                                // Clear delivery form fields
+                                const addressField = document.getElementById('deliveryAddress');
+                                const cityField = document.getElementById('deliveryCity');
+                                const zipField = document.getElementById('deliveryZip');
+                                if (addressField) addressField.value = '';
+                                if (cityField) cityField.value = '';
+                                if (zipField) zipField.value = '';
+
+                                // Hide delivery zone message
+                                const messageDiv = document.getElementById('deliveryZoneMessage');
+                                if (messageDiv) {
+                                    messageDiv.style.display = 'none';
+                                }
+
+                                // Show message for steps 1-2
+                                this.showStepError('Delivery requires 6 bottles minimum. Your order has been switched to pickup and reset to step 1.');
+                            }
+
                             // Update UI
                             this.updateDeliverySection();
                             this.updateLocationHoursInfo();
@@ -2314,25 +2522,41 @@
                             this.updateBackButtonText();
                             this.updateStepHeaders();
                             this.updateProgressIndicator(this.currentStep);
-
-                            // Show warning message
-                            this.showStepError('Delivery requires 6 bottles minimum. Your order has been switched to pickup.');
                         } else {
-                            console.log('Updating UI without changing order type');
-                            // Just update the UI without changing order type
-                            this.populateLocations();
-                            this.updateDeliverySection();
-                            this.populateOrderSummary();
-                            this.updateStepButtons();
+                            // Only update UI if we're on step 2 or higher to avoid interfering with step 1
+                            if (this.currentStep >= 2) {
+                                this.populateLocations();
+                                this.updateDeliverySection();
+                                this.populateOrderSummary();
+                                this.updateStepButtons();
 
-                            // If order type was changed to pickup, update the UI
-                            if (this.orderType === 'pickup') {
-                                this.updateLocationHoursInfo();
-                                this.updateBackButtonText();
-                                this.updateStepHeaders();
-                                this.updateProgressIndicator(this.currentStep);
+                                // If order type was changed to pickup, update the UI
+                                if (this.orderType === 'pickup') {
+                                    this.updateLocationHoursInfo();
+                                    this.updateBackButtonText();
+                                    this.updateStepHeaders();
+                                    this.updateProgressIndicator(this.currentStep);
+                                }
+                            } else {
+                                // But still update delivery warning message for step 1
+                                this.updateDeliveryWarningMessage();
                             }
                         }
+                    }
+
+                    // Update our cart reference AFTER checking totals
+                    this.cart.items = newItems;
+
+                    // Update our stored previous state for next comparison
+                    previousCartState = {
+                        totalItems: newTotal,
+                        items: JSON.parse(JSON.stringify(newItems))
+                    };
+
+                    // Only update delivery radio states when cart changes if user is on step 2 or higher
+                    // This prevents interference with step 1 location/order type selection
+                    if (this.currentStep >= 2) {
+                        this.updateDeliveryRadioStates();
                     }
                 });
             }
@@ -2341,25 +2565,21 @@
                 const totalItems = this.cart.getTotalItems();
                 const hasMinimumForDelivery = totalItems >= 6;
 
-                console.log('updateDeliveryRadioStates called - totalItems:', totalItems, 'hasMinimumForDelivery:', hasMinimumForDelivery);
 
                 // Update all delivery radio buttons for all locations
                 const deliveryRadios = document.querySelectorAll('input[value="delivery"]');
                 const deliveryLabels = document.querySelectorAll('label:has(input[value="delivery"])');
 
-                console.log('Found delivery radios:', deliveryRadios.length, 'delivery labels:', deliveryLabels.length);
 
                 deliveryRadios.forEach(radio => {
                     const locationSlug = radio.name.replace('orderType_', '').replace('_delivery', '');
                     const deliveryAvailable = isDeliveryAvailable(locationSlug);
                     const isCurrentLocation = locationSlug === this.selectedLocation;
 
-                    console.log('Processing radio for location:', locationSlug, 'deliveryAvailable:', deliveryAvailable, 'isCurrentLocation:', isCurrentLocation);
 
                     if (deliveryAvailable) {
                         // Always update the disabled state based on minimum requirement
                         radio.disabled = !hasMinimumForDelivery;
-                        console.log('Set radio disabled to:', !hasMinimumForDelivery, 'for location:', locationSlug);
 
                         // If this is the current location and delivery is selected but no longer valid, switch to pickup
                         if (isCurrentLocation && this.orderType === 'delivery' && !hasMinimumForDelivery) {
@@ -2368,13 +2588,11 @@
                                 pickupRadio.checked = true;
                                 radio.checked = false;
                                 this.orderType = 'pickup';
-                                console.log('Switched to pickup for location:', locationSlug);
                             }
                         }
                     } else {
                         // If delivery is not available for this location, disable the radio
                         radio.disabled = true;
-                        console.log('Delivery not available for location:', locationSlug, 'disabled radio');
                     }
                 });
 
@@ -2395,16 +2613,77 @@
                                 label.style.cursor = 'not-allowed';
                                 label.title = 'Delivery requires 6 bottles minimum';
                             }
-                            console.log('Updated label for location:', locationSlug, 'opacity:', label.style.opacity, 'cursor:', label.style.cursor, 'title:', label.title);
                         } else {
                             // If delivery is not available for this location, style accordingly
                             label.style.opacity = '0.3';
                             label.style.cursor = 'not-allowed';
                             label.title = 'Delivery not available for this location';
-                            console.log('Delivery not available for location:', locationSlug, 'styled label as disabled');
                         }
                     }
                 });
+            }
+
+            updateDeliveryWarningMessage() {
+                const totalItems = this.cart.getTotalItems();
+                const hasMinimumForDelivery = totalItems >= 6;
+
+                // Update delivery radio button states without interfering with selection
+                const deliveryRadios = document.querySelectorAll('input[value="delivery"]');
+                const deliveryLabels = document.querySelectorAll('label:has(input[value="delivery"])');
+
+                deliveryRadios.forEach(radio => {
+                    const locationSlug = radio.name.replace('orderType_', '').replace('_delivery', '');
+                    const deliveryAvailable = isDeliveryAvailable(locationSlug);
+
+                    if (deliveryAvailable) {
+                        // Update disabled state based on minimum requirement
+                        radio.disabled = !hasMinimumForDelivery;
+
+                        // Update the label styling
+                        const label = radio.closest('label');
+                        if (label) {
+                            if (hasMinimumForDelivery) {
+                                label.style.cursor = 'pointer';
+                                label.style.opacity = '1';
+                                label.title = '';
+                            } else {
+                                label.style.cursor = 'not-allowed';
+                                label.style.opacity = '0.5';
+                                label.title = 'Delivery requires 6 bottles minimum';
+                            }
+                        }
+                    }
+                });
+
+            }
+
+            // Method to clear data from steps 3, 4, and 5 when resetting
+            clearSteps345Data() {
+
+                // Clear Step 3: Pickup/Delivery Date
+                const dateField = document.getElementById('pickupDate');
+                if (dateField) {
+                    dateField.value = '';
+                }
+
+                // Clear Step 4: Contact Information
+                const nameField = document.getElementById('customerName');
+                const phoneField = document.getElementById('customerPhone');
+                const emailField = document.getElementById('customerEmail');
+                if (nameField) nameField.value = '';
+                if (phoneField) phoneField.value = '';
+                if (emailField) emailField.value = '';
+
+                // Clear Step 5: Order Summary (this will be repopulated automatically)
+                // No need to clear as it's dynamically generated
+
+                // Clear any error messages from these steps
+                const step3Error = document.querySelector('#step3 .step-error');
+                const step4Error = document.querySelector('#step4 .step-error');
+                const step5Error = document.querySelector('#step5 .step-error');
+                if (step3Error) step3Error.remove();
+                if (step4Error) step4Error.remove();
+                if (step5Error) step5Error.remove();
             }
 
             populateOrderSummaryReview() {
@@ -2991,7 +3270,6 @@
                     // Check if location is open on Monday
                     return isLocationOpenOnDate(this.selectedLocation, selectedDate);
                 } catch (error) {
-                    console.error('Error validating pickup date:', error);
                     return false;
                 }
             }
@@ -3224,12 +3502,12 @@
 
                 // Final validation check for delivery minimum
                 const totalItems = this.cart.getTotalItems();
-                if (this.orderType === 'delivery' && totalItems < 5) {
+                if (this.orderType === 'delivery' && totalItems < 6) {
                     if (button) {
                         button.disabled = false;
                         button.textContent = 'Proceed to Payment';
                     }
-                    this.showStepError('Delivery requires a minimum of 5 bottles. Please add more items to your cart or choose pickup.');
+                    this.showStepError('Delivery requires a minimum of 6 bottles. Please add more items to your cart or choose pickup.');
                     return;
                 }
 
@@ -3286,7 +3564,6 @@
 
                     window.location.href = url;
                 } catch (error) {
-                    console.error('Error during checkout:', error);
                     alert('There was an error processing your checkout. Please try again.');
                     button.disabled = false;
                     button.textContent = 'Proceed to Payment';
