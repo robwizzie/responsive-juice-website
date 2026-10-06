@@ -147,19 +147,9 @@ app.get('/athletes', (req, res) => {
 	res.sendFile(path.join(__dirname, 'athletes.html'));
 });
 
-app.get('/success', (req, res) => {
-	res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-	res.setHeader('Pragma', 'no-cache');
-	res.setHeader('Expires', '0');
-	res.sendFile(path.join(__dirname, 'success.html'));
-});
+app.get('/success', (req, res) => res.redirect(302, '/'));
 
-app.get('/cancel', (req, res) => {
-	res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-	res.setHeader('Pragma', 'no-cache');
-	res.setHeader('Expires', '0');
-	res.sendFile(path.join(__dirname, 'cancel.html'));
-});
+app.get('/cancel', (req, res) => res.redirect(302, '/'));
 
 app.get('/contact', (req, res) => {
 	res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
@@ -237,7 +227,14 @@ app.post('/send-email', emailLimiter, validateEmail, async (req, res) => {
 	}
 });
 
+// Online ordering is closed; flip to true to reopen.
+const ORDERING_ENABLED = false;
+
 app.post('/create-checkout-session', async (req, res) => {
+	if (!ORDERING_ENABLED) {
+		return res.status(410).json({ error: 'Online ordering is closed' });
+	}
+
 	try {
 		// Get the base URL
 		const baseURL = `${req.protocol}://${req.get('host')}`;

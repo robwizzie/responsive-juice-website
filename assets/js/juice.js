@@ -1,167 +1,91 @@
-import CarouselManager from '/assets/js/components/carousel-manager.js';
+import JuiceShowcase from '/assets/js/components/juice-showcase.js';
 
-/*=============== SHOW MENU ===============*/
-const navMenu = document.getElementById('nav-menu'),
-	navToggle = document.getElementById('nav-toggle'),
-	navClose = document.getElementById('nav-close');
+const slug = window.location.pathname.split('/').pop().replace('.html', '');
+const juice = juices.find(j => j.slug === slug);
+const ingredientIcon = name => `/assets/img/ingredients/${name.toLowerCase().replace(/ /g, '-')}.webp`;
 
-/*===== MENU SHOW =====*/
-/* Validate if constant exists */
-if (navToggle) {
-	navToggle.addEventListener('click', () => {
-		navMenu.classList.add('show-menu');
-	});
-}
-
-/*===== MENU HIDDEN =====*/
-/* Validate if constant exists */
-if (navClose) {
-	navClose.addEventListener('click', () => {
-		navMenu.classList.remove('show-menu');
-	});
-}
-
-/*=============== REMOVE MENU MOBILE ===============*/
-const navLink = document.querySelectorAll('.nav__link');
-
-function linkAction() {
-	const navMenu = document.getElementById('nav-menu');
-	// When we click on each nav__link, we remove the show-menu class
-	navMenu.classList.remove('show-menu');
-}
-navLink.forEach(n => n.addEventListener('click', linkAction));
-
-document.addEventListener('DOMContentLoaded', function () {
-	// console.log('Juice.js loaded');
-
-	// Get the juice slug from the URL path
-	const slug = window.location.pathname.split('/').pop();
-	// console.log('Current slug:', slug);
-
-	if (typeof juices === 'undefined' || !juices) {
-		console.error('Juices array is not defined. Ensure juices-database.js is loaded.');
-		return;
-	}
-	// console.log('Available juices:', juices);
-
-	const juice = juices.find(j => j.slug === slug);
-	// console.log('Found juice:', juice);
-
-	if (!juice) {
-		window.location.href = '/';
-		console.warn('Juice not found for slug:', slug);
-		return;
-	}
-
-	// Update SEO metadata
+if (!juice) {
+	window.location.href = '/';
+} else {
 	updateSEOMetadata(juice);
+	renderDetails(juice);
+	renderNutrition(juice);
 
-	// Populate main product details
-	const juicePage = document.getElementById('juicePage');
-	juicePage.innerHTML = `
+	new JuiceShowcase(document.querySelector('[data-juice-showcase]'), {
+		juices,
+		exclude: slug,
+		accent: document.querySelector('[data-showcase-accent]')
+	});
+
+	animateIn();
+}
+
+function renderDetails(juice) {
+	document.getElementById('juicePage').innerHTML = `
         <div class="product__info">
             <h1 class="home__title" style="max-width: 550px;">
                 ${juice.name} <span style="color: ${juice.color};">Details</span>
             </h1>
             <div class="ingredients-list">
-            <h3 style="color:${juice.color}; margin-bottom: 1rem; font-size: 2.5rem;">Ingredients:</h3>
+                <h3 style="color:${juice.color}; margin-bottom: 1rem; font-size: 2.5rem;">Ingredients:</h3>
                 <ul style="font-family: var(--second-font);">
                     ${juice.ingredients
 						.map(
 							ingredient => `
                         <li>
-                            <img src="/assets/img/ingredients/${ingredient.toLowerCase().replace(/ /g, '-')}.svg" 
-                                alt="${ingredient}" 
-                                style="width: 50px; height: 50px; vertical-align: middle;" loading="lazy" decoding="async">
+                            <img src="${ingredientIcon(ingredient)}" alt="" style="width: 50px; height: 50px; vertical-align: middle;" decoding="async">
                             ${ingredient}
-                        </li>
-                    `
+                        </li>`
 						)
 						.join('')}
                 </ul>
             </div>
             <p class="product__price">$${juice.price.toFixed(2)}</p>
-            ${
-				juice.inStock
-					? `<button class="home__button add-to-cart" data-id="${juice.id}" style="transform: translate(0px, 0px); opacity: 1; background-color: ${juice.color}">
-                <span style="margin-right: 5px; font-size: 1rem;">Add to Cart</span> <svg viewBox="0 0 24 24" width="24" height="24" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1">
-                        <line x1="12" y1="5" x2="12" y2="19"></line>
-                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                    </svg>
-            </button>`
-					: `<button class="home__button add-to-cart" disabled style="transform: translate(0px, 0px); opacity: 1; background-color: #ccc; color: #666;">
-                <span style="margin-right: 5px; font-size: 1rem;">Out of Stock</span>
-            </button>`
-			}
+            <p class="ordering-closed"><i class="ri-store-2-line"></i> Online ordering is closed &mdash; thanks for sipping with us!</p>
         </div>
 
-        <div class="home__images">
-            <img src="/assets/img/splash/${juice.slug}-splash.svg" alt="Liquid image" class="home__liquid">
-            <div class="home__juice-animate" style="z-index: 3; position: relative;">
-                <img src="${juice.imageUrl}" alt="${juice.name}" class="home__juice" loading="lazy" decoding="async">
+        <div class="home__images" style="--glow: ${juice.color}">
+            <img src="/assets/img/splash/${juice.slug}-splash.webp" alt="" class="home__liquid">
+            <div class="home__juice-animate">
+                <img src="${juice.imageUrl}" alt="${juice.name}" class="home__juice" decoding="async">
             </div>
             ${juice.ingredients
 				.slice(0, 2)
-				.map(
-					(ingredient, index) => `
-                <img src="/assets/img/ingredients/${ingredient.toLowerCase().replace(/ /g, '-')}.svg" 
-                    alt="${ingredient}" 
-                    class="home__apple${index + 1}" style="z-index: 0;" loading="lazy" decoding="async">
-            `
-				)
+				.map((ingredient, index) => `<img src="${ingredientIcon(ingredient)}" alt="" class="home__apple${index + 1}" style="z-index: 0;" decoding="async">`)
 				.join('')}
             <div>
-                <img src="/assets/img/leaf.png" alt="Leaf image" class="home__leaf">
-                <img src="/assets/img/leaf.png" alt="Leaf image" class="home__leaf">
-                <img src="/assets/img/leaf.png" alt="Leaf image" class="home__leaf">
-                <img src="/assets/img/leaf.png" alt="Leaf image" class="home__leaf">
+                <img src="/assets/img/leaf.webp" alt="" class="home__leaf">
+                <img src="/assets/img/leaf.webp" alt="" class="home__leaf">
+                <img src="/assets/img/leaf.webp" alt="" class="home__leaf">
+                <img src="/assets/img/leaf.webp" alt="" class="home__leaf">
             </div>
         </div>
     `;
+}
 
-	// Populate nutrition section
-	const nutritionSection = document.querySelector('.nutrition-content');
-
-	nutritionSection.innerHTML = `
-            <div class="magnifier-container" style="border: 3px solid ${juice.color}33;">
-                <img src="/assets/img/nutrition-facts/${juice.slug}-facts.png" 
-                    alt="${juice.name} Nutrition Facts" 
-                    class="nutrition-image"
-                    loading="lazy">
-            </div>
+function renderNutrition(juice) {
+	document.querySelector('.nutrition-content').innerHTML = `
+        <div class="magnifier-container" style="border: 3px solid ${juice.color}33;">
+            <img src="/assets/img/nutrition-facts/${juice.slug}-facts.webp" alt="${juice.name} Nutrition Facts" class="nutrition-image" loading="lazy">
+        </div>
     `;
 
-	// Add animation for the nutrition image
-	TweenMax.from('.nutrition-image', 1, {
-		delay: 1.5,
-		opacity: 0,
-		y: 20,
-		ease: Expo.easeInOut
+	// Not every juice has a nutrition label photo; hide the section rather than show a broken image
+	document.querySelector('.nutrition-image').addEventListener('error', () => {
+		document.querySelector('.nutrition-section').hidden = true;
 	});
+}
 
-	// Initialize carousel with filtered juices using CarouselManager
-	window.relatedCarousel = new CarouselManager({
-		trackSelector: '#relatedJuices',
-		carouselSelector: '#relatedCarousel',
-		prevButtonSelector: '.carousel-button.prev',
-		nextButtonSelector: '.carousel-button.next',
-		juices: typeof juices !== 'undefined' ? juices : [],
-		currentSlug: slug,
-		isHomePage: false,
-		dynamicWordSelector: '#dynamic-other-juices-word'
-	});
+function animateIn() {
+	if (typeof gsap === 'undefined' || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-	// Initialize GSAP animations
-	TweenMax.from('.ingredients-list', 1, { delay: 0.3, opacity: 0, y: 20, ease: Expo.easeInOut });
-	TweenMax.from('.product__price', 1, { delay: 0.4, opacity: 0, y: 20, ease: Expo.easeInOut });
-	TweenMax.from('.home__button:not(.add-to-cart)', 1, { delay: 0.5, opacity: 0, y: 20, ease: Expo.easeInOut });
-	TweenMax.from('.home__liquid', 1, { delay: 0.7, opacity: 0, y: 200, ease: Expo.easeInOut });
-	TweenMax.from('.home__juice-animate', 1, { delay: 1.2, opacity: 0, y: -800, ease: Expo.easeInOut });
-	TweenMax.from('.home__apple1', 1, { delay: 1.5, opacity: 0, y: -800, ease: Expo.easeInOut });
-	TweenMax.from('.home__apple2', 1, { delay: 1.6, opacity: 0, y: -800, ease: Expo.easeInOut });
-});
-
-// Legacy carousel function removed - now using CarouselManager
+	gsap.timeline({ defaults: { duration: 1, ease: 'expo.out' } })
+		.from('.product__info > *', { opacity: 0, y: 20, stagger: 0.1 }, 0.3)
+		.from('.home__liquid', { opacity: 0, y: 200 }, 0.5)
+		.from('.home__juice-animate', { opacity: 0, y: -800, duration: 1.4 }, 0.8)
+		.from('.home__apple1, .home__apple2', { opacity: 0, y: -800, duration: 1.4, stagger: 0.1 }, 1)
+		.from('.nutrition-image', { opacity: 0, y: 20 }, 1.2);
+}
 
 // Function to update SEO metadata dynamically
 function updateSEOMetadata(juice) {
@@ -172,8 +96,8 @@ function updateSEOMetadata(juice) {
 	document.title = `${juice.name} - Premium Cold-Pressed Juice | Sip On Pressed`;
 
 	// Use database metadata if available, otherwise fallback to generated content
-	const description = juice.metaDescription || `Try our delicious ${juice.name} cold-pressed juice made with ${juice.ingredients.join(', ')}. Fresh, organic, and packed with nutrients. Only $${juice.price.toFixed(2)} - ${juice.inStock ? 'Available now' : 'Coming soon'}!`;
-	const keywords = juice.metaKeywords || `${juice.name}, ${juice.ingredients.join(', ')}, cold-pressed juice, organic juice, fresh juice, healthy drinks, nutrient-rich, ${juice.inStock ? 'buy online' : 'coming soon'}`;
+	const description = juice.metaDescription || `Try our delicious ${juice.name} cold-pressed juice made with ${juice.ingredients.join(', ')}. Fresh, organic, and packed with nutrients.`;
+	const keywords = juice.metaKeywords || `${juice.name}, ${juice.ingredients.join(', ')}, cold-pressed juice, organic juice, fresh juice, healthy drinks, nutrient-rich`;
 	const metaImage = juice.metaImage ? `${baseUrl}${juice.metaImage}` : `${baseUrl}/assets/img/branding/logo.png`;
 
 	// Update meta description
@@ -238,7 +162,7 @@ function addStructuredData(juice) {
 		'@type': 'Product',
 		name: juice.name,
 		description: juice.metaDescription || `Fresh cold-pressed juice made with ${juice.ingredients.join(', ')}`,
-		image: [`${baseUrl}${juice.imageUrl}`, metaImage, `${baseUrl}/assets/img/nutrition-facts/${juice.slug}-facts.png`],
+		image: [`${baseUrl}${juice.imageUrl}`, metaImage, `${baseUrl}/assets/img/nutrition-facts/${juice.slug}-facts.webp`],
 		brand: {
 			'@type': 'Brand',
 			name: 'Sip On Pressed'
@@ -248,7 +172,7 @@ function addStructuredData(juice) {
 			'@type': 'Offer',
 			price: juice.price.toFixed(2),
 			priceCurrency: 'USD',
-			availability: juice.inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+			availability: 'https://schema.org/Discontinued',
 			seller: {
 				'@type': 'Organization',
 				name: 'Sip On Pressed'

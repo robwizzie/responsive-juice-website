@@ -20,7 +20,7 @@
     <meta property="og:title" content="Pressed By J & H - Embrace The Sip">
     <meta property="og:description"
         content="We're not lying... just made with real fruits. Pure greens, pure energy - nature's powerhouse in every bottle.">
-    <meta property="og:image" content="https://siponpressed.com/assets/img/og-images/juice-og-image.png">
+    <meta property="og:image" content="https://siponpressed.com/assets/img/og-images/juice-og-image.jpg">
     <meta property="og:logo" content="https://siponpressed.com/assets/img/branding/logo.png" />
 
     <!-- Twitter Meta Tags -->
@@ -30,7 +30,7 @@
     <meta name="twitter:title" content="Pressed By J & H - Embrace The Sip">
     <meta name="twitter:description"
         content="We're not lying... just made with real fruits. Pure greens, pure energy - nature's powerhouse in every bottle.">
-    <meta name="twitter:image" content="https://siponpressed.com/assets/img/og-images/juice-og-image.png">
+    <meta name="twitter:image" content="https://siponpressed.com/assets/img/og-images/juice-og-image.jpg">
     <meta name="twitter:logo" content="https://siponpressed.com/assets/img/branding/logo.png" />
 
     <!--=============== REMIXICONS ===============-->
@@ -42,9 +42,7 @@
     <!-- Preconnects for Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap');
-    </style>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;0,900;1,400&family=Lemon&display=swap">
 
     <!--=============== JS ===============-->
     <script>
@@ -54,116 +52,106 @@
         document.documentElement.classList.add('page-loading');
     </script>
     <script type="module" src="assets/js/main.js"></script>
-
-    <title>Pressed By J & H</title>
+    <script type="module" src="assets/js/home.js"></script>
 </head>
 
 <body>
-    <!--==================== HEADER ====================-->
-
-
-    <!--==================== MAIN ====================-->
     <main class="main">
         <div class="background-shapes">
             <div class="home__shape-small"></div>
             <div class="home__shape-big"></div>
-            <img src="assets/img/shape-bg.png" alt="" class="home__shape-bg">
+            <div class="home__shape-bg"></div>
         </div>
-        <!--==================== HOME ====================-->
-        <section class="home">
+
+        <!--==================== HERO ====================-->
+        <section class="home hero" data-intro>
             <div class="home__container container">
                 <div class="home__data">
+                    <p class="hero__eyebrow">Cold-pressed &bull; South Jersey</p>
                     <h1 class="home__title">
                         Embrace
-                        <span style="color: #ff9700;">The Sip</span>
+                        <span class="text-gradient text-gradient--citrus">The Sip</span>
                     </h1>
                     <p class="home__description">
                         We're not lying... <br> just made with real fruits.
                     </p>
-                    <button href="/juices" class="home__button">
-                        View All Juices
-                    </button>
+                    <div class="hero__actions">
+                        <a href="/juices" class="home__button">View All Juices</a>
+                        <a href="#showcase" class="hero__link">Find your flavor <i class="ri-arrow-down-line"></i></a>
+                    </div>
                 </div>
 
-                <div class="home__images">
-                    <img src="assets/img/splash/tropical-storm-splash.svg" alt="Liquid image" class="home__liquid">
-                    <div class="home__juice-animate" style="z-index: 3; position: relative;">
-                        <img src="assets/img/juices/tropical-storm.png" alt="Juice image" class="home__juice">
+                <div class="home__images" data-parallax style="--glow: #ff9700">
+                    <img src="assets/img/splash/tropical-storm-splash.webp" alt="" class="home__liquid" fetchpriority="high" style="--depth: 10">
+                    <div class="home__juice-animate" style="--depth: 18">
+                        <img src="assets/img/juices/tropical-storm.webp" alt="Tropical Storm juice" class="home__juice" fetchpriority="high">
                     </div>
-                    <img src="assets/img/ingredients/orange-bunch.svg" alt="Orange image" class="home__apple1">
-                    <img src="assets/img/ingredients/orange.svg" alt="Orange image" class="home__apple2">
-                    <div>
-                        <img src="assets/img/leaf.png" alt="Leaf image" class="home__leaf" style="z-index: 4;">
-                        <img src="assets/img/leaf.png" alt="Leaf image" class="home__leaf" style="z-index: 4;">
-                        <img src="assets/img/leaf.png" alt="Leaf image" class="home__leaf" style="z-index: 4;">
-                        <img src="assets/img/leaf.png" alt="Leaf image" class="home__leaf" style="z-index: 4;">
-                        <img src="assets/img/leaf.png" alt="Leaf image" class="home__leaf" style="z-index: 4;">
-                        <img src="assets/img/leaf.png" alt="Leaf image" class="home__leaf" style="z-index: 4;">
+                    <img src="assets/img/ingredients/orange-bunch.webp" alt="Oranges" class="home__apple1" style="--depth: 32">
+                    <img src="assets/img/ingredients/orange.webp" alt="Orange" class="home__apple2" style="--depth: 26">
+                    <div class="home__leaves">
+                        <img src="assets/img/leaf.webp" alt="" class="home__leaf" style="--depth: 50">
+                        <img src="assets/img/leaf.webp" alt="" class="home__leaf" style="--depth: 35">
+                        <img src="assets/img/leaf.webp" alt="" class="home__leaf" style="--depth: 20">
+                        <img src="assets/img/leaf.webp" alt="" class="home__leaf" style="--depth: 40">
+                        <img src="assets/img/leaf.webp" alt="" class="home__leaf" style="--depth: 30">
+                        <img src="assets/img/leaf.webp" alt="" class="home__leaf" style="--depth: 55">
+                    </div>
+                </div>
+            </div>
+
+            <a href="#vitality" class="hero__scroll" aria-label="Scroll down"><span></span></a>
+        </section>
+
+        <!--==================== MARQUEE ====================-->
+        <div class="marquee" aria-hidden="true">
+            <div class="marquee__track">
+                <div class="marquee__group"><span>Cold pressed</span><i class="ri-leaf-fill"></i><span>Real fruit</span><i class="ri-leaf-fill"></i><span>No preservatives</span><i class="ri-leaf-fill"></i><span>Pressed in South Jersey</span><i class="ri-leaf-fill"></i><span>Embrace the sip</span><i class="ri-leaf-fill"></i><span>Pure greens, pure energy</span><i class="ri-leaf-fill"></i></div>
+                <div class="marquee__group"><span>Cold pressed</span><i class="ri-leaf-fill"></i><span>Real fruit</span><i class="ri-leaf-fill"></i><span>No preservatives</span><i class="ri-leaf-fill"></i><span>Pressed in South Jersey</span><i class="ri-leaf-fill"></i><span>Embrace the sip</span><i class="ri-leaf-fill"></i><span>Pure greens, pure energy</span><i class="ri-leaf-fill"></i></div>
+            </div>
+        </div>
+
+        <!--==================== VITALITY ====================-->
+        <section class="home vitality" id="vitality" data-intro>
+            <div class="home__container container">
+                <div class="home__images" data-parallax style="--glow: #76bd4b">
+                    <img loading="lazy" decoding="async" src="assets/img/splash/sweet-green-splash.webp" alt="" class="home__liquid" style="--depth: 10">
+                    <div class="home__juice-animate" style="--depth: 18">
+                        <img loading="lazy" decoding="async" src="assets/img/juices/sweet-green.webp" alt="Sweet Green juice" class="home__juice home__juice--tilt-left">
+                    </div>
+                    <img loading="lazy" decoding="async" src="assets/img/ingredients/spinach.webp" alt="Spinach" class="home__apple1" style="--depth: 32">
+                    <img loading="lazy" decoding="async" src="assets/img/ingredients/kale.webp" alt="Kale" class="home__apple2" style="--depth: 26">
+                    <div class="home__leaves">
+                        <img loading="lazy" decoding="async" src="assets/img/leaf.webp" alt="" class="home__leaf" style="--depth: 50">
+                        <img loading="lazy" decoding="async" src="assets/img/leaf.webp" alt="" class="home__leaf" style="--depth: 35">
+                        <img loading="lazy" decoding="async" src="assets/img/leaf.webp" alt="" class="home__leaf" style="--depth: 20">
+                        <img loading="lazy" decoding="async" src="assets/img/leaf.webp" alt="" class="home__leaf" style="--depth: 40">
+                        <img loading="lazy" decoding="async" src="assets/img/leaf.webp" alt="" class="home__leaf" style="--depth: 30">
+                        <img loading="lazy" decoding="async" src="assets/img/leaf.webp" alt="" class="home__leaf" style="--depth: 55">
+                    </div>
+                </div>
+                <div class="home__data">
+                    <p class="hero__eyebrow">Greens that taste good</p>
+                    <h2 class="home__title">
+                        Fuel Your
+                        <span class="text-gradient text-gradient--green">Vitality</span>
+                    </h2>
+                    <p class="home__description">
+                        Pure greens, pure energy... <br> nature's powerhouse in every bottle.
+                    </p>
+                    <div class="hero__actions">
+                        <a href="/about" class="home__button">Who Are We</a>
                     </div>
                 </div>
             </div>
         </section>
 
-        <section class="home">
-            <div class="home__container second__container container">
-                <div class="home__images">
-                    <img src="assets/img/splash/sweet-green-splash.svg" alt="Liquid image" class="home__liquid">
-                    <div class="home__juice-animate" style="z-index: 3; position: relative;">
-                        <img src="assets/img/juices/sweet-green.png" alt="Juice image" class="home__juice"
-                            style="rotate: -20deg;">
-                    </div>
-                    <img src="assets/img/ingredients/spinach.svg" alt="Spinach image" class="home__apple1">
-                    <img src="assets/img/ingredients/kale.svg" alt="Kale image" class="home__apple2">
-                    <div>
-                        <img src="assets/img/leaf.png" alt="Leaf image" class="home__leaf" style="z-index: 4;">
-                        <img src="assets/img/leaf.png" alt="Leaf image" class="home__leaf" style="z-index: 4;">
-                        <img src="assets/img/leaf.png" alt="Leaf image" class="home__leaf" style="z-index: 4;">
-                        <img src="assets/img/leaf.png" alt="Leaf image" class="home__leaf" style="z-index: 4;">
-                        <img src="assets/img/leaf.png" alt="Leaf image" class="home__leaf" style="z-index: 4;">
-                        <img src="assets/img/leaf.png" alt="Leaf image" class="home__leaf" style="z-index: 4;">
-                    </div>
-                </div>
-                <div class="home__data">
-                    <h1 class="home__title">
-                        Fuel Your
-                        <span style="color: #76bd4b;">Vitality</span>
-                    </h1>
-                    <p class="home__description">
-                        Pure greens, pure energy... <br> nature's powerhouse in every bottle.
-                    </p>
-                    <button href="/about" class="home__button">
-                        Who Are We
-                    </button>
-                </div>
-            </div>
-
-            <div class="carousel-container">
-                <h1 class="home__title" style="text-align: center;">
-                    Find Your <span id="dynamic-juice-word">Juice</span>
-                </h1>
-                <div class="carousel">
-
-                    <div class="carousel-button-container">
-                        <button class="carousel-button prev">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="15 18 9 12 15 6"></polyline>
-                            </svg>
-                        </button>
-
-                        <button class="carousel-button next">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="9 18 15 12 9 6"></polyline>
-                            </svg>
-                        </button>
-                    </div>
-
-                    <div class="carousel-track">
-                        <!-- Juices will be inserted here -->
-                    </div>
-                </div>
-            </div>
+        <!--==================== SHOWCASE ====================-->
+        <section class="showcase-section" id="showcase">
+            <h2 class="home__title section-title">
+                Find Your <span data-showcase-accent>Juice</span>
+            </h2>
+            <p class="section-subtitle">Swipe, drag or tap a bottle to explore every flavor.</p>
+            <div data-juice-showcase></div>
         </section>
     </main>
 
@@ -172,8 +160,6 @@
 
     <!--=============== MAIN JS ===============-->
     <script src="assets/js/juices-database.js"></script>
-    <script src="assets/js/locations-database.js"></script>
-    <script src="assets/js/cart.js"></script>
     <script src="assets/js/components/footer.js"></script>
 </body>
 
