@@ -14,7 +14,7 @@ const AUTOPLAY_MS = 5000;
 const SWIPE_THRESHOLD = 50;
 const VISIBLE_RANGE = 2;
 
-const ingredientIcon = name => `/assets/img/ingredients/${name.toLowerCase().replace(/ /g, '-')}.svg`;
+const ingredientIcon = name => `/assets/img/ingredients/${name.toLowerCase().replace(/ /g, '-')}.webp`;
 const pad = n => String(n).padStart(2, '0');
 const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -47,7 +47,7 @@ export default class JuiceShowcase {
 
 			<div class="showcase__stage">
 				<div class="showcase__splashes" aria-hidden="true">
-					${this.juices.map(juice => `<img src="/assets/img/splash/${juice.slug}-splash.svg" alt="" class="showcase__splash" loading="lazy" decoding="async">`).join('')}
+					${this.juices.map(juice => `<img data-src="/assets/img/splash/${juice.slug}-splash.webp" alt="" class="showcase__splash" decoding="async">`).join('')}
 				</div>
 				<ul class="showcase__track">
 					${this.juices.map(juice => this.itemTemplate(juice)).join('')}
@@ -141,7 +141,11 @@ export default class JuiceShowcase {
 			item.querySelector('a').tabIndex = offset === 0 ? 0 : -1;
 		});
 
-		this.splashes.forEach((splash, i) => splash.classList.toggle('is-active', i === this.index));
+		this.splashes.forEach((splash, i) => {
+			// Only fetch splashes that are showing or one step away
+			if (!splash.src && Math.abs(this.offsetOf(i)) <= 1) splash.src = splash.dataset.src;
+			splash.classList.toggle('is-active', i === this.index);
+		});
 		this.dots.forEach((dot, i) => {
 			dot.classList.toggle('is-active', i === this.index);
 			dot.setAttribute('aria-current', String(i === this.index));

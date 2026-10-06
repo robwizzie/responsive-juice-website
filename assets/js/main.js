@@ -12,7 +12,13 @@ if (!loader) {
 	document.body.prepend(loader);
 }
 
+// Reveal on full load, but never keep visitors staring at a spinner for long on slow connections
+const LOADER_MAX_MS = 2500;
+let loaderHidden = false;
+
 function hideLoader() {
+	if (loaderHidden) return;
+	loaderHidden = true;
 	document.documentElement.classList.remove('page-loading');
 	loader.classList.add('hidden');
 	setTimeout(() => loader.remove(), 600);
@@ -20,7 +26,10 @@ function hideLoader() {
 }
 
 if (document.readyState === 'complete') hideLoader();
-else window.addEventListener('load', hideLoader);
+else {
+	window.addEventListener('load', hideLoader);
+	setTimeout(hideLoader, LOADER_MAX_MS);
+}
 
 /*=============== HEADER ===============*/
 document.body.insertAdjacentHTML('afterbegin', Header.render());

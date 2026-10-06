@@ -11,7 +11,7 @@ juices.forEach(juice => {
 	let html = template;
 
 	// Replace meta tags with juice-specific content
-	const metaImage = `/assets/img/og-images/${juice.slug}-og.png`;
+	const metaImage = `/assets/img/og-images/${juice.slug}-og.jpg`;
 
 	// Replace title
 	html = html.replace('<title>Product Details</title>', `<title>${juice.name} - Premium Cold-Pressed Juice | Sip On Pressed</title>`);

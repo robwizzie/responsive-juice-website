@@ -11,7 +11,7 @@ class Header {
             <header class="header" id="header">
                 <nav class="nav container">
                     <a href="/" class="nav__logo">
-                        <img src="/assets/img/branding/logo.png" alt="J & H Logo">
+                        <img src="/assets/img/branding/logo.webp" alt="J & H Logo">
                     </a>
 
                     <div class="nav__menu" id="nav-menu">
@@ -23,7 +23,7 @@ class Header {
                             <i class="ri-close-line"></i>
                         </div>
 
-                        <img src="/assets/img/nav-img.png" alt="" class="nav__img">
+                        <img src="/assets/img/nav-img.webp" alt="" class="nav__img">
                     </div>
 
                     <div class="nav__toggle" id="nav-toggle">

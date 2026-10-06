@@ -2,9 +2,6 @@ class Footer {
 	static async render() {
 		const currentYear = new Date().getFullYear();
 
-		// Use locations from the global scope (loaded via script tag)
-		const activeLocations = typeof getActiveLocations !== 'undefined' ? getActiveLocations() : [];
-
 		const footerHTML = `
             <footer class="footer">
                 <div class="footer__container" style="padding: 2rem;">
@@ -13,7 +10,7 @@ class Footer {
                         <!-- Brand Section -->
                         <div class="footer__section">
                             <div class="footer__logo">
-                                <img src="/assets/img/branding/logo.png" alt="Pressed By J & H" class="footer__logo-img">
+                                <img src="/assets/img/branding/logo.webp" alt="Pressed By J & H" class="footer__logo-img">
                                 <h3 class="footer__brand">Pressed By J & H</h3>
                             </div>
                             <p class="footer__description">
@@ -35,51 +32,6 @@ class Footer {
                                 <li><a href="/juices" class="footer__link">Our Juices</a></li>
                                 <li><a href="/contact" class="footer__link">Contact</a></li>
                             </ul>
-                        </div>
-
-                        <!-- Our Locations -->
-                        <div class="footer__section">
-                            <h4 class="footer__title">Our Locations</h4>
-                            <div class="footer__locations">
-                                ${activeLocations
-									.map(
-										location => `
-                                    <div class="footer__location">
-                                        <h5 class="footer__location-name" style="color: ${location.color};">
-                                            <i class="ri-map-pin-line"></i>
-                                            ${location.name}
-                                        </h5>
-                                        <p class="footer__location-address">${location.address}</p>
-                                        <p class="footer__location-desc">${location.description}</p>
-                                        <p class="footer__location-phone">
-                                            <i class="ri-phone-line"></i>
-                                            <a href="tel:${location.contactPhone}">${location.contactPhone}</a>
-                                        </p>
-                                        <p class="footer__location-hours">
-                                            <i class="ri-time-line"></i>
-                                            <strong>Today:</strong> ${typeof getTodaysHours !== 'undefined' ? getTodaysHours(location.slug) : 'Call for hours'}
-                                        </p>
-                                        <div class="footer__location-links">
-                                            <a href="${location.googleMapsLink}" target="_blank" class="footer__location-link">
-                                                <i class="ri-map-pin-2-line"></i>
-                                                Get Directions
-                                            </a>
-                                            ${
-												location.website
-													? `
-                                                <a href="${location.website}" target="_blank" class="footer__location-link">
-                                                    <i class="ri-external-link-line"></i>
-                                                    Visit Website
-                                                </a>
-                                            `
-													: ''
-											}
-                                        </div>
-                                    </div>
-                                `
-									)
-									.join('')}
-                            </div>
                         </div>
 
                         <!-- Important Info -->
@@ -137,14 +89,6 @@ class Footer {
 				}
 			});
 		});
-
-		// Make phone numbers clickable
-		const phoneLinks = document.querySelectorAll('.footer__location-phone a');
-		phoneLinks.forEach(link => {
-			link.addEventListener('click', e => {
-				// Phone links will work automatically with tel: protocol
-			});
-		});
 	}
 
 	static async create() {
@@ -167,7 +111,7 @@ class Footer {
 	}
 }
 
-// Auto-initialize when DOM is ready (only if locations database is loaded)
+// Auto-initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
 	// Wait a bit for other scripts to load
 	setTimeout(() => {

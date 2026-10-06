@@ -1,7 +1,3 @@
-/*=============== GOOGLE FONTS ===============*/
-
-@import url('https://fonts.googleapis.com/css2?family=Lemon&family=Open+Sans:wght@400;600&display=swap');
-
 /*=============== VARIABLES CSS ===============*/
 
 :root {
@@ -718,6 +714,9 @@ img {
     width: 100%;
     height: 100%;
     z-index: 1;
+    /* Small seamless grain tile, scaled like the old full-screen 1920px texture */
+    background: url(/assets/img/shape-bg.webp) repeat;
+    background-size: calc(256 / 1920 * 100vw) auto;
 }
 
 @keyframes floatSmall {
@@ -2520,94 +2519,6 @@ html.page-loading body>*:not(#page-loader) {
     opacity: 1;
 }
 
-.footer__locations {
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
-}
-
-.footer__location {
-    padding: 1.5rem;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 1rem;
-    border-left: 4px solid #ff9700;
-}
-
-.footer__location-name {
-    font-family: var(--second-font);
-    font-size: 1.1rem;
-    margin: 0 0 0.8rem 0;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.footer__location-name i {
-    font-size: 1.2rem;
-}
-
-.footer__location-address,
-.footer__location-desc,
-.footer__location-phone,
-.footer__location-hours {
-    margin: 0.5rem 0;
-    color: #cccccc;
-    font-size: 0.9rem;
-    line-height: 1.4;
-}
-
-.footer__location-phone {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.footer__location-phone a {
-    color: #ff9700;
-    text-decoration: none;
-    transition: color 0.3s ease;
-}
-
-.footer__location-phone a:hover {
-    color: #ffffff;
-}
-
-.footer__location-hours {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-weight: 500;
-}
-
-.footer__location-links {
-    display: flex;
-    gap: 1rem;
-    margin-top: 1rem;
-    flex-wrap: wrap;
-}
-
-.footer__location-link {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    color: #ff9700;
-    text-decoration: none;
-    font-size: 0.85rem;
-    padding: 0.4rem 0.8rem;
-    background: rgba(255, 151, 0, 0.1);
-    border-radius: 0.5rem;
-    transition: all 0.3s ease;
-    border: 1px solid rgba(255, 151, 0, 0.2);
-}
-
-.footer__location-link:hover {
-    background: rgba(255, 151, 0, 0.2);
-    transform: translateY(-2px);
-}
-
-.footer__location-link i {
-    font-size: 1rem;
-}
 
 .footer__info {
     display: flex;
@@ -2707,12 +2618,6 @@ html.page-loading body>*:not(#page-loader) {
         grid-template-columns: repeat(2, 1fr);
         gap: 2.5rem;
     }
-    .footer__locations {
-        gap: 1.5rem;
-    }
-    .footer__location {
-        padding: 1.2rem;
-    }
     .footer__container {
         padding: 3rem 1.5rem 2rem !important;
     }
@@ -2772,44 +2677,6 @@ html.page-loading body>*:not(#page-loader) {
     .footer__links li {
         text-align: center;
     }
-    .footer__locations {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-    .footer__location {
-        padding: 1.2rem;
-        text-align: center;
-        width: 100%;
-        max-width: 300px;
-    }
-    .footer__location-name {
-        justify-content: center;
-        text-align: center;
-    }
-    .footer__location-address,
-    .footer__location-desc {
-        text-align: center;
-    }
-    .footer__location-phone {
-        justify-content: center;
-        text-align: center;
-    }
-    .footer__location-hours {
-        justify-content: center;
-        text-align: center;
-    }
-    .footer__location-links {
-        flex-direction: column;
-        gap: 0.8rem;
-        align-items: center;
-        justify-content: center;
-    }
-    .footer__location-link {
-        justify-content: center;
-        padding: 0.6rem 1rem;
-        text-align: center;
-    }
     .footer__info {
         align-items: center;
         text-align: center;
@@ -2833,7 +2700,7 @@ html.page-loading body>*:not(#page-loader) {
 
 @media screen and (min-width: 1200px) {
     .footer__content {
-        grid-template-columns: 2fr 1fr 1.5fr 1fr;
+        grid-template-columns: 2fr 1fr 1fr;
     }
 }
 
@@ -3151,7 +3018,8 @@ html.page-loading body>*:not(#page-loader) {
     position: absolute;
     inset: 0;
     z-index: -1;
-    background: url(/assets/img/shape-bg.png) center / cover;
+    background: url(/assets/img/shape-bg.webp) repeat;
+    background-size: calc(256 / 1920 * 100vw) auto;
     mix-blend-mode: soft-light;
     opacity: 0.6;
     pointer-events: none;
