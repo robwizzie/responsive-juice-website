@@ -14,12 +14,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     <a href="/juices/${juice.slug}" class="juice-image-link">
                         <div class="juice-image">
                             <img src="${juice.imageUrl}" alt="${juice.name}" class="all-juices juice-bottle" loading="lazy" decoding="async">
-                            <img src="/assets/img/splash/${juice.slug}-splash.svg" alt="" class="juice-splash" loading="lazy" decoding="async">
+                            <img src="/assets/img/splash/${juice.slug}-splash.webp" alt="" class="juice-splash" loading="lazy" decoding="async">
                             ${juice.ingredients
 								.slice(0, 2)
 								.map(
 									(ingredient, index) => `
-                                <img src="/assets/img/ingredients/${ingredient.toLowerCase().replace(/ /g, '-')}.svg" 
+                                <img src="/assets/img/ingredients/${ingredient.toLowerCase().replace(/ /g, '-')}.webp" 
                                     alt="${ingredient}" 
                                     class="juice-ingredient ingredient-${index + 1}" loading="lazy" decoding="async">
                             `
@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
 								.map(
 									ingredient => `
                                 <span class="ingredient-tag">
-                                    <img src="/assets/img/ingredients/${ingredient.toLowerCase().replace(/ /g, '-')}.svg" 
+                                    <img src="/assets/img/ingredients/${ingredient.toLowerCase().replace(/ /g, '-')}.webp" 
                                         alt="${ingredient}" 
                                         class="ingredient-icon" loading="lazy" decoding="async">
                                     ${ingredient}

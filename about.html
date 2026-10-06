@@ -27,10 +27,7 @@
     <!-- Preconnects for Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap');
-    </style>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;0,900;1,400&family=Lemon&display=swap">
 
     <!--=============== JS ===============-->
     <script type="module" src="assets/js/main.js"></script>
@@ -47,7 +44,7 @@
     <meta property="og:title" content="About Us - Pressed By J & H">
     <meta property="og:description"
         content="Learn about Pressed By J & H - your trusted source for premium cold-pressed juices. Discover our story, mission, and commitment to delivering fresh, organic, nutrient-rich beverages.">
-    <meta property="og:image" content="https://siponpressed.com/assets/img/og-images/juice-og-image.png">
+    <meta property="og:image" content="https://siponpressed.com/assets/img/og-images/juice-og-image.jpg">
     <meta property="og:url" content="https://siponpressed.com/about">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Pressed By J & H">
@@ -57,7 +54,7 @@
     <meta name="twitter:title" content="About Us - Pressed By J & H">
     <meta name="twitter:description"
         content="Learn about Pressed By J & H - your trusted source for premium cold-pressed juices. Discover our story, mission, and commitment to delivering fresh, organic, nutrient-rich beverages.">
-    <meta name="twitter:image" content="https://siponpressed.com/assets/img/og-images/juice-og-image.png">
+    <meta name="twitter:image" content="https://siponpressed.com/assets/img/og-images/juice-og-image.jpg">
 
     <!-- Additional SEO meta tags -->
     <meta name="robots" content="index, follow">
@@ -70,7 +67,7 @@
         <div class="background-shapes">
             <div class="home__shape-small"></div>
             <div class="home__shape-big"></div>
-            <img src="/assets/img/shape-bg.png" alt="" class="home__shape-bg">
+            <div class="home__shape-bg"></div>
         </div>
 
         <!-- Story Section -->
@@ -78,7 +75,7 @@
             <div class="container">
                 <div class="about-header">
                     <h1 class="home__title">
-                        Meet <span style="color: #ff9700;"><img src="/assets/img/branding/logo.png"
+                        Meet <span style="color: #ff9700;"><img src="/assets/img/branding/logo.webp"
                                 alt="Pressed By J & H" style="width: 120px; padding: 10px 0px;"></span>
                     </h1>
                     <p class="home__description">
@@ -88,7 +85,7 @@
 
                 <div class="story-grid">
                     <div class="story-image">
-                        <video class="story-video" id="story-video" src="/assets/videos/siponpressed-video.mp4" controls
+                        <video class="story-video" id="story-video" src="/assets/videos/siponpressed-video.mp4" poster="/assets/videos/siponpressed-poster.webp" preload="none" controls
                             loop playsinline></video>
                     </div>
                     <div class="story-content" style="color: white;">
@@ -123,7 +120,7 @@
                                 flavors, J brings the perfect balance of health and taste to every recipe.</p>
                             <a href="/juices/sweet-green">
                                 <div class="athlete-favorite-juice" style="bottom: initial; top: 1rem;">
-                                    <img src="/assets/img/juices/sweet-green.png" alt="Favorite Juice"
+                                    <img src="/assets/img/juices/sweet-green.webp" alt="Favorite Juice"
                                         class="juice-photo">
                                     <span style="color: #969c05; font-family: var(--second-font);">Sweet Green</span>
                                 </div>
@@ -145,7 +142,7 @@
                                 quality control ensures that every bottle meets our high standards.</p>
                             <a href="/juices/tropical-storm">
                                 <div class="athlete-favorite-juice" style="bottom: initial; top: 1rem;">
-                                    <img src="/assets/img/juices/tropical-storm.png" alt="Favorite Juice"
+                                    <img src="/assets/img/juices/tropical-storm.webp" alt="Favorite Juice"
                                         class="juice-photo">
                                     <span style="color: #ff9700; font-family: var(--second-font);">Tropical Storm</span>
                                 </div>
@@ -187,7 +184,6 @@
 
     <!--=============== MAIN JS ===============-->
     <script src="/assets/js/juices-database.js"></script>
-    <script src="/assets/js/locations-database.js"></script>
     <script src="/assets/js/components/footer.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {

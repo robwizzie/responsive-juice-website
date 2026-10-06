@@ -2,7 +2,7 @@ import JuiceShowcase from '/assets/js/components/juice-showcase.js';
 
 const slug = window.location.pathname.split('/').pop().replace('.html', '');
 const juice = juices.find(j => j.slug === slug);
-const ingredientIcon = name => `/assets/img/ingredients/${name.toLowerCase().replace(/ /g, '-')}.svg`;
+const ingredientIcon = name => `/assets/img/ingredients/${name.toLowerCase().replace(/ /g, '-')}.webp`;
 
 if (!juice) {
 	window.location.href = '/';
@@ -45,7 +45,7 @@ function renderDetails(juice) {
         </div>
 
         <div class="home__images" style="--glow: ${juice.color}">
-            <img src="/assets/img/splash/${juice.slug}-splash.svg" alt="" class="home__liquid">
+            <img src="/assets/img/splash/${juice.slug}-splash.webp" alt="" class="home__liquid">
             <div class="home__juice-animate">
                 <img src="${juice.imageUrl}" alt="${juice.name}" class="home__juice" decoding="async">
             </div>
@@ -54,10 +54,10 @@ function renderDetails(juice) {
 				.map((ingredient, index) => `<img src="${ingredientIcon(ingredient)}" alt="" class="home__apple${index + 1}" style="z-index: 0;" decoding="async">`)
 				.join('')}
             <div>
-                <img src="/assets/img/leaf.png" alt="" class="home__leaf">
-                <img src="/assets/img/leaf.png" alt="" class="home__leaf">
-                <img src="/assets/img/leaf.png" alt="" class="home__leaf">
-                <img src="/assets/img/leaf.png" alt="" class="home__leaf">
+                <img src="/assets/img/leaf.webp" alt="" class="home__leaf">
+                <img src="/assets/img/leaf.webp" alt="" class="home__leaf">
+                <img src="/assets/img/leaf.webp" alt="" class="home__leaf">
+                <img src="/assets/img/leaf.webp" alt="" class="home__leaf">
             </div>
         </div>
     `;
@@ -66,9 +66,14 @@ function renderDetails(juice) {
 function renderNutrition(juice) {
 	document.querySelector('.nutrition-content').innerHTML = `
         <div class="magnifier-container" style="border: 3px solid ${juice.color}33;">
-            <img src="/assets/img/nutrition-facts/${juice.slug}-facts.png" alt="${juice.name} Nutrition Facts" class="nutrition-image" loading="lazy">
+            <img src="/assets/img/nutrition-facts/${juice.slug}-facts.webp" alt="${juice.name} Nutrition Facts" class="nutrition-image" loading="lazy">
         </div>
     `;
+
+	// Not every juice has a nutrition label photo; hide the section rather than show a broken image
+	document.querySelector('.nutrition-image').addEventListener('error', () => {
+		document.querySelector('.nutrition-section').hidden = true;
+	});
 }
 
 function animateIn() {
@@ -157,7 +162,7 @@ function addStructuredData(juice) {
 		'@type': 'Product',
 		name: juice.name,
 		description: juice.metaDescription || `Fresh cold-pressed juice made with ${juice.ingredients.join(', ')}`,
-		image: [`${baseUrl}${juice.imageUrl}`, metaImage, `${baseUrl}/assets/img/nutrition-facts/${juice.slug}-facts.png`],
+		image: [`${baseUrl}${juice.imageUrl}`, metaImage, `${baseUrl}/assets/img/nutrition-facts/${juice.slug}-facts.webp`],
 		brand: {
 			'@type': 'Brand',
 			name: 'Sip On Pressed'

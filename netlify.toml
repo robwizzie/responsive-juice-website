@@ -3,3 +3,14 @@
   functions = "netlify/functions"
 
 # Redirect rules are in _redirects file for cleaner syntax 
+# Images and video rarely change; let browsers reuse them for a week.
+# (JS/CSS keep Netlify's default revalidation since their filenames aren't versioned.)
+[[headers]]
+  for = "/assets/img/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+[[headers]]
+  for = "/assets/videos/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
