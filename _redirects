@@ -1,8 +1,8 @@
 /create-checkout-session /.netlify/functions/create-checkout-session 200
 /send-email /.netlify/functions/send-email 200
 /webhook/stripe /.netlify/functions/handle-successful-payment 200
-/checkout          /checkout.html     200
-/checkout/         /checkout.html     200
+/checkout          /juices            302!
+/checkout/         /juices            302!
 /juices            /juices.html        200
 /juices/           /juices.html        200
 /juices/tropical-storm /tropical-storm.html 200
@@ -21,8 +21,8 @@
 /athletes/        /athletes.html     200
 /contact          /contact.html      200
 /contact/         /contact.html      200
-/success          /success.html      200
-/success/         /success.html      200
-/cancel           /cancel.html       200
-/cancel/          /cancel.html       200
+/success          /                  302!
+/success/         /                  302!
+/cancel           /                  302!
+/cancel/          /                  302!
 /*                /index.html        200 

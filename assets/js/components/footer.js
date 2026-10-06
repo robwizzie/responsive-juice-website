@@ -88,8 +88,8 @@ class Footer {
                             <div class="footer__info">
                                 <div class="footer__order-notice">
                                     <i class="ri-store-2-line"></i>
-                                    <strong>PICKUP & DELIVERY</strong>
-                                    <p>Pickup at our NJ locations or delivery within 30 miles of Blackwood</p>
+                                    <strong>ORDERING CLOSED</strong>
+                                    <p>We've pressed our last bottle &mdash; thanks for sipping with us!</p>
                                 </div>
                                 <div class="footer__info-item">
                                     <i class="ri-leaf-line"></i>

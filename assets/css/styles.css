@@ -150,36 +150,6 @@ img {
     display: none;
 }
 
-.cart-button {
-    position: relative;
-    padding: 0.5rem;
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 1.5rem;
-    margin-top: 10px;
-    color: white;
-    transition: color 0.3s;
-}
-
-.cart-button:hover {
-    color: var(--first-color);
-}
-
-.cart-count {
-    position: absolute;
-    top: -8px;
-    right: -8px;
-    background: var(--first-color);
-    color: white;
-    border-radius: 50%;
-    width: 20px;
-    height: 20px;
-    font-size: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
 
 .active-link {
     color: var(--first-color-alt);
@@ -443,17 +413,6 @@ img {
     flex-direction: column;
 }
 
-.cart-button[data-count]:not([data-count='0'])::after {
-    content: attr(data-count);
-    position: absolute;
-    top: -8px;
-    right: -8px;
-    background: red;
-    color: white;
-    border-radius: 50%;
-    padding: 0.2rem 0.5rem;
-    font-size: 0.8rem;
-}
 
 .cart-items {
     padding-right: 2rem;
@@ -863,9 +822,6 @@ img {
         align-items: center;
         column-gap: 4rem;
     }
-    .second__container {
-        padding-top: 4rem;
-    }
 }
 
 
@@ -929,11 +885,6 @@ img {
     }
 }
 
-@media (min-width: 1024px) and (max-width: 1799px) {
-    .carousel-item {
-        flex: 0 0 50%;
-    }
-}
 
 @media screen and (min-width: 1048px) {
     .container {
@@ -942,259 +893,8 @@ img {
     }
 }
 
-.carousel-container {
-    margin: 0 auto;
-    padding: 2rem 0rem 0rem 0rem;
-    color: white;
-}
-
-.carousel {
-    position: relative;
-    height: 600px;
-    margin: 0 auto;
-    overflow: hidden;
-}
-
-.carousel-left-panel {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 50%;
-    height: 100%;
-    padding: 4rem 3rem;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    z-index: 2;
-    color: #fff;
-    border-radius: 0rem 4rem 0rem 0rem;
-}
-
-.carousel-track {
-    position: absolute;
-    right: 0;
-    width: 50%;
-    height: 100%;
-    padding-left: 2%;
-    display: flex;
-    gap: 0.25rem;
-    transform: translateX(0);
-    transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    will-change: transform;
-    user-select: none;
-    transform-style: preserve-3d;
-    backface-visibility: hidden;
-}
-
-.slide-title {
-    font-size: 3rem;
-}
-
-.carousel-track.dragging {
-    cursor: grabbing;
-    cursor: -webkit-grabbing;
-}
-
-.carousel-track:not(.dragging) {
-    transition: transform 0.5s ease-in-out;
-}
-
-.carousel-item {
-    flex: 0 0 33.333%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    will-change: transform, opacity;
-    transform-style: preserve-3d;
-    backface-visibility: hidden;
-}
-
-.carousel-item img {
-    width: 100%;
-    max-width: 250px;
-    transition: transform 0.35s ease, opacity 0.35s ease;
-    will-change: transform, opacity;
-    backface-visibility: hidden;
-}
-
-.carousel-item.active img {
-    opacity: 1;
-}
-
-.carousel-item.prev img {
-    transform: scale(0.75);
-    opacity: 0.6;
-}
-
-.carousel-item.next img {
-    transform: rotate(1deg) translateX(25%) translateY(0%) scale(0.75);
-    opacity: 0.6;
-}
-
-.carousel-item.next2 img {
-    transform: rotate(1deg) translateX(50%) translateY(0%) scale(0.75);
-    opacity: 0.6;
-}
-
-.carousel-item:not(.active) img {
-    transform: scale(0.75);
-    opacity: 0.6;
-}
-
-.carousel-left {
-    flex: 0 0 50%;
-    padding: 4rem 3rem;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    color: #fff;
-}
-
-.carousel-left .slide-title {
-    font-size: 2.5rem;
-    margin-bottom: 1.5rem;
-}
-
-.carousel-left .home__button {
-    width: 220px;
-    font-size: 1.1rem;
-}
-
-.carousel-left .ingredients-preview {
-    justify-content: center;
-}
-
-.carousel-right {
-    flex: 0 0 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #fff;
-}
-
-.carousel-right img {
-    width: 65%;
-    max-height: 80%;
-    object-fit: contain;
-}
-
-
-/* Responsive adjustments */
-
-@media (max-width: 1024px) {
-    .carousel-left .slide-title {
-        font-size: 2.5rem;
-    }
-    .carousel-track {
-        width: 55%;
-    }
-}
 
 @media (max-width: 767px) {
-    .carousel {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        height: auto;
-    }
-    .carousel-left-panel {
-        position: relative;
-        width: 100%;
-        padding: 1rem 0.75rem 0.5rem 0.75rem;
-        text-align: center;
-        min-height: auto;
-    }
-    .carousel-left-panel .button-row {
-        display: none;
-    }
-    .carousel-left-panel .left-btn {
-        width: 180px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 !important;
-        text-align: center;
-        font-family: var(--second-font);
-        font-size: 0.9rem;
-        padding: 0.75rem 1rem;
-    }
-    /* Track below info */
-    .carousel-track {
-        position: relative;
-        width: 100%;
-        margin-top: 1rem;
-        margin-bottom: 1rem;
-        gap: 1rem;
-    }
-    /* Mobile button row below carousel - Mobile Carousel v2 */
-    .carousel-mobile-buttons {
-        display: flex;
-        flex-direction: row;
-        justify-content: center;
-        gap: 0.5rem;
-        flex-wrap: nowrap;
-        margin: 1rem 0 3rem 0;
-        padding: 0 0.75rem;
-    }
-    .carousel-mobile-buttons .left-btn {
-        width: 220px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 !important;
-        text-align: center;
-        font-family: var(--second-font);
-        font-size: 0.9rem;
-        padding: 0.75rem 1rem;
-        background: #ffffff;
-        color: var(--text-color);
-        font-weight: 600;
-        border-radius: 1.5rem 0.25rem;
-        transition: background 0.3s ease, color 0.3s ease;
-        text-decoration: none;
-        border: none;
-        cursor: pointer;
-    }
-    .carousel-mobile-buttons .left-btn:hover {
-        background: var(--first-color);
-        color: #fff;
-    }
-    .carousel-item img {
-        max-width: 160px;
-        pointer-events: none;
-        /* Prevent image drag interference */
-    }
-    .carousel-button.prev,
-    .carousel-button.next {
-        left: auto;
-    }
-    .carousel {
-        text-align: center;
-    }
-    .carousel-button-container {
-        display: flex;
-        position: relative;
-        justify-content: center;
-        align-items: center;
-        gap: 1rem;
-    }
-    .carousel-button.prev {
-        left: 0;
-        transform: none !important;
-        position: static;
-    }
-    .carousel-button.next {
-        left: 0;
-        transform: none !important;
-        position: static;
-    }
-    .slide-title {
-        font-size: 1.75rem;
-        margin: 0.5rem 0 !important;
-    }
     .ingredients-preview {
         display: none !important;
     }
@@ -1210,31 +910,6 @@ img {
     }
 }
 
-.textImgContainer {
-    display: block;
-    text-decoration: none;
-    color: inherit;
-    border-radius: 2rem;
-    padding: 1.5rem;
-    transition: transform 0.3s ease;
-}
-
-.carousel-item.active .textImgContainer {
-    transform: translateY(-5px);
-}
-
-.carousel-item h3 {
-    margin-bottom: 1rem;
-    font-size: 1.5rem;
-    color: white;
-}
-
-.juice-ingredients {
-    color: white;
-    font-size: 0.9rem;
-    margin: 0.5rem 0;
-    line-height: 1.4;
-}
 
 .juice-price {
     font-weight: bold;
@@ -1267,48 +942,6 @@ img {
     border-radius: 1.5rem 0.25rem !important;
 }
 
-.carousel-button {
-    position: absolute;
-    bottom: 3rem;
-    top: auto;
-    transform: none;
-    background: none;
-    border: none;
-    color: white;
-    cursor: pointer;
-    z-index: 2;
-    padding: 1rem;
-    transition: opacity 0.3s ease;
-}
-
-.carousel-button:hover {
-    opacity: 0.8;
-}
-
-.carousel-button.prev {
-    left: 10%;
-}
-
-.carousel-button.next {
-    left: 18%;
-}
-
-.carousel-button svg {
-    width: 24px;
-    height: 24px;
-}
-
-
-/* Tablet (2 items) */
-
-@media (min-width: 768px) and (max-width: 1023px) {
-    .carousel-item {
-        flex: 0 0 100%;
-    }
-    .carousel-track {
-        gap: 1.5rem;
-    }
-}
 
 @media (max-width: 1100px) {
     .home__shape-small {
@@ -1328,18 +961,7 @@ img {
 }
 
 
-/* Mobile (1 item) */
-
 @media (max-width: 767px) {
-    .carousel-item {
-        flex: 0 0 33.333%;
-    }
-    .carousel-track {
-        gap: 0rem;
-    }
-    .textImgContainer {
-        padding: 1rem;
-    }
     .nav__logo {
         max-width: 70px;
     }
@@ -1385,15 +1007,7 @@ img {
         align-items: center;
         row-gap: 0rem;
     }
-    .second__container {
-        padding-top: 4rem;
     }
-    /* Target only the first container */
-    .home__container:not(.second__container) {
-        flex-direction: column-reverse;
-        padding-top: 10rem;
-    }
-}
 
 
 /*=============== PRODUCTS PAGE ===============*/
@@ -1478,9 +1092,6 @@ img {
 }
 
 
-/* Mobile styles */
-
-
 /* Tablet styles */
 
 @media screen and (max-width: 1024px) and (min-width: 769px) {
@@ -1562,8 +1173,6 @@ img {
     min-width: 150px;
 }
 
-
-/* Responsive adjustments */
 
 @media screen and (max-width: 768px) {
     .success-buttons,
@@ -2193,8 +1802,6 @@ img {
 }
 
 
-/* Responsive adjustments */
-
 @media screen and (max-width: 767px) {
     .product-details .home__container {
         flex-direction: column-reverse;
@@ -2693,9 +2300,6 @@ a.info-card {
     .contact-form-container {
         padding: 1.5rem;
     }
-    .slide-title {
-        margin-bottom: 0.5rem;
-    }
     .ingredients-preview {
         min-height: 124px;
         align-content: center;
@@ -2748,220 +2352,10 @@ html.page-loading body>*:not(#page-loader) {
 }
 
 
-/* Button row */
-
-.carousel-left-panel .button-row {
-    display: flex;
-    gap: 1rem;
-    margin: 1rem 0;
-}
-
-.carousel-left-panel .left-btn {
-    width: 220px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 !important;
-    text-align: center;
-}
-
-.carousel-left-panel .left-btn.add-to-cart {
-    width: 220px !important;
-}
-
-
-/* Centered button row */
-
-.carousel-left-panel .button-row {
-    justify-content: center;
-    flex-wrap: wrap;
-}
-
-.carousel-left-panel .left-btn {
-    width: 220px;
-    background: #ffffff;
-    color: var(--text-color);
-    font-weight: 600;
-    border-radius: 1.5rem 0.25rem;
-    transition: background 0.3s ease, color 0.3s ease;
-}
-
-.carousel-left-panel .left-btn:hover {
-    background: var(--first-color);
-    color: #fff;
-}
-
-
-/* Hide mobile buttons on desktop - Mobile Carousel v2 */
-
-.carousel-mobile-buttons {
-    display: none;
-}
-
-
-/* Arrow buttons styled */
-
-.carousel-button {
-    bottom: 1.5rem;
-    width: 48px;
-    height: 48px;
-    background: rgba(255, 255, 255, 0.15);
-    border: 2px solid #fff;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-}
-
-.carousel-button.prev {
-    left: 50%;
-    transform: translateX(-120%);
-}
-
-.carousel-button.next {
-    left: 50%;
-    transform: translateX(20%);
-}
-
-
-/* Bigger buttons on mobile */
-
-@media (max-width: 767px) {
-    .carousel-button {
-        width: 64px;
-        height: 64px;
-        bottom: 2rem;
-        background: rgba(255, 255, 255, 0.2);
-        border: 3px solid #fff;
-        transition: all 0.3s ease;
-    }
-    .carousel-button:hover {
-        background: rgba(255, 255, 255, 0.4);
-        transform: scale(1.05);
-    }
-    .carousel-button.prev {
-        transform: translateX(-140%);
-    }
-    .carousel-button.next {
-        transform: translateX(40%);
-    }
-    .carousel-button svg {
-        width: 32px;
-        height: 32px;
-    }
-}
-
-
-/* Show faded prev & next items on tablet/mobile when only 1 item is visible */
-
-@media (max-width: 1023px) {
-    .carousel-item.prev img,
-    .carousel-item.next img {
-        display: block !important;
-        /* override base rule */
-        transform: scale(0.75) !important;
-        opacity: 0.4 !important;
-    }
-    /* Remove left padding so translateX calculations align */
-    .carousel-track {
-        padding-left: 0 !important;
-    }
-}
-
-
 /* Remove hover transform for Add to Cart buttons */
 
-.add-to-cart:hover,
-.carousel-left-panel .left-btn.add-to-cart:hover {
+.add-to-cart:hover {
     transform: none !important;
-}
-
-.carousel-item-link {
-    display: block;
-    text-decoration: none;
-}
-
-
-/* No juices message */
-
-.no-juices {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 300px;
-    color: var(--title-color);
-    font-size: 1.2rem;
-    text-align: center;
-}
-
-
-/* Dynamic colored text alignment */
-
-#dynamic-juice-word,
-#dynamic-other-juices-word {
-    display: inline;
-    vertical-align: baseline;
-    line-height: inherit;
-}
-
-
-/* Out of stock styles */
-
-.out-of-stock {
-    position: relative;
-    opacity: 0.75;
-    transition: opacity 0.5s ease-in-out;
-}
-
-.out-of-stock::before {
-    content: 'OUT OF STOCK';
-    position: absolute;
-    top: 42%;
-    left: 50%;
-    transform: translate(-50%, -50%) scale(1);
-    background: rgba(255, 255, 255, 0.95);
-    color: #333;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-    font-weight: bold;
-    font-size: 0.9rem;
-    z-index: 5;
-    white-space: nowrap;
-    transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
-    will-change: transform, opacity;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    backface-visibility: hidden;
-}
-
-.out-of-stock img {
-    filter: grayscale(70%);
-    transition: filter 0.5s ease-in-out, transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
-}
-
-
-/* Ensure consistent treatment in carousel */
-
-.carousel-item.out-of-stock {
-    opacity: 0.75;
-    transition: opacity 0.5s ease-in-out;
-}
-
-.carousel-item.out-of-stock img {
-    filter: grayscale(70%);
-    transition: filter 0.5s ease-in-out, transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
-}
-
-
-/* Ensure consistent treatment in product cards */
-
-.juice-card.out-of-stock {
-    pointer-events: none;
-}
-
-.juice-card.out-of-stock:hover {
-    transform: none;
 }
 
 
@@ -2978,25 +2372,6 @@ html.page-loading body>*:not(#page-loader) {
 .add-to-cart:disabled:hover {
     transform: none !important;
     background-color: #ccc !important;
-}
-
-
-/* Ensure Safari stability */
-
-.carousel-item {
-    -webkit-transform-style: preserve-3d;
-    transform-style: preserve-3d;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-}
-
-
-/* Ensure consistent z-index stacking */
-
-.carousel-item.out-of-stock::before {
-    transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
-    transform: translate(-50%, -50%) translateZ(1px);
-    -webkit-transform: translate(-50%, -50%) translateZ(1px);
 }
 
 
@@ -3460,4 +2835,775 @@ html.page-loading body>*:not(#page-loader) {
     .footer__content {
         grid-template-columns: 2fr 1fr 1.5fr 1fr;
     }
+}
+
+/*=============== HOME: HERO ===============*/
+
+.home__title .text-gradient {
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: text-shine 6s linear infinite;
+}
+
+.text-gradient--citrus {
+    background-image: linear-gradient(100deg, #ff9700 0%, #ffd23f 25%, #ff6a00 50%, #ffd23f 75%, #ff9700 100%);
+}
+
+.text-gradient--green {
+    background-image: linear-gradient(100deg, #76bd4b 0%, #d4ec5c 25%, #3f9b3a 50%, #d4ec5c 75%, #76bd4b 100%);
+}
+
+.hero__eyebrow {
+    display: inline-block;
+    position: relative;
+    z-index: 1;
+    margin-bottom: 1.25rem;
+    padding: 0.45rem 1rem;
+    border: 1px solid hsl(0 0% 100% / 0.18);
+    border-radius: 999px;
+    background: hsl(0 0% 100% / 0.06);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    color: hsl(0 0% 100% / 0.75);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+}
+
+.hero__actions {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem 1.75rem;
+}
+
+.hero__actions .home__button {
+    width: auto;
+    padding: 1rem 2.25rem;
+    text-align: center;
+    transition: background 0.4s, transform 0.3s, box-shadow 0.3s;
+}
+
+.hero__actions .home__button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 14px 30px hsl(76 46% 47% / 0.35);
+}
+
+.hero__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--title-color);
+    font-weight: 700;
+    background: linear-gradient(currentColor, currentColor) left bottom / 0 2px no-repeat;
+    transition: background-size 0.3s;
+}
+
+.hero__link:hover {
+    background-size: 100% 2px;
+}
+
+.hero__link i {
+    animation: nudge-down 1.8s ease-in-out infinite;
+}
+
+.hero__scroll {
+    position: absolute;
+    left: 50%;
+    bottom: 2rem;
+    z-index: 3;
+    display: none;
+    width: 26px;
+    height: 42px;
+    margin-left: -13px;
+    border: 2px solid hsl(0 0% 100% / 0.5);
+    border-radius: 20px;
+}
+
+.hero__scroll span {
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    width: 4px;
+    height: 8px;
+    margin-left: -2px;
+    border-radius: 2px;
+    background: #fff;
+    animation: scroll-dot 1.8s ease-in-out infinite;
+}
+
+.home__juice-animate {
+    position: relative;
+    z-index: 3;
+}
+
+.home__leaf {
+    z-index: 4;
+}
+
+.home__juice--tilt-left {
+    rotate: -20deg;
+}
+
+/* Soft glow in the juice's colour behind each bottle composition */
+.home__images::before {
+    content: '';
+    position: absolute;
+    inset: 12% 8%;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--glow, transparent) 0%, transparent 65%);
+    opacity: 0.35;
+    filter: blur(40px);
+    pointer-events: none;
+    animation: glow-pulse 6s ease-in-out infinite;
+}
+
+/* Pointer parallax: home.js sets --px/--py (-0.5 … 0.5) on the scene */
+[data-parallax] [style*='--depth'] {
+    translate: calc(var(--px, 0) * var(--depth) * 1px) calc(var(--py, 0) * var(--depth) * 1px);
+    transition: translate 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.vitality .home__container {
+    padding-top: 4rem;
+}
+
+@media screen and (min-width: 768px) {
+    .hero .home__container {
+        min-height: 100vh;
+        min-height: 100svh;
+        padding-bottom: 5rem;
+        align-content: center;
+    }
+    .hero__scroll {
+        display: block;
+    }
+    .header.is-scrolled .nav.container {
+        margin-top: 12px;
+        background: rgb(115 0 0 / 82%);
+        box-shadow: 0 10px 30px rgb(0 0 0 / 35%);
+    }
+}
+
+@media screen and (max-width: 767px) {
+    .hero .home__container {
+        flex-direction: column-reverse;
+    }
+    .hero__eyebrow {
+        margin-top: 1.5rem;
+    }
+    .hero__actions {
+        justify-content: center;
+    }
+}
+
+@keyframes text-shine {
+    to {
+        background-position: 200% center;
+    }
+}
+
+@keyframes glow-pulse {
+    50% {
+        opacity: 0.55;
+        transform: scale(1.08);
+    }
+}
+
+@keyframes nudge-down {
+    50% {
+        transform: translateY(4px);
+    }
+}
+
+@keyframes scroll-dot {
+    0% {
+        opacity: 0;
+        transform: translateY(0);
+    }
+    30% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(14px);
+    }
+}
+
+
+/*=============== HOME: MARQUEE ===============*/
+
+.marquee {
+    position: relative;
+    z-index: 2;
+    width: calc(100% + 4rem);
+    margin: 2rem 0 2rem -2rem;
+    padding: 1rem 0;
+    overflow: hidden;
+    background: linear-gradient(90deg, #ff9700, #ff6a00 45%, #76bd4b);
+    box-shadow: 0 20px 50px rgb(0 0 0 / 40%);
+    transform: rotate(-2deg);
+}
+
+.marquee__track {
+    display: flex;
+    width: max-content;
+    animation: marquee 32s linear infinite;
+}
+
+.marquee__group {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    padding-right: 2rem;
+}
+
+.marquee span {
+    color: #1a1a1a;
+    font-family: var(--second-font);
+    font-size: clamp(1.1rem, 2.5vw, 1.6rem);
+    white-space: nowrap;
+}
+
+.marquee i {
+    color: #fff;
+    font-size: 1.25rem;
+}
+
+@keyframes marquee {
+    to {
+        transform: translateX(-50%);
+    }
+}
+
+
+/*=============== JUICE SHOWCASE (CAROUSEL) ===============*/
+
+.showcase-section {
+    position: relative;
+    z-index: 2;
+    padding-top: 5rem;
+}
+
+.section-title {
+    text-align: center;
+}
+
+.section-title span {
+    display: inline;
+    transition: color 0.7s ease;
+}
+
+.section-subtitle {
+    position: relative;
+    z-index: 1;
+    margin: 0 auto 2.5rem;
+    padding: 0 1.5rem;
+    color: hsl(0 0% 100% / 0.6);
+    text-align: center;
+}
+
+.showcase {
+    --juice-color: #ff9700;
+    --dir: 1;
+    position: relative;
+    isolation: isolate;
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    grid-template-rows: 1fr auto;
+    grid-template-areas: 'info stage' 'controls stage';
+    min-height: 640px;
+    padding: 4rem max(1.5rem, calc((100% - 1200px) / 2));
+    overflow: hidden;
+    border-radius: 2.5rem 2.5rem 0 0;
+    background-color: var(--juice-color);
+    color: #fff;
+    transition: background-color 0.7s ease;
+    outline: none;
+}
+
+.showcase[data-direction='prev'] {
+    --dir: -1;
+}
+
+.showcase:focus-visible {
+    box-shadow: inset 0 0 0 3px #fff;
+}
+
+/* Light from behind the bottles + darker floor for depth */
+.showcase::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    background:
+        radial-gradient(circle at 68% 50%, hsl(0 0% 100% / 0.3), transparent 50%),
+        linear-gradient(180deg, transparent 40%, hsl(0 0% 0% / 0.35));
+}
+
+.showcase::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: url(/assets/img/shape-bg.png) center / cover;
+    mix-blend-mode: soft-light;
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* Giant outlined juice name behind everything */
+.showcase__backdrop {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    z-index: -1;
+    translate: -50% -50%;
+    color: transparent;
+    font-family: var(--second-font);
+    font-size: clamp(4rem, 13vw, 12rem);
+    line-height: 1;
+    white-space: nowrap;
+    -webkit-text-stroke: 2px hsl(0 0% 100% / 0.2);
+    pointer-events: none;
+    user-select: none;
+}
+
+.showcase.is-changing .showcase__backdrop {
+    animation: backdrop-in 1s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* Stage: bottles are laid out purely from their data-pos attribute */
+.showcase__stage {
+    grid-area: stage;
+    position: relative;
+    min-height: 560px;
+    cursor: grab;
+    touch-action: pan-y;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.showcase.is-dragging .showcase__stage {
+    cursor: grabbing;
+}
+
+.showcase__splashes {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    pointer-events: none;
+}
+
+.showcase__splash {
+    grid-area: 1 / 1;
+    width: clamp(260px, 38vw, 500px);
+    opacity: 0;
+    transform: scale(0.6) rotate(-25deg);
+    transition: opacity 0.5s ease, transform 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.showcase__splash.is-active {
+    opacity: 0.9;
+    transform: none;
+}
+
+.showcase__track {
+    position: absolute;
+    inset: 0;
+    translate: var(--drag, 0) 0;
+    transition: translate 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.showcase.is-dragging .showcase__track {
+    transition: none;
+}
+
+.showcase__item {
+    --x: 0;
+    --scale: 1;
+    --opacity: 1;
+    --z: 1;
+    --filter: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    z-index: var(--z);
+    width: clamp(120px, 15vw, 210px);
+    opacity: var(--opacity);
+    filter: var(--filter);
+    transform: translate(-50%, -50%) translateX(calc(var(--x) * 100%)) scale(var(--scale));
+    transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.6s ease, filter 0.6s ease;
+}
+
+.showcase__item[data-pos='0'] {
+    --z: 5;
+}
+
+.showcase__item[data-pos='1'],
+.showcase__item[data-pos='-1'] {
+    --x: 1.35;
+    --scale: 0.62;
+    --opacity: 0.75;
+    --z: 4;
+    --filter: saturate(0.85);
+}
+
+.showcase__item[data-pos='2'],
+.showcase__item[data-pos='-2'] {
+    --x: 2.3;
+    --scale: 0.45;
+    --opacity: 0.35;
+    --z: 3;
+    --filter: blur(1px) saturate(0.6);
+}
+
+.showcase__item[data-pos='hidden-left'],
+.showcase__item[data-pos='hidden-right'] {
+    --x: 3;
+    --scale: 0.3;
+    --opacity: 0;
+    pointer-events: none;
+}
+
+/* Mirror the layout for bottles left of the active one */
+.showcase__item[data-pos^='-'],
+.showcase__item[data-pos='hidden-left'] {
+    transform: translate(-50%, -50%) translateX(calc(var(--x) * -100%)) scale(var(--scale));
+}
+
+.showcase__link {
+    position: relative;
+    display: block;
+}
+
+.showcase__bottle {
+    display: block;
+    width: 100%;
+    filter: drop-shadow(0 30px 25px rgb(0 0 0 / 35%));
+    pointer-events: none;
+}
+
+.showcase__item[data-pos='0'] .showcase__bottle {
+    animation: showcase-float 5s ease-in-out infinite;
+}
+
+/* Ingredients that pop out around the active bottle */
+.showcase__garnish {
+    position: absolute;
+    width: 48%;
+    opacity: 0;
+    transform: scale(0.3) rotate(-40deg);
+    transition: opacity 0.4s ease, transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+    pointer-events: none;
+}
+
+.showcase__garnish--1 {
+    top: 18%;
+    left: -40%;
+    z-index: -1;
+}
+
+.showcase__garnish--2 {
+    right: -38%;
+    bottom: 10%;
+    z-index: 1;
+}
+
+.showcase__item[data-pos='0'] .showcase__garnish {
+    opacity: 1;
+    transform: rotate(-12deg);
+    transition-delay: 0.25s;
+}
+
+.showcase__item[data-pos='0'] .showcase__garnish--2 {
+    transform: rotate(14deg);
+    transition-delay: 0.35s;
+}
+
+/* Info panel – re-rendered on every change, so its enter animation replays */
+.showcase__info {
+    grid-area: info;
+    align-self: end;
+    position: relative;
+    z-index: 6;
+    max-width: 30rem;
+}
+
+.showcase__info > :not(.showcase__ingredients) {
+    animation: info-in 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.showcase__info > :nth-child(2) {
+    animation-delay: 0.05s;
+}
+
+.showcase__info > :nth-child(4) {
+    animation-delay: 0.2s;
+}
+
+.showcase__count {
+    font-size: 0.9rem;
+    font-weight: 900;
+    letter-spacing: 0.15em;
+}
+
+.showcase__count span {
+    opacity: 0.65;
+}
+
+.showcase__name {
+    margin: 0.4rem 0 1.25rem;
+    font-family: var(--second-font);
+    font-size: clamp(2.25rem, 5vw, 4rem);
+    line-height: 1.05;
+    text-shadow: 0 4px 24px rgb(0 0 0 / 20%);
+}
+
+.showcase__ingredients {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+}
+
+.showcase__ingredient {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.35rem 0.9rem 0.35rem 0.35rem;
+    border: 1px solid hsl(0 0% 100% / 0.3);
+    border-radius: 999px;
+    background: hsl(0 0% 100% / 0.18);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    font-size: 0.9rem;
+    font-weight: 700;
+    animation: info-in 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    animation-delay: calc(0.1s + var(--i) * 0.04s);
+}
+
+.showcase__ingredient img {
+    width: 26px;
+    height: 26px;
+    padding: 3px;
+    border-radius: 50%;
+    background: #fff;
+}
+
+.showcase__cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 1.75rem;
+    border-radius: 1.5rem 0.25rem;
+    background: #fff;
+    box-shadow: 0 10px 30px rgb(0 0 0 / 20%);
+    color: var(--juice-color);
+    font-family: var(--second-font);
+    transition: transform 0.3s, box-shadow 0.3s, color 0.7s;
+}
+
+.showcase__cta:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 16px 40px rgb(0 0 0 / 28%);
+}
+
+/* Controls */
+.showcase__controls {
+    grid-area: controls;
+    position: relative;
+    z-index: 6;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 2.5rem;
+}
+
+.showcase__arrow {
+    display: grid;
+    flex-shrink: 0;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    border: 2px solid hsl(0 0% 100% / 0.7);
+    border-radius: 50%;
+    background: hsl(0 0% 100% / 0.12);
+    color: #fff;
+    font-size: 1.4rem;
+    cursor: pointer;
+    transition: background 0.3s, color 0.3s, transform 0.3s;
+}
+
+.showcase__arrow:hover {
+    background: #fff;
+    color: var(--juice-color);
+    transform: scale(1.06);
+}
+
+.showcase__dots {
+    display: flex;
+    align-items: center;
+}
+
+.showcase__dot {
+    position: relative;
+    width: 18px;
+    height: 28px;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    transition: width 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.showcase__dot::before,
+.showcase__dot span {
+    content: '';
+    position: absolute;
+    top: 9px;
+    right: 4px;
+    left: 4px;
+    height: 10px;
+    border-radius: 999px;
+}
+
+.showcase__dot::before {
+    background: hsl(0 0% 100% / 0.35);
+}
+
+.showcase__dot span {
+    background: #fff;
+    transform: scaleX(0);
+    transform-origin: left;
+}
+
+.showcase__dot.is-active {
+    width: 52px;
+}
+
+.showcase__dot.is-active span {
+    transform: none;
+}
+
+/* The active dot's fill doubles as the autoplay timer (see juice-showcase.js) */
+.showcase.is-autoplay .showcase__dot.is-active span {
+    animation: showcase-progress var(--autoplay-ms) linear both;
+}
+
+.showcase.is-paused .showcase__dot.is-active span {
+    animation-play-state: paused;
+}
+
+/* Tablet & up: the info panel sits left, so keep the far-left bottle out of it */
+@media screen and (min-width: 768px) {
+    .showcase__item[data-pos='-2'] {
+        --x: 3;
+        --scale: 0.3;
+        --opacity: 0;
+        pointer-events: none;
+    }
+}
+
+@media screen and (max-width: 767px) {
+    .showcase {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: auto;
+        grid-template-areas: 'stage' 'info' 'controls';
+        min-height: 0;
+        padding: 2rem 1.25rem 3rem;
+        border-radius: 2rem 2rem 0 0;
+        text-align: center;
+    }
+    .showcase__stage {
+        min-height: 380px;
+    }
+    .showcase__item {
+        width: 135px;
+    }
+    .showcase__info {
+        margin: 0 auto;
+    }
+    .showcase__ingredients {
+        justify-content: center;
+    }
+    .showcase__controls {
+        justify-content: center;
+        margin-top: 2rem;
+    }
+    .showcase__backdrop {
+        top: 32%;
+    }
+}
+
+@keyframes showcase-progress {
+    from {
+        transform: scaleX(0);
+    }
+    to {
+        transform: scaleX(1);
+    }
+}
+
+@keyframes showcase-float {
+    50% {
+        transform: translateY(-14px) rotate(2deg);
+    }
+}
+
+@keyframes info-in {
+    from {
+        opacity: 0;
+        transform: translateX(calc(var(--dir) * 40px));
+    }
+}
+
+@keyframes backdrop-in {
+    from {
+        opacity: 0;
+        transform: translateX(calc(var(--dir) * 12%));
+    }
+}
+
+
+/*=============== ORDERING CLOSED ===============*/
+
+.ordering-closed {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.85rem 1.25rem;
+    border: 1px dashed hsl(0 0% 100% / 0.35);
+    border-radius: 1.5rem 0.25rem;
+    background: hsl(0 0% 100% / 0.06);
+    color: hsl(0 0% 100% / 0.85);
+    font-weight: 600;
+}
+
+.ordering-closed i {
+    font-size: 1.2rem;
+}
+
+
+/*=============== REDUCED MOTION ===============*/
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+html {
+    scroll-behavior: smooth;
 }
