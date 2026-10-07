@@ -16,6 +16,7 @@ const VISIBLE_RANGE = 2;
 
 const ingredientIcon = name => `/assets/img/ingredients/${name.toLowerCase().replace(/ /g, '-')}.webp`;
 const pad = n => String(n).padStart(2, '0');
+const warmed = new Set();
 const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 export default class JuiceShowcase {
@@ -43,6 +44,7 @@ export default class JuiceShowcase {
 		this.root.tabIndex = 0;
 
 		this.root.innerHTML = `
+			<div class="showcase__colors" aria-hidden="true"><span></span><span></span></div>
 			<p class="showcase__backdrop" aria-hidden="true"></p>
 
 			<div class="showcase__stage">
@@ -79,12 +81,13 @@ export default class JuiceShowcase {
 		this.items = [...this.root.querySelectorAll('.showcase__item')];
 		this.splashes = [...this.root.querySelectorAll('.showcase__splash')];
 		this.dots = [...this.root.querySelectorAll('.showcase__dot')];
+		this.colorLayers = [...this.root.querySelectorAll('.showcase__colors span')];
 	}
 
 	itemTemplate(juice) {
 		const garnish = juice.ingredients
 			.slice(0, 2)
-			.map((name, i) => `<img src="${ingredientIcon(name)}" alt="" class="showcase__garnish showcase__garnish--${i + 1}" loading="lazy" decoding="async">`)
+			.map((name, i) => `<img src="${ingredientIcon(name)}" alt="" class="showcase__garnish showcase__garnish--${i + 1}" decoding="async">`)
 			.join('');
 
 		return `
@@ -106,7 +109,7 @@ export default class JuiceShowcase {
 					.map(
 						(name, i) => `
 					<li class="showcase__ingredient" style="--i: ${i}">
-						<img src="${ingredientIcon(name)}" alt="" loading="lazy" decoding="async">
+						<img src="${ingredientIcon(name)}" alt="">
 						${name}
 					</li>`
 					)
@@ -142,8 +145,7 @@ export default class JuiceShowcase {
 		});
 
 		this.splashes.forEach((splash, i) => {
-			// Only fetch splashes that are showing or one step away
-			if (!splash.src && Math.abs(this.offsetOf(i)) <= 1) splash.src = splash.dataset.src;
+			if (i === this.index && !splash.src) splash.src = splash.dataset.src;
 			splash.classList.toggle('is-active', i === this.index);
 		});
 		this.dots.forEach((dot, i) => {
@@ -153,15 +155,55 @@ export default class JuiceShowcase {
 
 		this.root.style.setProperty('--juice-color', juice.color);
 		this.root.dataset.direction = direction < 0 ? 'prev' : 'next';
+		this.fadeToColor(juice.color, direction);
 		this.backdrop.textContent = juice.name;
 		this.info.innerHTML = this.infoTemplate(juice);
 
-		// Restart the enter animations on the freshly rendered info + backdrop
-		this.root.classList.remove('is-changing');
-		void this.root.offsetWidth;
-		this.root.classList.add('is-changing');
-
 		if (this.accent) this.accent.style.color = juice.color;
+
+		// Get the neighbours' images downloaded and decoded before they're needed
+		const warm = () => [-1, 1].forEach(delta => this.warm(this.index + delta));
+		'requestIdleCallback' in window ? requestIdleCallback(warm) : setTimeout(warm, 200);
+	}
+
+	// Cross-fade a new colour layer in over the current one. Only opacity animates, so the browser
+	// composites it on the GPU instead of repainting the whole section every frame.
+	fadeToColor(color, direction) {
+		const [front, back] = this.colorLayers;
+		if (front.style.backgroundColor && front.dataset.color === color) return;
+
+		back.style.backgroundColor = color;
+		back.dataset.color = color;
+		back.style.zIndex = 1;
+		front.style.zIndex = 0;
+		this.colorLayers.reverse();
+
+		if (!front.dataset.color || prefersReducedMotion()) return;
+		back.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 700, easing: 'ease' });
+		this.backdrop.animate(
+			[
+				{ opacity: 0, transform: `translateX(${Math.sign(direction) * 12}%)` },
+				{ opacity: 1, transform: 'none' }
+			],
+			{ duration: 1000, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)' }
+		);
+	}
+
+	warm(index) {
+		const count = this.juices.length;
+		const i = (index + count) % count;
+		const splash = this.splashes[i];
+		if (!splash.src) splash.src = splash.dataset.src;
+		splash.decode?.().catch(() => {});
+
+		this.juices[i].ingredients.forEach(name => {
+			const src = ingredientIcon(name);
+			if (warmed.has(src)) return;
+			warmed.add(src);
+			const img = new Image();
+			img.src = src;
+			img.decode?.().catch(() => {});
+		});
 	}
 
 	step(delta) {
