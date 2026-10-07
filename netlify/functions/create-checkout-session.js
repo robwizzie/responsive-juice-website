@@ -10,7 +10,17 @@ const stripeSecretKey = process.env.CONTEXT === 'dev' && process.env.STRIPE_SECR
 
 const stripe = stripeLib(stripeSecretKey);
 
+// Online ordering is closed; flip to true (and restore the /checkout routes in _redirects) to reopen.
+const ORDERING_ENABLED = false;
+
 exports.handler = async event => {
+	if (!ORDERING_ENABLED) {
+		return {
+			statusCode: 410,
+			body: JSON.stringify({ error: 'Online ordering is closed' })
+		};
+	}
+
 	if (event.httpMethod !== 'POST') {
 		return {
 			statusCode: 405,

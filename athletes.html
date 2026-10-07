@@ -27,10 +27,7 @@
     <!-- Preconnects for Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap');
-    </style>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;0,900;1,400&family=Lemon&display=swap">
 
     <!--=============== JS ===============-->
     <script type="module" src="assets/js/main.js"></script>
@@ -47,7 +44,7 @@
     <meta property="og:title" content="Our Athletes - Pressed By J & H">
     <meta property="og:description"
         content="Meet the athletes who trust Pressed By J & H for their nutrition needs. Discover how our premium cold-pressed juices fuel performance and support active lifestyles.">
-    <meta property="og:image" content="https://siponpressed.com/assets/img/og-images/juice-og-image.png">
+    <meta property="og:image" content="https://siponpressed.com/assets/img/og-images/juice-og-image.jpg">
     <meta property="og:url" content="https://siponpressed.com/athletes">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Pressed By J & H">
@@ -57,7 +54,7 @@
     <meta name="twitter:title" content="Our Athletes - Pressed By J & H">
     <meta name="twitter:description"
         content="Meet the athletes who trust Pressed By J & H for their nutrition needs. Discover how our premium cold-pressed juices fuel performance and support active lifestyles.">
-    <meta name="twitter:image" content="https://siponpressed.com/assets/img/og-images/juice-og-image.png">
+    <meta name="twitter:image" content="https://siponpressed.com/assets/img/og-images/juice-og-image.jpg">
 
     <!-- Additional SEO meta tags -->
     <meta name="robots" content="index, follow">
@@ -70,7 +67,7 @@
         <div class="background-shapes">
             <div class="home__shape-small"></div>
             <div class="home__shape-big"></div>
-            <img src="/assets/img/shape-bg.png" alt="" class="home__shape-bg">
+            <div class="home__shape-bg"></div>
         </div>
 
         <!-- Athletes Header -->
@@ -94,11 +91,11 @@
                         <div class="athlete-image">
                             <div class="image-placeholder">
                                 <!-- Replace with actual image -->
-                                <img src="/assets/img/athletes/ryan-nutley.jpg" alt="Ryan Nutley" class="athlete-photo">
+                                <img src="/assets/img/athletes/ryan-nutley.webp" alt="Ryan Nutley" class="athlete-photo">
                             </div>
                             <a href="/juices/tropical-storm">
                                 <div class="athlete-favorite-juice">
-                                    <img src="/assets/img/juices/tropical-storm.png" alt="Favorite Juice"
+                                    <img src="/assets/img/juices/tropical-storm.webp" alt="Favorite Juice"
                                         class="juice-photo">
                                     <span style="color: #ff8902; font-family: var(--second-font);">Tropical Storm</span>
                                 </div>
@@ -134,12 +131,12 @@
                         <div class="athlete-image">
                             <div class="image-placeholder">
                                 <!-- Replace with actual image -->
-                                <img src="/assets/img/athletes/angelina-barrera.jpg" alt="Angelina Barrera"
+                                <img src="/assets/img/athletes/angelina-barrera.webp" alt="Angelina Barrera"
                                     class="athlete-photo">
                             </div>
                             <a href="/juices/sweet-green">
                                 <div class="athlete-favorite-juice">
-                                    <img src="/assets/img/juices/sweet-green.png" alt="Favorite Juice"
+                                    <img src="/assets/img/juices/sweet-green.webp" alt="Favorite Juice"
                                         class="juice-photo">
                                     <span style="color: #969c05; font-family: var(--second-font);">Sweet Green</span>
                                 </div>
@@ -205,9 +202,6 @@
 
     <!--=============== MAIN JS ===============-->
     <script src="/assets/js/juices-database.js"></script>
-    <script src="/assets/js/locations-database.js"></script>
-    <script type="module" src="/assets/js/router.js"></script>
-    <script src="/assets/js/cart.js"></script>
     <script src="/assets/js/components/footer.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {

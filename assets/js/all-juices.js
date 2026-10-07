@@ -6,30 +6,20 @@ document.addEventListener('DOMContentLoaded', () => {
 	const skeletons = document.querySelectorAll('.juice-card-skeleton');
 	skeletons.forEach(skeleton => skeleton.remove());
 
-	// Sort juices to show in-stock items first
-	const sortedJuices = [...juices].sort((a, b) => {
-		if (a.inStock && !b.inStock) return -1;
-		if (!a.inStock && b.inStock) return 1;
-		return 0;
-	});
-
 	// Create juice cards with optimized loading
-	sortedJuices.forEach((juice, index) => {
-		const outOfStockClass = juice.inStock ? '' : ' out-of-stock';
-		const addToCartButton = juice.inStock ? `<button class="home__button add-to-cart" data-id="${juice.id}" style="transform: translate(0px, 0px); opacity: 1; background-color: ${juice.color};">Add to Cart</button>` : `<button class="home__button add-to-cart" disabled style="transform: translate(0px, 0px); opacity: 1; background-color: #ccc; color: #666;">Out of Stock</button>`;
-
+	juices.forEach((juice, index) => {
 		const juiceCard = `
-            <div class="juice-card${outOfStockClass} juice-card-hidden" data-juice-id="${juice.id}" data-index="${index}">
+            <div class="juice-card juice-card-hidden" data-juice-id="${juice.id}" data-index="${index}">
                 <div class="juice-card-content">
                     <a href="/juices/${juice.slug}" class="juice-image-link">
                         <div class="juice-image">
                             <img src="${juice.imageUrl}" alt="${juice.name}" class="all-juices juice-bottle" loading="lazy" decoding="async">
-                            <img src="/assets/img/splash/${juice.slug}-splash.svg" alt="" class="juice-splash" loading="lazy" decoding="async">
+                            <img src="/assets/img/splash/${juice.slug}-splash.webp" alt="" class="juice-splash" loading="lazy" decoding="async">
                             ${juice.ingredients
 								.slice(0, 2)
 								.map(
 									(ingredient, index) => `
-                                <img src="/assets/img/ingredients/${ingredient.toLowerCase().replace(/ /g, '-')}.svg" 
+                                <img src="/assets/img/ingredients/${ingredient.toLowerCase().replace(/ /g, '-')}.webp" 
                                     alt="${ingredient}" 
                                     class="juice-ingredient ingredient-${index + 1}" loading="lazy" decoding="async">
                             `
@@ -45,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
 								.map(
 									ingredient => `
                                 <span class="ingredient-tag">
-                                    <img src="/assets/img/ingredients/${ingredient.toLowerCase().replace(/ /g, '-')}.svg" 
+                                    <img src="/assets/img/ingredients/${ingredient.toLowerCase().replace(/ /g, '-')}.webp" 
                                         alt="${ingredient}" 
                                         class="ingredient-icon" loading="lazy" decoding="async">
                                     ${ingredient}
@@ -56,7 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                         <div class="juice-footer">
                             <span class="juice-price" style="color: black; font-weight: bold; margin-top: 0;">$${juice.price.toFixed(2)}</span>
-                            ${addToCartButton}
+                            <a href="/juices/${juice.slug}" class="home__button view-juice" style="background-color: ${juice.color};">View Juice</a>
                         </div>
                     </div>
                 </div>
