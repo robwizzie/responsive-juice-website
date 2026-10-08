@@ -1,237 +1,38 @@
-document.addEventListener('DOMContentLoaded', () => {
-	// Populate juice grid with performance optimizations
-	const juiceGrid = document.querySelector('.juice-grid');
+import { revealOnScroll, tiltOnHover } from '/assets/js/effects.js';
 
-	// Remove skeleton loaders
-	const skeletons = document.querySelectorAll('.juice-card-skeleton');
-	skeletons.forEach(skeleton => skeleton.remove());
+const ingredientIcon = name => `/assets/img/ingredients/${name.toLowerCase().replace(/ /g, '-')}.webp`;
+const pad = n => String(n).padStart(2, '0');
 
-	// Create juice cards with optimized loading
-	juices.forEach((juice, index) => {
-		const juiceCard = `
-            <div class="juice-card juice-card-hidden" data-juice-id="${juice.id}" data-index="${index}">
-                <div class="juice-card-content">
-                    <a href="/juices/${juice.slug}" class="juice-image-link">
-                        <div class="juice-image">
-                            <img src="${juice.imageUrl}" alt="${juice.name}" class="all-juices juice-bottle" loading="lazy" decoding="async">
-                            <img src="/assets/img/splash/${juice.slug}-splash.webp" alt="" class="juice-splash" loading="lazy" decoding="async">
-                            ${juice.ingredients
-								.slice(0, 2)
-								.map(
-									(ingredient, index) => `
-                                <img src="/assets/img/ingredients/${ingredient.toLowerCase().replace(/ /g, '-')}.webp" 
-                                    alt="${ingredient}" 
-                                    class="juice-ingredient ingredient-${index + 1}" loading="lazy" decoding="async">
-                            `
-								)
-								.join('')}
-                        </div>
-                    </a>
-                    <div class="juice-info">
-                        <h3 style="color:${juice.color}; font-weight: bold; font-family: var(--second-font); margin: 3rem 0 1rem 0;">${juice.name}</h3>
-                        <p class="juice-description" style="margin-bottom: 1rem;">${juice.description}</p>
-                        <div class="ingredients-preview">
-                            ${juice.ingredients
-								.map(
-									ingredient => `
-                                <span class="ingredient-tag">
-                                    <img src="/assets/img/ingredients/${ingredient.toLowerCase().replace(/ /g, '-')}.webp" 
-                                        alt="${ingredient}" 
-                                        class="ingredient-icon" loading="lazy" decoding="async">
-                                    ${ingredient}
-                                </span>
-                            `
-								)
-								.join('')}
-                        </div>
-                        <div class="juice-footer">
-                            <span class="juice-price" style="color: black; font-weight: bold; margin-top: 0;">$${juice.price.toFixed(2)}</span>
-                            <a href="/juices/${juice.slug}" class="home__button view-juice" style="background-color: ${juice.color};">View Juice</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-		juiceGrid.insertAdjacentHTML('beforeend', juiceCard);
-	});
+function cardTemplate(juice, index) {
+	const [garnishA, garnishB] = juice.ingredients;
 
-	// Wait for GSAP to be available before running animations
-	waitForGSAPAndAnimate();
-});
+	return `
+		<li class="juice-tile" data-reveal style="--c: ${juice.color}">
+			<a href="/juices/${juice.slug}" class="juice-tile__link">
+				<div class="juice-tile__art" aria-hidden="true">
+					<span class="juice-tile__glow"></span>
+					<img src="/assets/img/splash/${juice.slug}-splash-sm.webp" alt="" class="juice-tile__splash" loading="lazy" decoding="async">
+					<img src="${ingredientIcon(garnishA)}" alt="" class="juice-tile__garnish juice-tile__garnish--1" loading="lazy" decoding="async">
+					<img src="${ingredientIcon(garnishB)}" alt="" class="juice-tile__garnish juice-tile__garnish--2" loading="lazy" decoding="async">
+					<img src="${juice.imageUrl}" alt="" class="juice-tile__bottle" loading="${index < 3 ? 'eager' : 'lazy'}" decoding="async">
+				</div>
 
-function waitForGSAPAndAnimate() {
-	if (typeof TweenMax !== 'undefined') {
-		// Create a smooth, elegant header animation
-		const headerTl = new TimelineMax();
-		headerTl.from('.catalog-header', 1.5, {
-			opacity: 0,
-			y: 40,
-			scale: 0.95,
-			ease: Power3.easeOut,
-			delay: 0.3
-		});
-
-		// Add a subtle bounce to the title for freshness
-		headerTl.to(
-			'.catalog-header .home__title',
-			0.4,
-			{
-				scale: 1.02,
-				ease: Power2.easeOut
-			},
-			'-=0.3'
-		);
-
-		headerTl.to('.catalog-header .home__title', 0.4, {
-			scale: 1,
-			ease: Power2.easeInOut
-		});
-
-		// Set up scroll-triggered animations for juice cards
-		setupScrollAnimations();
-
-		// Animate benefit cards with smooth, staggered entrance
-		const benefitCards = document.querySelectorAll('.benefit-card');
-		benefitCards.forEach((card, index) => {
-			const cardTl = new TimelineMax();
-			cardTl.from(card, 1.2, {
-				opacity: 0,
-				y: 50,
-				scale: 0.9,
-				rotationY: 10,
-				ease: Power3.easeOut,
-				delay: 0.8 + index * 0.2
-			});
-
-			// Add a gentle float effect
-			cardTl.to(
-				card,
-				0.3,
-				{
-					scale: 1.02,
-					ease: Power2.easeOut
-				},
-				'-=0.2'
-			);
-
-			cardTl.to(card, 0.3, {
-				scale: 1,
-				ease: Power2.easeInOut
-			});
-		});
-	} else {
-		setTimeout(waitForGSAPAndAnimate, 50);
-	}
+				<div class="juice-tile__body">
+					<p class="juice-tile__count">${pad(index + 1)}</p>
+					<h2 class="juice-tile__name">${juice.name}</h2>
+					<ul class="juice-tile__ingredients">
+						${juice.ingredients.map(name => `<li><img src="${ingredientIcon(name)}" alt="" loading="lazy" decoding="async">${name}</li>`).join('')}
+					</ul>
+					<span class="juice-tile__cta">Explore <i class="ri-arrow-right-up-line"></i></span>
+				</div>
+			</a>
+		</li>
+	`;
 }
 
-function setupScrollAnimations() {
-	// Create intersection observer for scroll-triggered animations
-	const observer = new IntersectionObserver(
-		entries => {
-			entries.forEach(entry => {
-				if (entry.isIntersecting) {
-					const card = entry.target;
-					const index = parseInt(card.dataset.index);
+const grid = document.querySelector('[data-catalog]');
+grid.innerHTML = juices.map(cardTemplate).join('');
+document.querySelector('[data-juice-count]').textContent = juices.length;
 
-					// Preload images for this card when it comes into view
-					preloadCardImages(card);
-
-					// Remove hidden class and animate in with smooth, elegant animation
-					card.classList.remove('juice-card-hidden');
-
-					// Create a smooth, juice-inspired animation
-					const tl = new TimelineMax();
-
-					// Initial state
-					tl.set(card, {
-						opacity: 0,
-						y: 80,
-						scale: 0.9,
-						rotationX: 15,
-						transformOrigin: 'center bottom'
-					});
-
-					// Smooth entrance animation
-					tl.to(card, 0.8, {
-						opacity: 1,
-						y: 0,
-						scale: 1,
-						rotationX: 0,
-						ease: Power3.easeOut,
-						delay: index * 0.1 // Faster stagger for quicker loading
-					});
-
-					// Add a subtle bounce at the end for juice-like freshness
-					tl.to(
-						card,
-						0.2,
-						{
-							scale: 1.02,
-							ease: Power2.easeOut
-						},
-						'-=0.1'
-					);
-
-					tl.to(card, 0.2, {
-						scale: 1,
-						ease: Power2.easeInOut
-					});
-
-					// Animate individual elements within the card for extra smoothness
-					const juiceImage = card.querySelector('.juice-image');
-					const juiceInfo = card.querySelector('.juice-info');
-
-					if (juiceImage && juiceInfo) {
-						// Animate image with a gentle float
-						tl.from(
-							juiceImage,
-							0.5,
-							{
-								y: 30,
-								opacity: 0,
-								ease: Power2.easeOut
-							},
-							'-=0.5'
-						);
-
-						// Animate info with a smooth slide
-						tl.from(
-							juiceInfo,
-							0.4,
-							{
-								y: 20,
-								opacity: 0,
-								ease: Power2.easeOut
-							},
-							'-=0.4'
-						);
-					}
-
-					// Unobserve after animation
-					observer.unobserve(card);
-				}
-			});
-		},
-		{
-			threshold: 0.1,
-			rootMargin: '200px 0px -50px 0px' // Start loading much earlier for smoother experience
-		}
-	);
-
-	// Observe all juice cards
-	const juiceCards = document.querySelectorAll('.juice-card');
-	juiceCards.forEach(card => {
-		observer.observe(card);
-	});
-}
-
-function preloadCardImages(card) {
-	// Get all images in the card
-	const images = card.querySelectorAll('img[data-src]');
-	images.forEach(img => {
-		if (img.dataset.src) {
-			img.src = img.dataset.src;
-			img.removeAttribute('data-src');
-		}
-	});
-}
+revealOnScroll(document.querySelectorAll('[data-reveal]'));
+tiltOnHover(grid.querySelectorAll('.juice-tile__link'));

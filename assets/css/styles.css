@@ -56,6 +56,11 @@ img {
     height: auto;
 }
 
+/* Ingredient art comes in many aspect ratios; fit it inside whatever box it's given */
+img[src*='/ingredients/'] {
+    object-fit: contain;
+}
+
 
 /*=============== REUSABLE CSS CLASSES ===============*/
 
@@ -665,44 +670,6 @@ img {
 }
 
 
-/* Order Options Banner */
-
-.order-options-banner {
-    margin-top: 2rem;
-    display: flex;
-    justify-content: center;
-}
-
-.order-banner-content {
-    background: linear-gradient(135deg, #ff9700, #ff7700);
-    color: white;
-    padding: 1rem 2rem;
-    border-radius: 50px;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    font-size: 1rem;
-    font-weight: 500;
-    box-shadow: 0 4px 20px rgba(255, 151, 0, 0.3);
-    animation: pulse-glow 3s ease-in-out infinite;
-}
-
-.order-banner-content i {
-    font-size: 1.3rem;
-    opacity: 0.9;
-}
-
-@keyframes pulse-glow {
-    0%,
-    100% {
-        box-shadow: 0 4px 20px rgba(255, 151, 0, 0.3);
-        transform: scale(1);
-    }
-    50% {
-        box-shadow: 0 6px 30px rgba(255, 151, 0, 0.5);
-        transform: scale(1.02);
-    }
-}
 
 
 /* Background image */
@@ -893,29 +860,6 @@ img {
 }
 
 
-@media (max-width: 767px) {
-    .ingredients-preview {
-        display: none !important;
-    }
-    .ingredient-tag {
-        min-height: 36px;
-        height: fit-content;
-        font-size: 1rem !important;
-        padding: 0.2rem 0.6rem;
-    }
-    .ingredient-icon {
-        width: 16px !important;
-        height: 16px !important;
-    }
-}
-
-
-.juice-price {
-    font-weight: bold;
-    font-size: 1.2rem;
-    margin: 0.5rem 0;
-}
-
 .add-to-cart {
     margin: 20px auto 0;
     width: 40px;
@@ -1011,127 +955,14 @@ img {
 
 /*=============== PRODUCTS PAGE ===============*/
 
-.product-details {
-    min-height: 100vh;
-}
-
-.product__info {
-    padding: 2rem;
-}
-
-.ingredients-list {
-    margin: 2rem 0;
-}
-
-.ingredients-list ul {
-    list-style: none;
-    padding: 0;
-}
-
-.ingredients-list li {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 1rem;
-    color: var(--title-color);
-    font-size: 1.5rem;
-}
-
-.ingredients-list i {
-    font-size: 1.5rem;
-}
-
-.product__price {
-    font-size: 2rem;
-    font-weight: bold;
-    color: var(--title-color);
-    margin: 2rem 0;
-}
-
-.nutrition-section {
-    background-color: var(--container-color);
-    z-index: 1;
-    position: relative;
-}
-
-.nutrition-content {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 0 1rem;
-}
-
-.magnifier-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 2rem;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
-    border-radius: 20px;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    text-align: center;
-}
-
-.magnifier-container:hover {
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
-}
-
-.nutrition-image {
-    width: 100%;
-    max-width: 500px;
-    max-height: 600px;
-    object-fit: contain;
-    border-radius: 12px;
-    filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.2));
-}
-
 
 /* Tablet styles */
-
-@media screen and (max-width: 1024px) and (min-width: 769px) {
-    .nutrition-content {
-        padding: 0 1rem;
-    }
-    .magnifier-container {
-        padding: 1.5rem;
-    }
-}
 
 
 /* Mobile styles */
 
-@media screen and (max-width: 768px) {
-    .nutrition-content {
-        padding: 0 1rem;
-    }
-    .magnifier-container {
-        padding: 1.5rem;
-    }
-    .nutrition-image {
-        width: 100%;
-        max-width: 400px;
-    }
-}
-
 
 /* Small mobile styles */
-
-@media screen and (max-width: 480px) {
-    .nutrition-content {
-        padding: 0 0.5rem;
-    }
-    .magnifier-container {
-        padding: 1rem;
-    }
-    .nutrition-image {
-        max-width: 350px;
-    }
-}
 
 
 /* Success page styles */
@@ -1426,10 +1257,6 @@ img {
         height: 150px;
         font-size: 3rem;
     }
-    .juice-card {
-        padding: 0 !important;
-        justify-content: center;
-    }
     .story-video {
         width: 100%;
         height: auto;
@@ -1439,179 +1266,11 @@ img {
 
 /* Juices Catalog Styles */
 
-.catalog-header {
-    padding-top: 8rem;
-    text-align: center;
-}
-
-.juice-catalog {
-    padding: 2rem 0 6rem;
-}
-
-.juice-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 2rem;
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 0 2rem;
-}
-
-.juice-card {
-    background: white;
-    border-radius: 1.5rem;
-    overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-    padding: 3rem 0 0 0rem;
-    display: flex;
-}
-
-.juice-card-hidden {
-    opacity: 0;
-    transform: translateY(80px) scale(0.9) rotateX(15deg);
-    transform-origin: center bottom;
-    will-change: transform, opacity;
-}
-
-.juice-card:not(.juice-card-hidden) .juice-bottle {
-    animation: gentleFloat 4s ease-in-out infinite;
-}
-
 
 /* Staggered floating animations for natural variation */
 
-.juice-card:nth-child(1) .juice-bottle {
-    animation-delay: 0s;
-}
-
-.juice-card:nth-child(2) .juice-bottle {
-    animation-delay: 0.5s;
-}
-
-.juice-card:nth-child(3) .juice-bottle {
-    animation-delay: 1s;
-}
-
-.juice-card:nth-child(4) .juice-bottle {
-    animation-delay: 1.5s;
-}
-
-.juice-card:nth-child(5) .juice-bottle {
-    animation-delay: 2s;
-}
-
-.juice-card:nth-child(6) .juice-bottle {
-    animation-delay: 2.5s;
-}
-
-.juice-card:nth-child(7) .juice-bottle {
-    animation-delay: 3s;
-}
-
-.juice-card:nth-child(8) .juice-bottle {
-    animation-delay: 3.5s;
-}
-
-.juice-card:nth-child(9) .juice-bottle {
-    animation-delay: 0.2s;
-}
-
-.juice-card:nth-child(10) .juice-bottle {
-    animation-delay: 0.7s;
-}
-
-.juice-card:nth-child(11) .juice-bottle {
-    animation-delay: 1.2s;
-}
-
-.juice-card:nth-child(12) .juice-bottle {
-    animation-delay: 1.7s;
-}
-
-.juice-card:hover {
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
-.juice-card-content {
-    position: relative;
-    padding: 2rem;
-    align-content: center;
-}
-
-.juice-image {
-    position: relative;
-    height: 300px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 1.5rem;
-}
-
-.juice-bottle {
-    width: auto;
-    object-fit: contain;
-    position: relative;
-    z-index: 2;
-}
-
-.all-juices.juice-bottle {
-    height: 350px;
-}
-
-.juice-splash {
-    position: absolute;
-    width: 90%;
-    height: auto;
-    opacity: 0.7;
-    z-index: 1;
-}
-
-.juice-ingredient {
-    position: absolute;
-    width: 120px;
-    height: 120px;
-    opacity: 1;
-    z-index: 1;
-}
-
 
 /* Updated styles for juice cards */
-
-.juice-image-link {
-    text-decoration: none;
-    cursor: pointer;
-    display: block;
-    transition: transform 0.3s ease;
-}
-
-.juice-image-link:hover {
-    transform: translateY(-5px);
-}
-
-.ingredient-tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    background: #f5f5f5;
-    padding: 0.25rem 0.75rem;
-    border-radius: 1rem;
-    font-size: 1.2rem;
-    font-family: var(--second-font);
-    color: var(--text-color);
-}
-
-.ingredient-icon {
-    width: 20px;
-    height: 20px;
-    object-fit: contain;
-    margin: 0 !important;
-}
-
-.ingredient-name {
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
 
 
 /* Make sure the button doesn't trigger the card link */
@@ -1621,72 +1280,14 @@ img {
     z-index: 2;
 }
 
-.ingredient-1 {
-    top: 20%;
-    left: 10%;
-}
-
-.ingredient-2 {
-    bottom: 30%;
-    right: 10%;
-}
-
-.juice-info {
-    text-align: center;
-}
-
-.juice-info h3 {
-    font-size: 1.5rem;
-    color: var(--title-color);
-    margin-bottom: 1rem;
-}
-
-.ingredients-preview {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    justify-content: center;
-    margin-bottom: 1rem;
-}
-
-.juice-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 1rem;
-    flex-flow: column;
-}
-
-.juice-price {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: var(--title-color);
-}
 
 .add-to-cart:hover {
     opacity: 0.9;
 }
 
-.view-details {
-    display: inline-block;
-    width: 100%;
-    text-align: center;
-    padding: 0.5rem;
-    text-decoration: none;
-    font-weight: 600;
-    transition: opacity 0.3s ease;
-}
-
-.view-details:hover {
-    opacity: 0.8;
-}
-
 
 /* Benefits Section */
 
-.benefits-section {
-    padding: 0 0 4rem 0;
-}
 
 .benefits-grid {
     display: grid;
@@ -1730,89 +1331,21 @@ img {
 }
 
 @media screen and (max-width: 576px) {
-    .juice-grid {
-        grid-template-columns: 1fr;
-    }
     .benefits-grid {
         grid-template-columns: 1fr;
-    }
-    .juice-image {
-        height: 250px;
-    }
-    .ingredient-1 {
-        left: 3%;
-    }
-    .ingredient-2 {
-        right: 3%;
     }
 }
 
 
 /* Card hover effects - smooth and juice-like */
 
-.juice-card .juice-bottle {
-    transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    transform-origin: center bottom;
-}
-
-.juice-card:hover .juice-bottle {
-    filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.1));
-}
-
-.juice-card .juice-ingredient {
-    transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    transform-origin: center;
-}
-
-.juice-card:hover .ingredient-1 {
-    animation: float 2s ease-in-out infinite;
-}
-
-.juice-card:hover .ingredient-2 {
-    animation: float 2s ease-in-out infinite 0.5s;
-}
-
-.juice-card:hover .juice-splash {
-    opacity: 1;
-    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
 
 /* Floating animation for ingredients */
 
-@keyframes float {
-    0%,
-    100% {
-        transform: translateY(0px);
-    }
-    50% {
-        transform: translateY(-3px);
-    }
-}
 
-@keyframes gentleFloat {
-    0%,
-    100% {
-        transform: translateY(0px);
-    }
-    50% {
-        transform: translateY(-8px);
-    }
-}
 
 
 @media screen and (max-width: 767px) {
-    .product-details .home__container {
-        flex-direction: column-reverse;
-        padding-top: 2rem;
-    }
-    .product__info {
-        text-align: center;
-        padding-top: 0px;
-    }
-    .ingredients-list li {
-        justify-content: center;
-    }
     .add-to-cart {
         margin: 10px auto;
     }
@@ -2245,11 +1778,6 @@ a.info-card {
 
 /* Responsive Design */
 
-@media screen and (max-width: 1070px) {
-    .all-juices.juice-bottle {
-        height: 100% !important;
-    }
-}
 
 @media screen and (max-width: 967px) {
     .contact-content {
@@ -2287,9 +1815,6 @@ a.info-card {
     .info-card {
         width: 100%;
     }
-    .juice-splash {
-        max-width: 370px;
-    }
 }
 
 @media screen and (max-width: 576px) {
@@ -2298,10 +1823,6 @@ a.info-card {
     }
     .contact-form-container {
         padding: 1.5rem;
-    }
-    .ingredients-preview {
-        min-height: 124px;
-        align-content: center;
     }
 }
 
@@ -2988,10 +2509,24 @@ html.page-loading body>*:not(#page-loader) {
     padding: 4rem max(1.5rem, calc((100% - 1200px) / 2));
     overflow: hidden;
     border-radius: 2.5rem 2.5rem 0 0;
-    background-color: var(--juice-color);
+    background-color: #1a1a1a;
     color: #fff;
-    transition: background-color 0.7s ease;
     outline: none;
+}
+
+/* Two stacked colour layers; juice-showcase.js fades the new one in over the old */
+.showcase__colors,
+.showcase__colors span {
+    position: absolute;
+    inset: 0;
+}
+
+.showcase__colors {
+    z-index: -3;
+}
+
+.showcase__colors span {
+    will-change: opacity;
 }
 
 .showcase[data-direction='prev'] {
@@ -3020,9 +2555,10 @@ html.page-loading body>*:not(#page-loader) {
     z-index: -1;
     background: url(/assets/img/shape-bg.webp) repeat;
     background-size: calc(256 / 1920 * 100vw) auto;
-    mix-blend-mode: soft-light;
-    opacity: 0.6;
+    /* Plain alpha grain (not a blend mode) so colour fades underneath stay GPU-composited */
+    opacity: 0.22;
     pointer-events: none;
+    will-change: transform;
 }
 
 /* Giant outlined juice name behind everything */
@@ -3040,10 +2576,6 @@ html.page-loading body>*:not(#page-loader) {
     -webkit-text-stroke: 2px hsl(0 0% 100% / 0.2);
     pointer-events: none;
     user-select: none;
-}
-
-.showcase.is-changing .showcase__backdrop {
-    animation: backdrop-in 1s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 /* Stage: bottles are laid out purely from their data-pos attribute */
@@ -3075,6 +2607,7 @@ html.page-loading body>*:not(#page-loader) {
     opacity: 0;
     transform: scale(0.6) rotate(-25deg);
     transition: opacity 0.5s ease, transform 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
+    will-change: transform, opacity;
 }
 
 .showcase__splash.is-active {
@@ -3098,16 +2631,15 @@ html.page-loading body>*:not(#page-loader) {
     --scale: 1;
     --opacity: 1;
     --z: 1;
-    --filter: none;
     position: absolute;
     top: 50%;
     left: 50%;
     z-index: var(--z);
     width: clamp(120px, 15vw, 210px);
     opacity: var(--opacity);
-    filter: var(--filter);
     transform: translate(-50%, -50%) translateX(calc(var(--x) * 100%)) scale(var(--scale));
-    transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.6s ease, filter 0.6s ease;
+    transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.6s ease;
+    will-change: transform, opacity;
 }
 
 .showcase__item[data-pos='0'] {
@@ -3120,7 +2652,6 @@ html.page-loading body>*:not(#page-loader) {
     --scale: 0.62;
     --opacity: 0.75;
     --z: 4;
-    --filter: saturate(0.85);
 }
 
 .showcase__item[data-pos='2'],
@@ -3129,7 +2660,6 @@ html.page-loading body>*:not(#page-loader) {
     --scale: 0.45;
     --opacity: 0.35;
     --z: 3;
-    --filter: blur(1px) saturate(0.6);
 }
 
 .showcase__item[data-pos='hidden-left'],
@@ -3248,9 +2778,7 @@ html.page-loading body>*:not(#page-loader) {
     padding: 0.35rem 0.9rem 0.35rem 0.35rem;
     border: 1px solid hsl(0 0% 100% / 0.3);
     border-radius: 999px;
-    background: hsl(0 0% 100% / 0.18);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
+    background: hsl(0 0% 100% / 0.2);
     font-size: 0.9rem;
     font-weight: 700;
     animation: info-in 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
@@ -3432,10 +2960,589 @@ html.page-loading body>*:not(#page-loader) {
     }
 }
 
-@keyframes backdrop-in {
-    from {
-        opacity: 0;
-        transform: translateX(calc(var(--dir) * 12%));
+
+/*=============== SCROLL REVEAL ===============*/
+/* effects.js adds .is-revealed as elements enter the viewport, with --reveal-i for a stagger */
+[data-reveal] {
+    opacity: 0;
+    transform: translateY(32px);
+    transition: opacity 0.7s ease, transform 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
+    transition-delay: calc(var(--reveal-i, 0) * 80ms);
+}
+
+[data-reveal].is-revealed {
+    opacity: 1;
+    transform: none;
+}
+
+
+/*=============== JUICES CATALOG ===============*/
+
+.catalog-hero {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10rem 0 3.5rem;
+    text-align: center;
+}
+
+.catalog-hero__title span {
+    display: inline;
+}
+
+.catalog-hero__lede {
+    max-width: 34rem;
+    margin-bottom: 1.5rem;
+    color: hsl(0 0% 100% / 0.75);
+    font-size: 1.15rem;
+    line-height: 1.6;
+}
+
+.catalog,
+.perks {
+    position: relative;
+    z-index: 2;
+}
+
+.catalog.container,
+.perks.container {
+    max-width: 1200px;
+}
+
+.catalog {
+    padding-bottom: 5rem;
+}
+
+.catalog__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+    gap: 1.5rem;
+}
+
+.juice-tile {
+    perspective: 900px;
+}
+
+.juice-tile__link {
+    --tilt-x: 0deg;
+    --tilt-y: 0deg;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+    border: 1px solid hsl(0 0% 100% / 0.08);
+    border-radius: 2rem;
+    background: linear-gradient(165deg, color-mix(in srgb, var(--c) 55%, #111) 0%, #151515 62%);
+    box-shadow: 0 20px 50px rgb(0 0 0 / 35%);
+    color: #fff;
+    transform: rotateX(var(--tilt-x)) rotateY(var(--tilt-y));
+    transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.4s, border-color 0.4s;
+    will-change: transform;
+}
+
+.juice-tile__link:hover,
+.juice-tile__link:focus-visible {
+    border-color: color-mix(in srgb, var(--c) 70%, #fff 10%);
+    box-shadow: 0 30px 70px rgb(0 0 0 / 45%), 0 20px 60px -25px var(--c);
+}
+
+.juice-tile__link:focus-visible {
+    outline: 3px solid #fff;
+    outline-offset: 3px;
+}
+
+.juice-tile__art {
+    position: relative;
+    display: grid;
+    place-items: center;
+    height: 300px;
+}
+
+.juice-tile__glow {
+    position: absolute;
+    inset: 15%;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--c), transparent 70%);
+    opacity: 0.55;
+    filter: blur(30px);
+}
+
+.juice-tile__splash {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 88%;
+    translate: -50% -50%;
+    opacity: 0.9;
+    transform: scale(0.85) rotate(-8deg);
+    transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.juice-tile__bottle {
+    position: relative;
+    z-index: 1;
+    width: auto;
+    height: 250px;
+    filter: drop-shadow(0 20px 20px rgb(0 0 0 / 40%));
+    transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.juice-tile__garnish {
+    position: absolute;
+    width: 80px;
+    height: 80px;
+    transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.juice-tile__garnish--1 {
+    top: 38%;
+    left: 12%;
+    transform: rotate(-12deg) scale(0.85);
+}
+
+.juice-tile__garnish--2 {
+    right: 10%;
+    bottom: 12%;
+    z-index: 2;
+    transform: rotate(10deg) scale(0.85);
+}
+
+.juice-tile__link:hover .juice-tile__splash {
+    transform: scale(1) rotate(8deg);
+}
+
+.juice-tile__link:hover .juice-tile__bottle {
+    transform: translateY(-12px) rotate(-4deg);
+}
+
+.juice-tile__link:hover .juice-tile__garnish--1 {
+    transform: translate(-12px, -10px) rotate(-26deg);
+}
+
+.juice-tile__link:hover .juice-tile__garnish--2 {
+    transform: translate(12px, 6px) rotate(22deg);
+}
+
+.juice-tile__body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    padding: 0 1.75rem 1.75rem;
+}
+
+.juice-tile__count {
+    color: hsl(0 0% 100% / 0.5);
+    font-size: 0.8rem;
+    font-weight: 900;
+    letter-spacing: 0.15em;
+}
+
+.juice-tile__name {
+    margin: 0.25rem 0 1rem;
+    color: #fff;
+    font-family: var(--second-font);
+    font-size: 1.75rem;
+    line-height: 1.1;
+}
+
+.juice-tile__ingredients {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-bottom: 1.5rem;
+}
+
+.juice-tile__ingredients li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.25rem 0.7rem 0.25rem 0.3rem;
+    border-radius: 999px;
+    background: hsl(0 0% 100% / 0.08);
+    color: hsl(0 0% 100% / 0.85);
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.juice-tile__ingredients img {
+    width: 22px;
+    height: 22px;
+    padding: 2px;
+    border-radius: 50%;
+    background: #fff;
+}
+
+.juice-tile__cta {
+    display: inline-flex;
+    align-items: center;
+    align-self: flex-start;
+    gap: 0.4rem;
+    margin-top: auto;
+    padding: 0.7rem 1.25rem;
+    border-radius: 1.5rem 0.25rem;
+    background: var(--c);
+    color: #fff;
+    font-family: var(--second-font);
+    font-size: 0.95rem;
+    transition: gap 0.3s, background 0.3s, color 0.3s;
+}
+
+.juice-tile__link:hover .juice-tile__cta {
+    gap: 0.8rem;
+    background: #fff;
+    color: var(--c);
+}
+
+.perks {
+    padding: 1rem 0 6rem;
+}
+
+.perks__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.25rem;
+    margin-top: 2.5rem;
+}
+
+.perk {
+    padding: 2rem;
+    border: 1px solid hsl(0 0% 100% / 0.08);
+    border-radius: 1.75rem;
+    background: hsl(0 0% 100% / 0.04);
+    color: hsl(0 0% 100% / 0.75);
+    line-height: 1.6;
+}
+
+.perk i {
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    margin-bottom: 1.25rem;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #ff9700, #76bd4b);
+    color: #111;
+    font-size: 1.5rem;
+}
+
+.perk h3 {
+    margin-bottom: 0.5rem;
+    color: #fff;
+    font-family: var(--second-font);
+    font-size: 1.3rem;
+}
+
+
+/*=============== JUICE PAGE ===============*/
+
+.juice-page {
+    --c: #ff9700;
+}
+
+.juice-hero {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    min-height: 100vh;
+    min-height: 100svh;
+    padding: 8rem 0 4rem;
+    overflow: hidden;
+    background: radial-gradient(ellipse at 72% 45%, color-mix(in srgb, var(--c) 40%, transparent), transparent 60%);
+}
+
+.juice-hero__backdrop {
+    position: absolute;
+    top: 52%;
+    left: 50%;
+    translate: -50% -50%;
+    color: transparent;
+    font-family: var(--second-font);
+    font-size: clamp(5rem, 16vw, 15rem);
+    line-height: 1;
+    white-space: nowrap;
+    -webkit-text-stroke: 2px color-mix(in srgb, var(--c) 45%, transparent);
+    pointer-events: none;
+    user-select: none;
+}
+
+.juice-hero__inner {
+    position: relative;
+    display: grid;
+    align-items: center;
+    gap: 2rem;
+    width: 100%;
+}
+
+.juice-hero__copy {
+    position: relative;
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    max-width: 32rem;
+}
+
+.juice-hero__back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-bottom: 1.5rem;
+    color: hsl(0 0% 100% / 0.7);
+    font-weight: 700;
+    transition: color 0.3s, gap 0.3s;
+}
+
+.juice-hero__back:hover {
+    gap: 0.7rem;
+    color: #fff;
+}
+
+.juice-hero__name {
+    margin-bottom: 1.25rem;
+    color: #fff;
+    font-family: var(--second-font);
+    font-size: clamp(2.75rem, 7vw, 5rem);
+    line-height: 1;
+    text-shadow: 0 0 60px color-mix(in srgb, var(--c) 60%, transparent);
+}
+
+.juice-hero__lede {
+    margin-bottom: 2rem;
+    color: hsl(0 0% 100% / 0.78);
+    font-size: 1.1rem;
+    line-height: 1.65;
+}
+
+.juice-hero__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem 1.25rem;
+}
+
+.juice-hero__price {
+    padding: 0.5rem 1.25rem;
+    border-radius: 1.5rem 0.25rem;
+    background: var(--c);
+    box-shadow: 0 10px 30px -10px var(--c);
+    color: #fff;
+    font-family: var(--second-font);
+    font-size: 1.6rem;
+}
+
+.juice-hero__art {
+    justify-self: center;
+}
+
+/* This leaf drifts out towards the copy column; the composition reads fine without it */
+.juice-hero__art .home__leaf:nth-child(6) {
+    display: none;
+}
+
+.juice-info {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    gap: 3rem;
+    padding: 4rem 0;
+}
+
+.juice-info__heading {
+    margin-bottom: 1.5rem;
+    color: #fff;
+    font-family: var(--second-font);
+    font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+}
+
+.juice-info__heading::after {
+    content: '';
+    display: block;
+    width: 56px;
+    height: 4px;
+    margin-top: 0.6rem;
+    border-radius: 2px;
+    background: var(--c);
+}
+
+.ingredient-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 1rem;
+}
+
+.ingredient-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 1.5rem 1rem;
+    border: 1px solid hsl(0 0% 100% / 0.08);
+    border-radius: 1.5rem;
+    background: hsl(0 0% 100% / 0.04);
+    text-align: center;
+    transition: opacity 0.7s ease, transform 0.9s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.3s, translate 0.3s;
+    transition-delay: calc(var(--reveal-i, 0) * 80ms), calc(var(--reveal-i, 0) * 80ms), 0s, 0s;
+}
+
+.ingredient-card:hover {
+    border-color: color-mix(in srgb, var(--c) 60%, transparent);
+    translate: 0 -4px;
+}
+
+.ingredient-card__icon {
+    display: grid;
+    place-items: center;
+    width: 84px;
+    height: 84px;
+    border-radius: 50%;
+    background: radial-gradient(circle, color-mix(in srgb, var(--c) 35%, transparent), transparent 70%);
+}
+
+.ingredient-card__icon img {
+    width: 64px;
+    height: 64px;
+}
+
+.ingredient-card__name {
+    color: #fff;
+    font-family: var(--second-font);
+    font-size: 1.05rem;
+}
+
+.nutrition-card {
+    padding: 1rem;
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--c) 40%, transparent);
+    border-radius: 1.75rem;
+    background: hsl(0 0% 100% / 0.04);
+}
+
+.nutrition-card img {
+    display: block;
+    width: auto;
+    max-height: 620px;
+    margin: 0 auto;
+    border-radius: 1.25rem;
+    transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.nutrition-card:hover img {
+    transform: scale(1.04);
+}
+
+.juice-pager {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    padding-bottom: 2rem;
+}
+
+.pager-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    overflow: hidden;
+    border: 1px solid hsl(0 0% 100% / 0.08);
+    border-radius: 1.5rem;
+    background: linear-gradient(120deg, color-mix(in srgb, var(--c) 45%, #151515), #151515 75%);
+    color: #fff;
+    transition: opacity 0.7s ease, transform 0.9s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.3s, translate 0.3s;
+}
+
+.pager-card--next {
+    flex-direction: row-reverse;
+    background: linear-gradient(240deg, color-mix(in srgb, var(--c) 45%, #151515), #151515 75%);
+    text-align: right;
+}
+
+.pager-card:hover {
+    border-color: color-mix(in srgb, var(--c) 70%, #fff 10%);
+    translate: 0 -3px;
+}
+
+.pager-card__bottle {
+    width: auto;
+    height: 90px;
+    transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.pager-card:hover .pager-card__bottle {
+    transform: rotate(-8deg) scale(1.08);
+}
+
+.pager-card__text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 0;
+}
+
+.pager-card__label {
+    color: hsl(0 0% 100% / 0.6);
+    font-size: 0.75rem;
+    font-weight: 900;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+}
+
+.pager-card__name {
+    font-family: var(--second-font);
+    font-size: 1.2rem;
+}
+
+@media screen and (min-width: 900px) {
+    .juice-hero__inner {
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 3rem;
+    }
+    .juice-info {
+        grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+        align-items: start;
+    }
+    .juice-info--single {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@media screen and (max-width: 899px) {
+    .juice-hero {
+        padding-top: 7rem;
+    }
+    .juice-hero__art {
+        order: -1;
+    }
+    .juice-hero__copy {
+        align-items: center;
+        margin: 0 auto;
+        text-align: center;
+    }
+    .juice-hero__meta {
+        justify-content: center;
+    }
+}
+
+@media screen and (max-width: 560px) {
+    .juice-pager {
+        gap: 0.6rem;
+    }
+    .pager-card {
+        gap: 0.6rem;
+        padding: 0.9rem;
+    }
+    .pager-card__bottle {
+        height: 64px;
+    }
+    .pager-card__name {
+        font-size: 1rem;
+    }
+    .juice-tile__art {
+        height: 270px;
     }
 }
 

@@ -56,34 +56,19 @@
 </head>
 
 <body>
-    <!--==================== HEADER ====================-->
-
-    <main class="main">
+    <main class="main juice-page">
         <div class="background-shapes">
             <div class="home__shape-small"></div>
             <div class="home__shape-big"></div>
             <div class="home__shape-bg"></div>
         </div>
 
-        <section class="home product-details">
-            <div class="home__container container"
-                style="column-gap: 0rem; padding-top: 10rem; max-width: 100%; position: relative; display: flex;"
-                id="juicePage">
-                <!-- Dynamic content will be inserted here -->
-            </div>
-        </section>
+        <!-- Hero, ingredients, nutrition and pager are rendered by juice.js from juices-database.js -->
+        <section class="juice-hero" id="juiceHero" data-intro></section>
 
-        <!-- Show the specific juice nutritional facts image -->
-        <section class="nutrition-section">
-            <h3 class="home__title" style="text-align: center; padding-top: 2rem;">
-                Nutritional Facts
-            </h3>
-            <div class="container" style="max-width: 700px;">
-                <div class="nutrition-content">
-                    <!-- Content will be dynamically inserted here -->
-                </div>
-            </div>
-        </section>
+        <section class="juice-info container" id="juiceInfo"></section>
+
+        <nav class="juice-pager container" id="juicePager" aria-label="More juices"></nav>
 
         <section class="showcase-section related-products">
             <h2 class="home__title section-title">

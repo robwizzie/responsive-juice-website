@@ -1,15 +1,19 @@
 import JuiceShowcase from '/assets/js/components/juice-showcase.js';
+import { initIntros, initParallax, revealOnScroll } from '/assets/js/effects.js';
 
 const slug = window.location.pathname.split('/').pop().replace('.html', '');
-const juice = juices.find(j => j.slug === slug);
+const index = juices.findIndex(j => j.slug === slug);
+const juice = juices[index];
 const ingredientIcon = name => `/assets/img/ingredients/${name.toLowerCase().replace(/ /g, '-')}.webp`;
 
 if (!juice) {
-	window.location.href = '/';
+	window.location.href = '/juices';
 } else {
+	document.querySelector('.juice-page').style.setProperty('--c', juice.color);
 	updateSEOMetadata(juice);
-	renderDetails(juice);
-	renderNutrition(juice);
+	renderHero(juice);
+	renderInfo(juice);
+	renderPager();
 
 	new JuiceShowcase(document.querySelector('[data-juice-showcase]'), {
 		juices,
@@ -17,74 +21,87 @@ if (!juice) {
 		accent: document.querySelector('[data-showcase-accent]')
 	});
 
-	animateIn();
+	initIntros();
+	initParallax();
+	revealOnScroll(document.querySelectorAll('[data-reveal]'));
 }
 
-function renderDetails(juice) {
-	document.getElementById('juicePage').innerHTML = `
-        <div class="product__info">
-            <h1 class="home__title" style="max-width: 550px;">
-                ${juice.name} <span style="color: ${juice.color};">Details</span>
-            </h1>
-            <div class="ingredients-list">
-                <h3 style="color:${juice.color}; margin-bottom: 1rem; font-size: 2.5rem;">Ingredients:</h3>
-                <ul style="font-family: var(--second-font);">
-                    ${juice.ingredients
-						.map(
-							ingredient => `
-                        <li>
-                            <img src="${ingredientIcon(ingredient)}" alt="" style="width: 50px; height: 50px; vertical-align: middle;" decoding="async">
-                            ${ingredient}
-                        </li>`
-						)
-						.join('')}
-                </ul>
-            </div>
-            <p class="product__price">$${juice.price.toFixed(2)}</p>
-            <p class="ordering-closed"><i class="ri-store-2-line"></i> Online ordering is closed &mdash; thanks for sipping with us!</p>
-        </div>
+function renderHero(juice) {
+	const [first, second] = juice.ingredients;
+	const leaves = [50, 35, 20, 40, 30, 55].map(depth => `<img src="/assets/img/leaf.webp" alt="" class="home__leaf" style="--depth: ${depth}">`).join('');
 
-        <div class="home__images" style="--glow: ${juice.color}">
-            <img src="/assets/img/splash/${juice.slug}-splash.webp" alt="" class="home__liquid">
-            <div class="home__juice-animate">
-                <img src="${juice.imageUrl}" alt="${juice.name}" class="home__juice" decoding="async">
-            </div>
-            ${juice.ingredients
-				.slice(0, 2)
-				.map((ingredient, index) => `<img src="${ingredientIcon(ingredient)}" alt="" class="home__apple${index + 1}" style="z-index: 0;" decoding="async">`)
-				.join('')}
-            <div>
-                <img src="/assets/img/leaf.webp" alt="" class="home__leaf">
-                <img src="/assets/img/leaf.webp" alt="" class="home__leaf">
-                <img src="/assets/img/leaf.webp" alt="" class="home__leaf">
-                <img src="/assets/img/leaf.webp" alt="" class="home__leaf">
-            </div>
-        </div>
-    `;
+	document.getElementById('juiceHero').innerHTML = `
+		<p class="juice-hero__backdrop" aria-hidden="true">${juice.name}</p>
+		<div class="juice-hero__inner container">
+			<div class="juice-hero__copy">
+				<a href="/juices" class="juice-hero__back" data-intro-item><i class="ri-arrow-left-line"></i> All juices</a>
+				<p class="hero__eyebrow">Cold-pressed &bull; 12 fl oz</p>
+				<h1 class="juice-hero__name" data-intro-item>${juice.name}</h1>
+				<p class="juice-hero__lede" data-intro-item>${juice.metaDescription}</p>
+				<div class="juice-hero__meta" data-intro-item>
+					<span class="juice-hero__price">$${juice.price.toFixed(2)}</span>
+					<span class="ordering-closed"><i class="ri-store-2-line"></i> Online ordering is closed</span>
+				</div>
+			</div>
+
+			<div class="home__images juice-hero__art" data-parallax style="--glow: ${juice.color}">
+				<img src="/assets/img/splash/${juice.slug}-splash.webp" alt="" class="home__liquid" fetchpriority="high" style="--depth: 10">
+				<div class="home__juice-animate" style="--depth: 18">
+					<img src="${juice.imageUrl}" alt="${juice.name} bottle" class="home__juice" fetchpriority="high">
+				</div>
+				<img src="${ingredientIcon(first)}" alt="" class="home__apple1" style="--depth: 32">
+				<img src="${ingredientIcon(second)}" alt="" class="home__apple2" style="--depth: 26">
+				<div class="home__leaves">${leaves}</div>
+			</div>
+		</div>
+	`;
 }
 
-function renderNutrition(juice) {
-	document.querySelector('.nutrition-content').innerHTML = `
-        <div class="magnifier-container" style="border: 3px solid ${juice.color}33;">
-            <img src="/assets/img/nutrition-facts/${juice.slug}-facts.webp" alt="${juice.name} Nutrition Facts" class="nutrition-image" loading="lazy">
-        </div>
-    `;
+function renderInfo(juice) {
+	document.getElementById('juiceInfo').innerHTML = `
+		<div class="juice-info__ingredients">
+			<h2 class="juice-info__heading" data-reveal>What's inside</h2>
+			<ul class="ingredient-grid">
+				${juice.ingredients
+					.map(
+						name => `
+					<li class="ingredient-card" data-reveal>
+						<span class="ingredient-card__icon"><img src="${ingredientIcon(name)}" alt="" loading="lazy" decoding="async"></span>
+						<span class="ingredient-card__name">${name}</span>
+					</li>`
+					)
+					.join('')}
+			</ul>
+		</div>
 
-	// Not every juice has a nutrition label photo; hide the section rather than show a broken image
-	document.querySelector('.nutrition-image').addEventListener('error', () => {
-		document.querySelector('.nutrition-section').hidden = true;
+		<div class="juice-info__nutrition" data-reveal>
+			<h2 class="juice-info__heading">Nutrition facts</h2>
+			<figure class="nutrition-card">
+				<img src="/assets/img/nutrition-facts/${juice.slug}-facts.webp" alt="${juice.name} nutrition facts label" loading="lazy" decoding="async">
+			</figure>
+		</div>
+	`;
+
+	// Not every juice has a nutrition label photo; drop that column rather than show a broken image
+	document.querySelector('.nutrition-card img').addEventListener('error', () => {
+		document.querySelector('.juice-info__nutrition').remove();
+		document.getElementById('juiceInfo').classList.add('juice-info--single');
 	});
 }
 
-function animateIn() {
-	if (typeof gsap === 'undefined' || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+function renderPager() {
+	const neighbour = delta => juices[(index + delta + juices.length) % juices.length];
+	const link = (other, label, direction) => `
+		<a href="/juices/${other.slug}" class="pager-card pager-card--${direction}" style="--c: ${other.color}" data-reveal>
+			<img src="${other.imageUrl}" alt="" class="pager-card__bottle" loading="lazy" decoding="async">
+			<span class="pager-card__text">
+				<span class="pager-card__label">${direction === 'prev' ? '<i class="ri-arrow-left-line"></i>' : ''} ${label} ${direction === 'next' ? '<i class="ri-arrow-right-line"></i>' : ''}</span>
+				<span class="pager-card__name">${other.name}</span>
+			</span>
+		</a>
+	`;
 
-	gsap.timeline({ defaults: { duration: 1, ease: 'expo.out' } })
-		.from('.product__info > *', { opacity: 0, y: 20, stagger: 0.1 }, 0.3)
-		.from('.home__liquid', { opacity: 0, y: 200 }, 0.5)
-		.from('.home__juice-animate', { opacity: 0, y: -800, duration: 1.4 }, 0.8)
-		.from('.home__apple1, .home__apple2', { opacity: 0, y: -800, duration: 1.4, stagger: 0.1 }, 1)
-		.from('.nutrition-image', { opacity: 0, y: 20 }, 1.2);
+	document.getElementById('juicePager').innerHTML = link(neighbour(-1), 'Previous', 'prev') + link(neighbour(1), 'Next', 'next');
 }
 
 // Function to update SEO metadata dynamically
