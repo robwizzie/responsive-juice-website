@@ -1,4 +1,4 @@
-import { ready } from '../site.js';
+import { ready, t } from '../site.js';
 import { flavorCarousel } from '../lib/carousel.js';
 import { bottleImage, garnishFor, statusStamp, waysToOrder } from '../lib/components.js';
 import { escapeHtml as e } from '../lib/catalog.js';
@@ -33,7 +33,7 @@ playHero(hero);
 // Coming back with the browser's back button restores the page as it was; replay the entrance
 window.addEventListener('pageshow', event => event.persisted && playHero(hero));
 
-ready.then(({ juices, settings }) => {
+ready.then(({ juices, settings, copy }) => {
 	// The hero ships with the three launch bottles; rebuild it only if Hunter's menu differs
 	const trio = document.querySelector('[data-hero-trio]');
 	const shown = juices.slice(0, 3);
@@ -46,11 +46,11 @@ ready.then(({ juices, settings }) => {
 	}
 
 	flavorCarousel(document.querySelector('[data-flavors]'), juices);
-	document.querySelector('[data-ways]').innerHTML = waysToOrder(settings);
+	document.querySelector('[data-ways]').innerHTML = waysToOrder(settings, copy);
 
 	// Hunter's own photo in the story block once he's uploaded one, otherwise a bottle on the river
 	const media = document.querySelector('[data-story-media]');
-	const portrait = settings.aboutPhoto || '/assets/img/hunter-portrait.webp';
+	const portrait = t('home.story.photo') || settings.aboutPhoto || '/assets/img/hunter-portrait.webp';
 	if (portrait) {
 		media.classList.add('story__media--photo');
 		media.innerHTML = `<img src="${e(portrait)}" alt="Hunter, the founder of SiponPressed" class="story__photo" loading="lazy" decoding="async">`;

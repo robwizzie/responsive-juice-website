@@ -5,7 +5,9 @@
 import { loadCatalog, escapeHtml as e } from './lib/catalog.js';
 import { addToCart, cartCount, cartLines, getCart, setQty } from './lib/cart.js';
 import { bottleImage, flashAdded, money, moneyShort } from './lib/components.js';
-import { juiceStatus } from './shared/catalog.js';
+import { ingredientIcon, juiceStatus } from './shared/catalog.js';
+import { DEFAULT_COPY, copyText } from './shared/content.js';
+import { weekdayName } from './shared/order-rules.js';
 import { wordmark } from './lib/brand.js';
 import { headerHTML } from './lib/header.js';
 import { icon } from './lib/icons.js';
@@ -68,19 +70,23 @@ const FIZZ = [
 function renderFooter(settings) {
 	const main = document.querySelector('main');
 	const year = new Date().getFullYear();
+	const photo = t('footer.photo');
+	const scene = photo
+		? `<img src="${e(photo)}" alt="" class="site-footer__scene" loading="lazy" decoding="async">`
+		: `<picture>
+					<source media="(max-width: 760px)" srcset="/assets/img/brand/footer-scene-mobile.webp">
+					<img src="/assets/img/brand/footer-scene.webp" srcset="/assets/img/brand/footer-scene-sm.webp 960w, /assets/img/brand/footer-scene.webp 1916w" sizes="100vw" alt="" class="site-footer__scene" loading="lazy" decoding="async">
+				</picture>`;
 	(main || document.body).insertAdjacentHTML(
 		main ? 'afterend' : 'beforeend',
 		`<footer class="site-footer" data-reveal>
 			<div class="site-footer__hero">
-				<picture>
-					<source media="(max-width: 760px)" srcset="/assets/img/brand/footer-scene-mobile.webp">
-					<img src="/assets/img/brand/footer-scene.webp" srcset="/assets/img/brand/footer-scene-sm.webp 960w, /assets/img/brand/footer-scene.webp 1916w" sizes="100vw" alt="" class="site-footer__scene" loading="lazy" decoding="async">
-				</picture>
+				${scene}
 				<span class="site-footer__glow" aria-hidden="true"></span>
 				<span class="site-footer__fizz" aria-hidden="true">${FIZZ.map(([x, size, time, delay]) => `<i style="--x: ${x}%; --s: ${size}px; --t: ${time}s; --d: ${delay}s"></i>`).join('')}</span>
 				<div class="container site-footer__intro">
-					<p class="site-footer__tag"><span>Embrace</span> <span>the sip</span></p>
-					<p class="site-footer__note">Cold-pressed in small batches by Hunter in Philadelphia. Real juice, nothing else in the bottle.</p>
+					<p class="site-footer__tag"><span>${e(t('footer.tag1'))}</span> <span>${e(t('footer.tag2'))}</span></p>
+					<p class="site-footer__note">${e(t('footer.note'))}</p>
 					<div class="site-footer__chips">
 						<a href="mailto:${e(settings.contactEmail)}" class="footer-chip">${icon('mail')}<span>${e(settings.contactEmail)}</span></a>
 						<a href="https://instagram.com/${e(settings.instagram)}" target="_blank" rel="noopener" class="footer-chip">${icon('instagram')}<span>@${e(settings.instagram)}</span></a>
@@ -101,17 +107,25 @@ function renderFooter(settings) {
 				</div>
 				<div class="site-footer__bottom">
 					<p>&copy; ${year} SiponPressed &middot; Philadelphia, PA</p>
-					<p>Cold pressed &middot; No added sugar &middot; Keep refrigerated</p>
+					<p>${e(t('footer.bottom'))}</p>
 				</div>
 			</div>
 		</footer>`
 	);
 }
 
+/** Decorative fruit baked into the pages switches to Hunter's own photo when he's replaced one. */
+function applyIngredientPhotos(root = document) {
+	for (const [key, url] of Object.entries(settings?.ingredientPhotos || {})) {
+		const bundled = ingredientIcon(key);
+		if (bundled) root.querySelectorAll(`img[src="${bundled}"]`).forEach(img => (img.src = url));
+	}
+}
+
 /*=============== ANNOUNCEMENT ===============*/
 function renderAnnouncement(settings) {
 	const bar = document.querySelector('.announcement');
-	const message = !settings.orderingEnabled ? 'Online ordering is paused for now. Message us on Instagram to grab a bottle.' : settings.announcement;
+	const message = !settings.orderingEnabled ? t('banner.paused') : settings.announcement;
 	if (!message) return;
 	bar.textContent = message;
 	bar.hidden = false;
@@ -120,6 +134,18 @@ function renderAnnouncement(settings) {
 /*=============== CART DRAWER ===============*/
 let juices = [];
 let settings = null;
+let copy = DEFAULT_COPY;
+
+/** Page text from /admin → Pages (or the default), with {tokens} filled in from the live settings. */
+export const t = (key, extra) => copyText(copy, key, settings, extra);
+
+/** Puts Hunter's text into every element marked data-copy. The server usually has already. */
+export function applyCopy(root = document) {
+	root.querySelectorAll('[data-copy]').forEach(el => {
+		const value = t(el.dataset.copy);
+		if (el.textContent !== value) el.textContent = value;
+	});
+}
 
 function renderDrawerShell() {
 	document.body.insertAdjacentHTML(
@@ -168,11 +194,12 @@ function renderDrawer() {
 	const bottles = lines.reduce((n, l) => n + l.qty, 0);
 	const subtotal = lines.reduce((n, l) => n + l.qty * l.juice.price, 0);
 	const min = settings?.delivery?.minBottles || 0;
+	const day = weekdayName(settings?.delivery?.day ?? 1);
 	const deliveryNote =
 		settings?.delivery?.enabled && bottles < min
-			? `<p class="drawer__hint">${icon('truck')} Add ${min - bottles} more bottle${min - bottles === 1 ? '' : 's'} to unlock Monday delivery.</p><div class="drawer__progress"><span style="--w: ${Math.round((bottles / min) * 100)}%"></span></div>`
+			? `<p class="drawer__hint">${icon('truck')} Add ${min - bottles} more bottle${min - bottles === 1 ? '' : 's'} to unlock ${day} delivery.</p><div class="drawer__progress"><span style="--w: ${Math.round((bottles / min) * 100)}%"></span></div>`
 			: settings?.delivery?.enabled
-				? `<p class="drawer__hint drawer__hint--ok">${icon('check')} Your order qualifies for Monday delivery.</p>`
+				? `<p class="drawer__hint drawer__hint--ok">${icon('check')} Your order qualifies for ${day} delivery.</p>`
 				: '';
 
 	foot.innerHTML = `
@@ -358,6 +385,9 @@ bindCart();
 export const ready = loadCatalog().then(catalog => {
 	juices = catalog.juices;
 	settings = catalog.settings;
+	copy = catalog.copy || DEFAULT_COPY;
+	applyCopy();
+	applyIngredientPhotos();
 	renderAnnouncement(settings);
 	renderFooter(settings);
 	renderDrawer();
@@ -370,6 +400,7 @@ export const ready = loadCatalog().then(catalog => {
 ready.then(() =>
 	requestAnimationFrame(() => {
 		fillIcons();
+		applyIngredientPhotos();
 		revealOnScroll();
 		initParallax();
 		document.documentElement.classList.add('is-ready');

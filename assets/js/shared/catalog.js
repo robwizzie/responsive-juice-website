@@ -88,14 +88,44 @@ const ICON_ALIASES = {
 	spirulina: 'blue-spirulina'
 };
 
+/**
+ * One id per ingredient, so "Oranges", "orange" and "Orange " share a photo. Ingredients the site
+ * has a picture of use that picture's file name; anything else is its name in lower case.
+ */
+export function ingredientKey(name = '') {
+	const key = String(name || '').trim().toLowerCase().replace(/\s+/g, ' ');
+	const file = ICON_ALIASES[key] || key.replace(/ /g, '-');
+	if (INGREDIENT_ICONS.includes(file)) return file;
+	const singular = file.replace(/(es|s)$/, '');
+	return INGREDIENT_ICONS.includes(singular) ? singular : key;
+}
+
 /** Path of the bundled photo for an ingredient name, or null when there isn't one. */
 export function ingredientIcon(name = '') {
-	const key = name.trim().toLowerCase();
-	const file = ICON_ALIASES[key] || key.replace(/\s+/g, '-');
-	if (INGREDIENT_ICONS.includes(file)) return `/assets/img/ingredients/${file}.webp`;
-	const singular = file.replace(/(es|s)$/, '');
-	return INGREDIENT_ICONS.includes(singular) ? `/assets/img/ingredients/${singular}.webp` : null;
+	const key = ingredientKey(name);
+	return INGREDIENT_ICONS.includes(key) ? `/assets/img/ingredients/${key}.webp` : null;
 }
+
+/**
+ * The photo for an ingredient: Hunter's upload from Admin → Ingredients first, then the bundled one.
+ * The upload library comes with each juice (see prepareJuices), so every page can look it up.
+ */
+export const ingredientPhoto = (juice, name) => juice?.ingredientImages?.[ingredientKey(name)] || ingredientIcon(name);
+
+/**
+ * Every bottle costs the shop's bottle price unless Hunter gave that juice its own price.
+ * The saved menu and the defaults both go through this, so one edit reprices the whole site:
+ * cards, cart, checkout, share images and emails.
+ */
+export function priceJuice(juice, settings) {
+	const shop = Number(settings?.bottlePrice);
+	if (juice.customPrice || !(shop > 0)) return juice;
+	return { ...juice, price: shop };
+}
+export const priceJuices = (juices, settings) => juices.map(juice => priceJuice(juice, settings));
+
+/** The menu as the site shows it: live prices, plus the shared ingredient photo library on each juice. */
+export const prepareJuices = (juices, settings) => priceJuices(juices, settings).map(juice => ({ ...juice, ingredientImages: settings?.ingredientPhotos || {} }));
 
 export const slugify = text =>
 	String(text || '')
@@ -113,7 +143,8 @@ export const DEFAULT_JUICES = [
 		description:
 			'Sunny oranges, pineapple and mango, grounded with carrot and a warming hit of fresh ginger and turmeric. Our brightest bottle, and a big dose of vitamin C.',
 		ingredients: ['Oranges', 'Pineapple', 'Mango', 'Carrots', 'Ginger', 'Turmeric'],
-		price: 7.5,
+		price: 8,
+		customPrice: false,
 		color: '#f59e1b',
 		splash: 'orange',
 		image: '/assets/img/bottles/simply-orange.webp',
@@ -139,7 +170,8 @@ export const DEFAULT_JUICES = [
 		description:
 			'A full handful of spinach blended with sweet oranges, banana and pineapple. Smooth, fruity and loaded with vitamin K, so you get your greens without tasting like a salad.',
 		ingredients: ['Spinach', 'Oranges', 'Bananas', 'Pineapple'],
-		price: 7.5,
+		price: 8,
+		customPrice: false,
 		color: '#8db62f',
 		splash: 'green',
 		image: '/assets/img/bottles/simply-green.webp',
@@ -165,7 +197,8 @@ export const DEFAULT_JUICES = [
 		description:
 			'Ripe strawberries and crisp apples pressed with fresh lemon and coconut water. Light, tart and hydrating, the easiest bottle to finish.',
 		ingredients: ['Strawberries', 'Apples', 'Lemon', 'Coconut Water'],
-		price: 7.5,
+		price: 8,
+		customPrice: false,
 		color: '#e0322f',
 		splash: 'red',
 		image: '/assets/img/bottles/simply-red.webp',
@@ -188,6 +221,11 @@ export const DEFAULT_JUICES = [
 
 export const DEFAULT_SETTINGS = {
 	orderingEnabled: true,
+	// What one bottle costs. Every juice uses it unless it has its own price set in /admin.
+	bottlePrice: 8,
+	// Ingredient photos Hunter uploaded in /admin → Ingredients, keyed by ingredientKey(). They
+	// replace the bundled photo (or fill in for an ingredient the site has no photo of) everywhere.
+	ingredientPhotos: {},
 	// Optional banner shown across the top of every page (e.g. "Back in stock Monday!")
 	announcement: '',
 	contactEmail: 'siponpressed@yahoo.com',
