@@ -10,7 +10,7 @@ import { bottleImage, garnishFor, money, onColor, statusStamp } from './componen
 import { icon } from './icons.js';
 
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-const AUTOPLAY_MS = 6500;
+const AUTOPLAY_MS = 8000;
 const pad = n => String(n).padStart(2, '0');
 
 function slide(juice, i, total) {
@@ -153,13 +153,14 @@ export function flavorCarousel(root, juices) {
 		if (hops) hopTimer = setInterval(() => (step(dir), --hops || clearInterval(hopTimer)), 160);
 	}
 
-	/* Autoplay: pauses on hover, focus, when off screen or the tab is hidden */
+	/* Autoplay: only counts down while the carousel is on screen; pauses on hover, focus or a hidden tab */
 	let timer;
-	let visible = true;
+	let visible = false;
 	const paused = () => root.matches(':hover, :focus-within') || !visible || document.hidden;
 	function schedule() {
 		clearTimeout(timer);
 		if (reducedMotion || n < 2) return root.classList.add('no-autoplay');
+		if (!visible) return root.classList.add('is-paused');
 		timer = setTimeout(function tick() {
 			if (paused()) {
 				root.classList.add('is-paused');
@@ -173,7 +174,21 @@ export function flavorCarousel(root, juices) {
 	}
 	root.addEventListener('pointerenter', () => root.classList.add('is-paused'));
 	root.addEventListener('pointerleave', () => root.classList.remove('is-paused'));
-	new IntersectionObserver(([entry]) => (visible = entry.isIntersecting), { threshold: 0.3 }).observe(root);
+	// Each time it scrolls into view the countdown (and the dot's fill bar) starts fresh
+	new IntersectionObserver(
+		([entry]) => {
+			visible = entry.isIntersecting;
+			const dot = dots[active];
+			if (visible && dot) {
+				dot.classList.remove('is-active');
+				void dot.offsetWidth;
+				dot.classList.add('is-active');
+				root.classList.remove('is-paused');
+			}
+			schedule();
+		},
+		{ threshold: 0.5 }
+	).observe(root);
 
 	const user = fn => (...args) => {
 		fn(...args);

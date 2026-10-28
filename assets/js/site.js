@@ -55,37 +55,39 @@ function renderFooter(settings) {
 	(main || document.body).insertAdjacentHTML(
 		main ? 'afterend' : 'beforeend',
 		`<footer class="site-footer">
-			<div class="site-footer__bottles" aria-hidden="true">${fan(juices)}</div>
 			<div class="container">
 				<div class="site-footer__top">
-					<div class="site-footer__brand">
-						<a href="/" class="wordmark wordmark--lg" aria-label="SiponPressed home">${wordmark('SiponPressed')}</a>
+					<div class="site-footer__intro">
 						<p class="site-footer__tag">Embrace the sip</p>
-						<p class="site-footer__note">Real juice. Real health. Real you. Cold-pressed in small batches by Hunter in Philadelphia.</p>
+						<p class="site-footer__note">Cold-pressed in small batches by Hunter in Philadelphia. Real juice, nothing else in the bottle.</p>
+						<div class="site-footer__chips">
+							<a href="mailto:${e(settings.contactEmail)}" class="footer-chip">${icon('mail')}<span>${e(settings.contactEmail)}</span></a>
+							<a href="https://instagram.com/${e(settings.instagram)}" target="_blank" rel="noopener" class="footer-chip">${icon('instagram')}<span>@${e(settings.instagram)}</span></a>
+						</div>
 					</div>
-					<div class="site-footer__cols">
+					<nav class="site-footer__cols" aria-label="Footer">
 						<div>
 							<h2 class="site-footer__title">Shop</h2>
 							<a href="/juices">All juices</a>
 							<a href="/order">Pickup or delivery</a>
-							<a href="/contact?topic=wholesale">Wholesale for cafes &amp; studios</a>
+							<a href="/contact?topic=wholesale">Wholesale</a>
 						</div>
 						<div>
 							<h2 class="site-footer__title">SiponPressed</h2>
+							<a href="/">Home</a>
 							<a href="/about">About Hunter</a>
 							<a href="/contact">Contact</a>
-							<a href="https://instagram.com/${e(settings.instagram)}" target="_blank" rel="noopener">Instagram</a>
 						</div>
-						<div>
-							<h2 class="site-footer__title">Say hi</h2>
-							<a href="mailto:${e(settings.contactEmail)}" class="site-footer__contact">${icon('mail')} ${e(settings.contactEmail)}</a>
-							<a href="https://instagram.com/${e(settings.instagram)}" target="_blank" rel="noopener" class="site-footer__contact">${icon('instagram')} @${e(settings.instagram)}</a>
-						</div>
-					</div>
+					</nav>
 				</div>
+				<a href="/" class="site-footer__mark" aria-label="SiponPressed home">${wordmark('SiponPressed')}</a>
 				<div class="site-footer__bottom">
 					<p>&copy; ${year} SiponPressed &middot; Philadelphia, PA</p>
-					<p>Cold pressed &middot; No added sugar &middot; Keep refrigerated</p>
+					<ul class="site-footer__badges">
+						<li>Cold pressed</li>
+						<li>No added sugar</li>
+						<li>Keep refrigerated</li>
+					</ul>
 				</div>
 			</div>
 		</footer>`

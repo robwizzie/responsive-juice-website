@@ -2,6 +2,28 @@ import { ready } from '../site.js';
 import { escapeHtml as e } from '../lib/catalog.js';
 import { icon } from '../lib/icons.js';
 
+/** The hero entrance: plays once the portrait photo is decoded, so nothing pops in halfway through. */
+const hero = document.querySelector('[data-about-hero]');
+let played = false;
+function playHero(photo) {
+	if (played) return;
+	const imgs = photo ? [...photo.querySelectorAll('img')] : [];
+	const decoded = Promise.all(imgs.map(img => img.decode().catch(() => {})));
+	Promise.race([decoded, new Promise(r => setTimeout(r, 1200))]).then(() => {
+		if (played) return;
+		played = true;
+		requestAnimationFrame(() => hero.classList.add('is-in'));
+	});
+}
+// If the menu is slow to load, don't hold the page back forever
+setTimeout(() => playHero(null), 2500);
+window.addEventListener('pageshow', event => {
+	if (!event.persisted) return;
+	hero.classList.remove('is-in');
+	void hero.offsetWidth;
+	hero.classList.add('is-in');
+});
+
 ready.then(({ juices, settings }) => {
 	const photographed = juices.filter(j => j.image);
 	const photo = document.querySelector('[data-portrait-photo]');
@@ -15,6 +37,8 @@ ready.then(({ juices, settings }) => {
 			${photographed[0] ? `<img src="${photographed[0].imageSmall || photographed[0].image}" alt="" class="portrait__bottle" decoding="async">` : ''}`;
 		photo.insertAdjacentHTML('afterend', '<span class="stamp stamp--coming-soon portrait__soon">Photo of Hunter soon</span>');
 	}
+
+	playHero(photo);
 
 	const lineup = photographed.slice(0, 3);
 	document.querySelector('[data-about-bottles]').innerHTML = lineup

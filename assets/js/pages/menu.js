@@ -42,14 +42,19 @@ function compare(juices) {
 
 ready.then(({ juices, settings }) => {
 	document.querySelector('[data-menu]').innerHTML = juices.map((juice, i) => juiceCard(juice, { eager: i < 3 })).join('');
+	// Header lineup: splashes on their own layer behind, so none paints over a neighbouring bottle
 	const fan = document.querySelector('[data-fan]');
-	const shown = juices.slice(0, 5);
-	fan.innerHTML = shown
-		.map((j, i) => {
-			const mid = (shown.length - 1) / 2;
-			return `<a href="/juices/${j.slug}" tabindex="-1" class="${i === mid ? 'is-mid' : ''}" style="--i: ${i}; z-index: ${10 - Math.abs(i - mid)}">${bottleImage(j, { eager: true })}</a>`;
-		})
-		.join('');
+	const shown = juices.filter(j => j.image).slice(0, 3);
+	const mid = (shown.length - 1) / 2;
+	const slot = (j, i, back) => {
+		const splash = back && j.splash && j.splash !== 'none' ? `<img src="/assets/img/splash/${j.splash}.webp" alt="" class="menu-card__splash" decoding="async">` : '';
+		const tag = back ? 'span' : 'a';
+		const href = back ? '' : ` href="/juices/${j.slug}" tabindex="-1"`;
+		return `<${tag}${href} class="menu-card__bottle${i === mid ? ' is-mid' : ''}" style="--i: ${i}; --r: ${(i - mid) * 6}deg">${splash}<img src="${j.image}" alt="" class="menu-card__img${back ? ' is-ghost' : ''}" decoding="async"></${tag}>`;
+	};
+	fan.innerHTML = `<div class="menu-card__layer">${shown.map((j, i) => slot(j, i, true)).join('')}</div><div class="menu-card__layer">${shown.map((j, i) => slot(j, i, false)).join('')}</div>`;
+	const playIn = () => requestAnimationFrame(() => document.querySelector('[data-menu-hero]').classList.add('is-in'));
+	Promise.race([Promise.all([...fan.querySelectorAll('.menu-card__img')].map(img => img.decode().catch(() => {}))), new Promise(r => setTimeout(r, 1500))]).then(playIn);
 	const table = document.querySelector('[data-compare]');
 	table.style.setProperty('--n', Math.min(juices.length, 4));
 	table.innerHTML = compare(juices);

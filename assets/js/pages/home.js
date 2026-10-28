@@ -60,5 +60,14 @@ ready.then(({ juices, settings }) => {
 	}
 
 	const fan = juices.filter(j => j.image).slice(0, 3);
-	document.querySelector('[data-cta-bottles]').innerHTML = fan.map((j, i) => `<img src="${j.imageSmall || j.image}" alt="" loading="lazy" style="--i: ${i}">`).join('');
+	// Wholesale band: the bottles rise up out of the bottom edge with their splashes bursting behind.
+	// Splashes sit on their own layer (each beside an invisible copy of its bottle for sizing) so no
+	// splash ever paints over a neighbouring bottle.
+	const ctaBottle = (j, i, splash) => {
+		const splashImg = splash && j.splash && j.splash !== 'none' ? `<img src="/assets/img/splash/${j.splash}.webp" alt="" class="cta-band__splash" loading="lazy" decoding="async">` : '';
+		return `<span class="cta-band__bottle" style="--i: ${i}; --r: ${(i - (fan.length - 1) / 2) * 7}deg">${splashImg}<img src="${j.image}" alt="" class="cta-band__img${splash ? ' is-ghost' : ''}" loading="lazy" decoding="async"></span>`;
+	};
+	document.querySelector('[data-cta-bottles]').innerHTML = `
+		<div class="cta-band__layer">${fan.map((j, i) => ctaBottle(j, i, true)).join('')}</div>
+		<div class="cta-band__layer">${fan.map((j, i) => ctaBottle(j, i, false)).join('')}</div>`;
 });
