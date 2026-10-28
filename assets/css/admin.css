@@ -1,3 +1,18 @@
+/* The admin stays in light mode whatever the device setting */
+.page-admin {
+	color-scheme: light;
+	--ink: #161513;
+	--ink-2: #34322d;
+	--muted: #6f6a60;
+	--line: rgba(22, 21, 19, 0.11);
+	--line-strong: rgba(22, 21, 19, 0.22);
+	--paper: #fdf6ea;
+	--paper-2: #f6ead6;
+	--card: #fffdf9;
+	--on-ink: #fff;
+	--night: #161513;
+}
+
 /*=============== ADMIN ===============*/
 .page-admin {
 	min-height: 100vh;

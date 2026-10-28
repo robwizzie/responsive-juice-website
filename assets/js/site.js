@@ -55,39 +55,32 @@ function renderFooter(settings) {
 	(main || document.body).insertAdjacentHTML(
 		main ? 'afterend' : 'beforeend',
 		`<footer class="site-footer">
-			<div class="container">
-				<div class="site-footer__top">
-					<div class="site-footer__intro">
-						<p class="site-footer__tag">Embrace the sip</p>
-						<p class="site-footer__note">Cold-pressed in small batches by Hunter in Philadelphia. Real juice, nothing else in the bottle.</p>
-						<div class="site-footer__chips">
-							<a href="mailto:${e(settings.contactEmail)}" class="footer-chip">${icon('mail')}<span>${e(settings.contactEmail)}</span></a>
-							<a href="https://instagram.com/${e(settings.instagram)}" target="_blank" rel="noopener" class="footer-chip">${icon('instagram')}<span>@${e(settings.instagram)}</span></a>
-						</div>
+			<div class="site-footer__hero">
+				<img src="/assets/img/brand/footer-scene.webp" srcset="/assets/img/brand/footer-scene-sm.webp 960w, /assets/img/brand/footer-scene.webp 1916w" sizes="100vw" alt="" class="site-footer__scene" loading="lazy" decoding="async">
+				<div class="container site-footer__intro">
+					<p class="site-footer__tag">Embrace the sip</p>
+					<p class="site-footer__note">Cold-pressed in small batches by Hunter in Philadelphia. Real juice, nothing else in the bottle.</p>
+					<div class="site-footer__chips">
+						<a href="mailto:${e(settings.contactEmail)}" class="footer-chip">${icon('mail')}<span>${e(settings.contactEmail)}</span></a>
+						<a href="https://instagram.com/${e(settings.instagram)}" target="_blank" rel="noopener" class="footer-chip">${icon('instagram')}<span>@${e(settings.instagram)}</span></a>
 					</div>
-					<nav class="site-footer__cols" aria-label="Footer">
-						<div>
-							<h2 class="site-footer__title">Shop</h2>
-							<a href="/juices">All juices</a>
-							<a href="/order">Pickup or delivery</a>
-							<a href="/contact?topic=wholesale">Wholesale</a>
-						</div>
-						<div>
-							<h2 class="site-footer__title">SiponPressed</h2>
-							<a href="/">Home</a>
-							<a href="/about">About Hunter</a>
-							<a href="/contact">Contact</a>
-						</div>
+				</div>
+			</div>
+			<div class="container">
+				<div class="site-footer__row">
+					<a href="/" class="site-footer__mark" aria-label="SiponPressed home">${wordmark('SiponPressed')}</a>
+					<nav class="site-footer__links" aria-label="Footer">
+						<a href="/">Home</a>
+						<a href="/juices">Juices</a>
+						<a href="/order">Order</a>
+						<a href="/about">About Hunter</a>
+						<a href="/contact?topic=wholesale">Wholesale</a>
+						<a href="/contact">Contact</a>
 					</nav>
 				</div>
-				<a href="/" class="site-footer__mark" aria-label="SiponPressed home">${wordmark('SiponPressed')}</a>
 				<div class="site-footer__bottom">
 					<p>&copy; ${year} SiponPressed &middot; Philadelphia, PA</p>
-					<ul class="site-footer__badges">
-						<li>Cold pressed</li>
-						<li>No added sugar</li>
-						<li>Keep refrigerated</li>
-					</ul>
+					<p>Cold pressed &middot; No added sugar &middot; Keep refrigerated</p>
 				</div>
 			</div>
 		</footer>`

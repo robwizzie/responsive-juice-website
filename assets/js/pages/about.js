@@ -3,6 +3,7 @@ import { escapeHtml as e } from '../lib/catalog.js';
 import { icon } from '../lib/icons.js';
 
 /** The hero entrance: plays once the portrait photo is decoded, so nothing pops in halfway through. */
+const HUNTER_PHOTO = '/assets/img/hunter.webp';
 const hero = document.querySelector('[data-about-hero]');
 let played = false;
 function playHero(photo) {
@@ -27,8 +28,10 @@ window.addEventListener('pageshow', event => {
 ready.then(({ juices, settings }) => {
 	const photographed = juices.filter(j => j.image);
 	const photo = document.querySelector('[data-portrait-photo]');
-	if (settings.aboutPhoto) {
-		photo.innerHTML = `<img src="${e(settings.aboutPhoto)}" alt="Hunter, founder of SiponPressed" decoding="async">`;
+	// Hunter's own upload from /admin wins; otherwise the photo that ships with the site
+	const portrait = settings.aboutPhoto || HUNTER_PHOTO;
+	if (portrait) {
+		photo.innerHTML = `<img src="${e(portrait)}" alt="Hunter, founder of SiponPressed" decoding="async">`;
 	} else {
 		// No photo of Hunter yet: show his bottles on the river until he uploads one in /admin
 		document.querySelector('[data-portrait]').classList.add('portrait--empty');
