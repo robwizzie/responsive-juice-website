@@ -95,7 +95,7 @@ const fit = (words, maxWidth, max) => Math.round(Math.min(max, maxWidth / (Math.
 // Night card: the juices glow on black, and a lime band along the bottom keeps the
 // link bar iMessage tints from the image's bottom edge in the brand green
 function lineupPage(juices) {
-	const prices = juices.filter(juice => juiceStatus(juice) === 'available').map(juice => Number(juice.price)).filter(Boolean);
+	// No prices in the clips: they're baked files, and Hunter can change prices any time in admin
 	const words = ['Embrace', 'the sip'];
 	return `<style>${base}
 body { --bg: #0b0b0a; --fg: #fdf6ea; --lime: #c4dd3b; }
@@ -111,14 +111,14 @@ body { --bg: #0b0b0a; --fg: #fdf6ea; --lime: #c4dd3b; }
 	<div>${lines(words, fit(words, 530, 124))}<p class="note">Small-batch cold-pressed juice, made by Hunter in Philly</p></div>
 </div>
 <div class="stage">${bottles(juices, 405, true)}</div>
-<div class="band"><b>${prices.length ? `From $${Math.min(...prices).toFixed(2)}` : 'Cold-pressed in Philly'}</b><span>siponpressed.com</span></div>`;
+<div class="band"><b>Cold-pressed in Philly</b><span>siponpressed.com</span></div>`;
 }
 
 function juicePage(juice) {
 	const color = /^#[0-9a-f]{6}$/i.test(juice.color || '') ? juice.color : '#c4dd3b';
 	const words = juice.name.split(/\s+/);
 	const status = juiceStatus(juice);
-	const badge = { 'sold-out': 'Sold out', 'coming-soon': 'Coming soon' }[status] || (Number(juice.price) ? `$${Number(juice.price).toFixed(2)}` : 'siponpressed.com');
+	const badge = { 'sold-out': 'Sold out', 'coming-soon': 'Coming soon' }[status] || 'siponpressed.com';
 	const word = words[words.length - 1].toUpperCase();
 	return `<style>${base} body { --bg: ${color}; --fg: ${onColor(color)}; }</style>
 <div class="word">${esc(`${word} ${word} ${word}`)}</div>
