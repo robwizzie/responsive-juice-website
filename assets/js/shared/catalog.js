@@ -16,6 +16,13 @@ export const JUICE_STATUSES = {
 
 /** Older saved menus only had an inStock flag, so fall back to it. */
 export const juiceStatus = juice => (JUICE_STATUSES[juice?.status] ? juice.status : juice?.inStock === false ? 'sold-out' : 'available');
+/** Dark or light text, whichever reads better on a juice's color. */
+export function onColor(hex = '#000000') {
+	const [r, g, b] = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16) / 255).map(c => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4));
+	const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+	return luminance > 0.24 ? '#161513' : '#ffffff';
+}
+
 export const isOrderable = juice => juiceStatus(juice) === 'available';
 
 /**

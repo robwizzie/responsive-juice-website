@@ -1,0 +1,236 @@
+/**
+ * Share cards (the 1200×630 image a link preview shows), drawn fresh from the live menu.
+ *
+ * Satori lays the card out like a small flexbox page and returns an SVG; sharp turns it into
+ * a PNG. Photos and fonts are fetched from the site itself, so uploaded bottle photos work too.
+ */
+import satori from 'satori';
+import sharp from 'sharp';
+import { juiceStatus, onColor } from '../../../assets/js/shared/catalog.js';
+
+export const OG_WIDTH = 1200;
+export const OG_HEIGHT = 630;
+
+const INK = '#161513';
+const LIME = '#c4dd3b';
+const PAPER = '#fdf6ea';
+
+// A tiny hyperscript so the layouts below read like markup
+const h = (type, style = {}, ...children) => {
+	const kids = children.flat().filter(child => child !== null && child !== false && child !== undefined);
+	return { type, props: { style: { display: 'flex', ...style }, children: kids.length === 1 ? kids[0] : kids } };
+};
+const img = (src, style) => ({ type: 'img', props: { src, style } });
+
+/* ---------- assets ---------- */
+
+const cache = new Map();
+const remember = (key, load) => {
+	if (!cache.has(key)) cache.set(key, load().catch(err => (cache.delete(key), Promise.reject(err))));
+	return cache.get(key);
+};
+
+async function fetchBuffer(origin, path) {
+	const res = await fetch(new URL(path, origin));
+	if (!res.ok) throw new Error(`${path}: ${res.status}`);
+	return Buffer.from(await res.arrayBuffer());
+}
+
+const fonts = origin =>
+	remember('fonts', async () => {
+		const [regular, bold, display] = await Promise.all(
+			['archivo-500.ttf', 'archivo-700.ttf', 'archivo-expanded-900.ttf'].map(file => fetchBuffer(origin, `/assets/fonts/og/${file}`))
+		);
+		return [
+			{ name: 'Archivo', data: regular, weight: 500, style: 'normal' },
+			{ name: 'Archivo', data: bold, weight: 700, style: 'normal' },
+			{ name: 'Archivo Expanded', data: display, weight: 900, style: 'normal' }
+		];
+	});
+
+/** Any site image (WebP included) as a PNG data URI, scaled to `height`, with its real size. */
+const picture = (origin, path, height) =>
+	remember(`${path}@${height}`, async () => {
+		const { data, info } = await sharp(await fetchBuffer(origin, path))
+			.resize({ height, withoutEnlargement: false })
+			.png({ compressionLevel: 6 })
+			.toBuffer({ resolveWithObject: true });
+		return { src: `data:image/png;base64,${data.toString('base64')}`, width: info.width, height: info.height };
+	});
+
+const optionalPicture = (origin, path, height) => (path ? picture(origin, path, height).catch(() => null) : Promise.resolve(null));
+
+const wordmark = (origin, color) =>
+	remember(`wordmark:${color}`, async () => {
+		const svg = (await fetchBuffer(origin, '/assets/img/brand/wordmark.svg')).toString('utf8').replace(/currentColor/g, color);
+		return `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
+	});
+
+/* ---------- pieces ---------- */
+
+const splashFor = juice => `/assets/img/splash/${juice.splash || 'orange'}.webp`;
+
+const STATUS_TEXT = { 'sold-out': 'Sold out', 'coming-soon': 'Coming soon' };
+const priceText = juice => (Number(juice.price) ? `$${Number(juice.price).toFixed(2)}` : '');
+
+/** Big stacked headline; the size shrinks so the longest line fits the column. */
+function headline(lines, color, maxWidth, maxSize) {
+	const longest = Math.max(...lines.map(line => line.length));
+	const size = Math.round(Math.min(maxSize, maxWidth / (longest * 0.95)));
+	return h(
+		'div',
+		{ flexDirection: 'column', fontFamily: 'Archivo Expanded', fontWeight: 900, fontSize: size, lineHeight: 0.92, color, letterSpacing: -1 },
+		lines.map(line => h('div', {}, line))
+	);
+}
+
+const pill = (text, background, color) =>
+	h('div', { alignItems: 'center', height: 58, padding: '0 28px', borderRadius: 999, background, color, fontSize: 26, fontWeight: 700 }, text);
+
+/** Bottles fanned out with their splashes behind, sized to fill a `width × height` box. */
+async function bottleFan(origin, juices, width, height) {
+	const shown = juices.filter(juice => juice.image).slice(0, 3);
+	if (!shown.length) return h('div', { width, height });
+	const bottleH = Math.round(height * (shown.length === 1 ? 0.92 : 0.84));
+	const [bottles, splashes] = await Promise.all([
+		Promise.all(shown.map(juice => optionalPicture(origin, juice.image, bottleH))),
+		Promise.all(shown.map(juice => optionalPicture(origin, splashFor(juice), Math.round(bottleH * 0.95))))
+	]);
+	const step = shown.length === 1 ? 0 : Math.min(width / shown.length, 175);
+	const mid = (shown.length - 1) / 2;
+	const layer = (items, isSplash) =>
+		items.map((item, i) => {
+			if (!item) return null;
+			const centerX = width / 2 + (i - mid) * step;
+			const top = isSplash ? height - item.height - bottleH * 0.06 : height - item.height - (i === Math.round(mid) && shown.length > 1 ? 26 : 0);
+			return img(item.src, {
+				position: 'absolute',
+				left: Math.round(centerX - item.width / 2),
+				top: Math.round(top),
+				width: item.width,
+				height: item.height,
+				opacity: isSplash ? 0.85 : 1,
+				transform: `rotate(${(i - mid) * 6}deg)`
+			});
+		});
+	return h('div', { position: 'relative', width, height }, layer(splashes, true), layer(bottles, false));
+}
+
+/* ---------- cards ---------- */
+
+const SITE = 'siponpressed.com';
+
+/** Copy for each page's card. `juices` is the live, active menu. */
+function pageCopy(page, juices, settings) {
+	const orderable = juices.filter(juice => juiceStatus(juice) === 'available');
+	const prices = orderable.map(juice => Number(juice.price)).filter(Boolean);
+	const from = prices.length ? `From $${Math.min(...prices).toFixed(2)}` : 'Fresh every week';
+	switch (page) {
+		case 'juices':
+			return { lines: ['PRESSED', 'THIS WEEK'], note: juices.map(juice => juice.name).slice(0, 4).join(' · ') || 'Cold-pressed juice', cta: from };
+		case 'order':
+			return { lines: ['ORDER', 'FRESH'], note: `Pickup in ${settings.pickup?.area || 'Philadelphia'} or delivery`, cta: `Order at ${SITE}` };
+		case 'about':
+			return { lines: ["HEY, I'M", 'HUNTER'], note: 'One guy, one press, every bottle', cta: 'Meet the maker', photo: true };
+		case 'contact':
+			return { lines: ['SAY', 'HELLO'], note: 'Questions, big orders and wholesale', cta: settings.contactEmail || SITE };
+		default:
+			return { lines: ['EMBRACE', 'THE SIP'], note: 'Small-batch cold-pressed juice, made by Hunter in Philly', cta: from };
+	}
+}
+
+async function pageCard(origin, page, juices, settings) {
+	const copy = pageCopy(page, juices, settings);
+	const left = 620;
+	const art = copy.photo ? await portrait(origin, settings) : await bottleFan(origin, juices, OG_WIDTH - left - 20, OG_HEIGHT - 50);
+	return h(
+		'div',
+		{ width: OG_WIDTH, height: OG_HEIGHT, background: LIME, position: 'relative', fontFamily: 'Archivo', overflow: 'hidden' },
+		h(
+			'div',
+			{ flexDirection: 'column', justifyContent: 'space-between', width: left, height: OG_HEIGHT, padding: '56px 0 56px 64px' },
+			img(await wordmark(origin, INK), { width: 300, height: 48 }),
+			h(
+				'div',
+				{ flexDirection: 'column', gap: 22 },
+				headline(copy.lines, INK, left - 84, 124),
+				h('div', { fontSize: 30, fontWeight: 500, color: INK, maxWidth: 500, lineHeight: 1.25 }, copy.note)
+			),
+			h('div', { gap: 14 }, pill(copy.cta, INK, PAPER))
+		),
+		h('div', { position: 'absolute', right: 0, bottom: 0 }, art)
+	);
+}
+
+async function portrait(origin, settings) {
+	const photo = (await optionalPicture(origin, settings.aboutPhoto, 560)) || (await optionalPicture(origin, '/assets/img/hunter.webp', 560));
+	if (!photo) return h('div', {});
+	return h(
+		'div',
+		{ padding: '0 70px 0 0', height: OG_HEIGHT, alignItems: 'center' },
+		h(
+			'div',
+			{ width: 400, height: 500, borderRadius: 36, overflow: 'hidden', border: `6px solid ${INK}`, transform: 'rotate(3deg)' },
+			img(photo.src, { width: 400, height: 500, objectFit: 'cover' })
+		)
+	);
+}
+
+async function juiceCard(origin, juice) {
+	const color = /^#[0-9a-f]{6}$/i.test(juice.color || '') ? juice.color : LIME;
+	const fg = onColor(color);
+	const status = juiceStatus(juice);
+	const left = 660;
+	const words = juice.name.toUpperCase().split(/\s+/);
+	const watermark = words[words.length - 1];
+	const badge = STATUS_TEXT[status] || priceText(juice);
+	const size = juice.sizeOz ? `${juice.sizeOz} OZ` : '';
+	return h(
+		'div',
+		{ width: OG_WIDTH, height: OG_HEIGHT, background: color, position: 'relative', fontFamily: 'Archivo', overflow: 'hidden' },
+		h(
+			'div',
+			{
+				position: 'absolute',
+				left: -10,
+				bottom: -40,
+				fontFamily: 'Archivo Expanded',
+				fontWeight: 900,
+				fontSize: Math.min(300, Math.round(1250 / (watermark.length * 0.84))),
+				color: fg,
+				opacity: 0.12,
+				letterSpacing: -4
+			},
+			watermark
+		),
+		h(
+			'div',
+			{ flexDirection: 'column', justifyContent: 'space-between', width: left, height: OG_HEIGHT, padding: '56px 0 56px 64px' },
+			img(await wordmark(origin, fg), { width: 280, height: 45 }),
+			h(
+				'div',
+				{ flexDirection: 'column', gap: 20 },
+				h('div', { fontSize: 24, fontWeight: 700, color: fg, opacity: 0.75, letterSpacing: 3 }, ['COLD-PRESSED', size].filter(Boolean).join(' · ')),
+				headline(words, fg, left - 90, 118),
+				juice.tagline ? h('div', { fontSize: 30, fontWeight: 500, color: fg, maxWidth: 540, lineHeight: 1.25 }, juice.tagline) : null
+			),
+			h(
+				'div',
+				{ gap: 14 },
+				badge ? pill(badge, fg, color) : null,
+				status === 'available' ? pill(`Order at ${SITE}`, 'rgba(255,255,255,0.28)', fg) : null
+			)
+		),
+		h('div', { position: 'absolute', right: 30, bottom: 0 }, await bottleFan(origin, [juice], OG_WIDTH - left - 30, OG_HEIGHT - 30))
+	);
+}
+
+/**
+ * Draw a card. `page` is home / juices / order / about / contact, or a juice to draw that juice.
+ * Returns PNG bytes.
+ */
+export async function renderCard({ origin, page, juice, juices, settings }) {
+	const tree = juice ? await juiceCard(origin, juice) : await pageCard(origin, page, juices, settings);
+	const svg = await satori(tree, { width: OG_WIDTH, height: OG_HEIGHT, fonts: await fonts(origin) });
+	return sharp(Buffer.from(svg)).png({ compressionLevel: 8 }).toBuffer();
+}

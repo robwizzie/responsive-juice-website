@@ -1,16 +1,7 @@
-# Old juice pages from the previous menu point at their closest new flavor
-/juices/tropical-storm        /juices/simply-orange   301
-/juices/sweet-green           /juices/simply-green    301
-/juices/strawberry-lemonade   /juices/simply-red      301
-/juices/sour-punch            /juices                 301
-/juices/strawberry-banana     /juices                 301
-/juices/electric-berry-lemonade /juices               301
-/juices/midnight-rush         /juices                 301
-/juices/cinnamon-green-apple  /juices                 301
+# /juices/<slug> (and the old juice addresses) are served by netlify/functions/juice-page.js
 
 # Pages
 /juices          /juices.html    200
-/juices/:slug    /juice.html     200
 /about           /about.html     200
 /contact         /contact.html   200
 /order           /order.html     200

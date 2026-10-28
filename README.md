@@ -6,11 +6,12 @@ Website for SiponPressed, Hunter's cold-pressed juice company in Philadelphia. I
 
 | Path | What it is |
 | --- | --- |
-| `index.html`, `juices.html`, `juice.html`, `about.html`, `contact.html`, `order.html`, `success.html` | Public pages. `juice.html` renders every `/juices/:slug` page. |
+| `index.html`, `juices.html`, `juice.html`, `about.html`, `contact.html`, `order.html`, `success.html` | Public pages. `juice.html` renders every `/juices/:slug` page (served by the `juice-page` function so each juice has its own share tags). |
 | `admin.html` + `assets/js/admin/` | Hunter's admin at `/admin`: edit/add juices, see orders, change pickup and delivery settings. |
 | `assets/js/shared/catalog.js` | The starting menu (Simply Orange, Green, Red) and default shop settings. |
 | `assets/js/shared/order-rules.js` | Dates, minimums, delivery fee and pricing. Used by both the order page and the checkout function, so they always agree. |
-| `netlify/functions/` | `catalog` (public menu), `checkout` (Stripe Checkout), `stripe-webhook` (saves paid orders, sends emails), `delivery-check`, `contact`, `admin`, `images`, `order-summary`. |
+| `netlify/functions/` | `catalog` (public menu), `checkout` (Stripe Checkout), `stripe-webhook` (saves paid orders, sends emails), `delivery-check`, `contact`, `admin`, `images`, `order-summary`, `og` (share images), `juice-page`, `sitemap`. |
+| `assets/js/shared/seo.js` | Page titles, descriptions, share tags and structured data. Baked into each page's `<head>` by `node scripts/bake-header.mjs`. |
 
 Menu edits, settings, uploaded photos and orders are stored in **Netlify Blobs**, which every Netlify site has built in. There is no database to set up. Until something is saved in the admin, the defaults in `catalog.js` are used.
 
@@ -53,3 +54,9 @@ npm test
 ## Adding a juice
 
 Sign in at `/admin` → **Menu** → **Add a juice**. Upload a bottle photo (a PNG with the background removed looks best; remove.bg works well), fill in the ingredients and nutrition, and save. The site, cart and checkout pick it up immediately. Use **Mark sold out** to pause a flavor without hiding it, or untick **Show on the site** to hide it.
+
+## Link previews
+
+The image a link shows when shared (iMessage, Instagram DMs, X, Slack…) is drawn on the fly from the live menu by the `og` function: `/og/home.png`, `/og/juices.png`, `/og/order.png`, `/og/about.png`, `/og/contact.png` and `/og/juices/<slug>.png`. Saving in the admin refreshes them. Apps cache previews on their side for a while; Facebook's [Sharing Debugger](https://developers.facebook.com/tools/debug/) and LinkedIn's [Post Inspector](https://www.linkedin.com/post-inspector/) can force a refresh.
+
+Previews that play video use the short clips in `assets/videos/og/`. After changing the lineup, run `node scripts/make-og-videos.mjs` (needs ffmpeg) and commit the new clips. A juice without a clip just shows its image.

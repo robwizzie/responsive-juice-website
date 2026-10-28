@@ -4,9 +4,9 @@
  *    bottles line up to the right like a shelf; swipe, arrows, dots, keys and autoplay.
  *  - rail: a row of cards that scrolls sideways with snap, drag-to-scroll and arrow buttons.
  */
-import { juiceStatus } from '../shared/catalog.js';
+import { juiceStatus, onColor } from '../shared/catalog.js';
 import { escapeHtml as e } from './catalog.js';
-import { bottleImage, garnishFor, money, onColor, statusStamp } from './components.js';
+import { bottleImage, garnishFor, money, statusStamp } from './components.js';
 import { icon } from './icons.js';
 
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;

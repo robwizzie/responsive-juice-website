@@ -9,6 +9,8 @@
   node_bundler = "esbuild"
   # The menu defaults are shared with the browser; make sure they're bundled
   included_files = ["assets/js/shared/**"]
+  # sharp ships a native binary, so it is installed alongside the functions instead of bundled
+  external_node_modules = ["sharp"]
 
 # Redirect rules are in the _redirects file.
 

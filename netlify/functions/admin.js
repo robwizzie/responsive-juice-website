@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { purgeCache } from '@netlify/functions';
 import { adminConfigured, isSignedIn, signIn, signOutCookie } from './lib/auth.js';
 import { getJuices, getSettings, imageStore, listOrders, saveJuices, saveSettings } from './lib/store.js';
 import { cleanJuices, cleanSettings } from './lib/validate.js';
@@ -8,6 +9,16 @@ import { stripeConfigured } from './lib/stripe.js';
 
 const IMAGE_TYPES = { 'image/webp': 'webp', 'image/png': 'png', 'image/jpeg': 'jpg' };
 const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
+
+// Share images and juice pages are cached on the CDN; clear them so a change shows up in
+// new link previews right away. Only works on Netlify, so a local save just skips it.
+async function refreshSharePreviews() {
+	try {
+		await purgeCache({ tags: ['og'] });
+	} catch (err) {
+		if (process.env.NETLIFY) console.warn('Could not refresh share previews', err.message);
+	}
+}
 
 // Everything behind /admin. Requests that change data must carry the X-Admin-Request
 // header, which other websites can't add, on top of the SameSite session cookie.
@@ -41,6 +52,7 @@ export default async (req, context) => {
 		const { value, error: problem } = cleanJuices(await readJSON(req));
 		if (problem) return error(problem);
 		await saveJuices(value);
+		await refreshSharePreviews();
 		return json({ juices: value });
 	}
 
@@ -48,6 +60,7 @@ export default async (req, context) => {
 		const { value, error: problem } = cleanSettings((await readJSON(req)) || {}, await getSettings());
 		if (problem) return error(problem);
 		await saveSettings(value);
+		await refreshSharePreviews();
 		return json({ settings: value });
 	}
 

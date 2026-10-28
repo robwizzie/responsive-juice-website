@@ -43,7 +43,7 @@ const redirects = readFileSync(join(root, '_redirects'), 'utf8')
 		return { pattern: toPattern(from.replace(/\/\*$/, '/*')), to, status: parseInt(status, 10) };
 	});
 
-const TYPES = { '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.js': 'text/javascript', '.json': 'application/json', '.png': 'image/png', '.jpg': 'image/jpeg', '.webp': 'image/webp', '.svg': 'image/svg+xml', '.ico': 'image/x-icon' };
+const TYPES = { '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.js': 'text/javascript', '.json': 'application/json', '.png': 'image/png', '.jpg': 'image/jpeg', '.webp': 'image/webp', '.svg': 'image/svg+xml', '.ico': 'image/x-icon', '.mp4': 'video/mp4', '.ttf': 'font/ttf', '.txt': 'text/plain', '.xml': 'application/xml' };
 
 function staticFile(pathname) {
 	const clean = normalize(decodeURIComponent(pathname)).replace(/^(\.\.[/\\])+/, '');
