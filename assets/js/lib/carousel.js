@@ -53,6 +53,7 @@ export function flavorCarousel(root, juices) {
 				<button type="button" class="icon-btn flavors__arrow" data-prev aria-label="Previous juice">${icon('arrowLeft')}</button>
 				<button type="button" class="icon-btn flavors__arrow" data-next aria-label="Next juice">${icon('arrowRight')}</button>
 				<div class="flavors__dots">${juices.map((j, i) => `<button type="button" class="flavors__dot" data-dot="${i}" aria-label="${e(j.name)}"></button>`).join('')}</div>
+				<button type="button" class="icon-btn flavors__play" data-play aria-label="Pause autoplay" aria-pressed="false">${icon('pause')}</button>
 			</div>
 		</div>
 		<p class="flavors__word" aria-hidden="true"></p>
@@ -153,13 +154,20 @@ export function flavorCarousel(root, juices) {
 		if (hops) hopTimer = setInterval(() => (step(dir), --hops || clearInterval(hopTimer)), 160);
 	}
 
-	/* Autoplay: only counts down while the carousel is on screen; pauses on hover, focus or a hidden tab */
+	/* Autoplay: only counts down while the carousel is on screen; pauses on hover, focus or a hidden tab.
+	   The play/pause button stops it for good, and so does any swipe, arrow, dot or key: once someone
+	   is browsing, the carousel waits for them. */
 	let timer;
 	let visible = false;
-	const paused = () => root.matches(':hover, :focus-within') || !visible || document.hidden;
+	let stopped = reducedMotion;
+	const playBtn = root.querySelector('[data-play]');
+	let hovered = false;
+	// Only a mouse resting on it or keyboard focus inside pauses it; a tap leaves sticky :hover on phones
+	const paused = () => hovered || !!root.querySelector(':focus-visible') || !visible || document.hidden;
 	function schedule() {
 		clearTimeout(timer);
-		if (reducedMotion || n < 2) return root.classList.add('no-autoplay');
+		root.classList.toggle('is-stopped', stopped);
+		if (n < 2 || stopped) return;
 		if (!visible) return root.classList.add('is-paused');
 		timer = setTimeout(function tick() {
 			if (paused()) {
@@ -172,17 +180,41 @@ export function flavorCarousel(root, juices) {
 			schedule();
 		}, AUTOPLAY_MS);
 	}
-	root.addEventListener('pointerenter', () => root.classList.add('is-paused'));
-	root.addEventListener('pointerleave', () => root.classList.remove('is-paused'));
+	function setStopped(value) {
+		stopped = value;
+		playBtn.innerHTML = icon(stopped ? 'play' : 'pause');
+		playBtn.setAttribute('aria-label', stopped ? 'Play autoplay' : 'Pause autoplay');
+		playBtn.setAttribute('aria-pressed', String(stopped));
+		if (!stopped) restartFill();
+		schedule();
+	}
+	function restartFill() {
+		const dot = dots[active];
+		if (!dot) return;
+		dot.classList.remove('is-active');
+		void dot.offsetWidth;
+		dot.classList.add('is-active');
+	}
+	playBtn.addEventListener('click', () => {
+		setStopped(!stopped);
+		// Resuming moves on soon, so it's clear the carousel is playing again
+		if (!stopped) root.classList.remove('is-paused');
+	});
+	root.addEventListener('pointerenter', event => {
+		if (event.pointerType !== 'mouse') return;
+		hovered = true;
+		root.classList.add('is-paused');
+	});
+	root.addEventListener('pointerleave', () => {
+		hovered = false;
+		root.classList.remove('is-paused');
+	});
 	// Each time it scrolls into view the countdown (and the dot's fill bar) starts fresh
 	new IntersectionObserver(
 		([entry]) => {
 			visible = entry.isIntersecting;
-			const dot = dots[active];
-			if (visible && dot) {
-				dot.classList.remove('is-active');
-				void dot.offsetWidth;
-				dot.classList.add('is-active');
+			if (visible) {
+				restartFill();
 				root.classList.remove('is-paused');
 			}
 			schedule();
@@ -192,7 +224,7 @@ export function flavorCarousel(root, juices) {
 
 	const user = fn => (...args) => {
 		fn(...args);
-		schedule();
+		if (!stopped) setStopped(true);
 	};
 
 	root.querySelector('[data-prev]').addEventListener('click', user(() => step(-1)));
@@ -203,14 +235,11 @@ export function flavorCarousel(root, juices) {
 		el.addEventListener('click', pick);
 		el.addEventListener('keydown', event => (event.key === 'Enter' || event.key === ' ') && (event.preventDefault(), pick()));
 	});
-	root.addEventListener(
-		'keydown',
-		user(event => {
-			if (event.target.closest('input, textarea')) return;
-			if (event.key === 'ArrowRight') step(1);
-			if (event.key === 'ArrowLeft') step(-1);
-		})
-	);
+	root.addEventListener('keydown', event => {
+		if (event.target.closest('input, textarea')) return;
+		if (event.key === 'ArrowRight') user(() => step(1))();
+		if (event.key === 'ArrowLeft') user(() => step(-1))();
+	});
 
 	/* Swipe / drag */
 	let startX = null;
@@ -229,7 +258,7 @@ export function flavorCarousel(root, juices) {
 	});
 
 	render(0);
-	schedule();
+	setStopped(stopped);
 }
 
 /** Sideways card row: arrows scroll by a card, mouse users can drag it. */
