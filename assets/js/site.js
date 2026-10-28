@@ -49,6 +49,22 @@ const fan = list =>
 		.map((juice, i) => (juice.image ? `<img src="${juice.imageSmall || juice.image}" alt="" loading="lazy" style="--i: ${i}">` : ''))
 		.join('');
 
+// Bubbles in the footer shot: [left %, size px, rise seconds, delay seconds]
+const FIZZ = [
+	[4, 5, 8, -1],
+	[12, 8, 10, -6],
+	[21, 4, 7, -3],
+	[30, 6, 9, -8],
+	[38, 9, 11, -2],
+	[47, 5, 8, -5],
+	[55, 7, 10, -9],
+	[63, 4, 7, -4],
+	[71, 8, 12, -7],
+	[80, 5, 9, -1.5],
+	[88, 6, 8, -6.5],
+	[95, 4, 10, -3.5]
+];
+
 function renderFooter(settings) {
 	const main = document.querySelector('main');
 	const year = new Date().getFullYear();
@@ -56,7 +72,12 @@ function renderFooter(settings) {
 		main ? 'afterend' : 'beforeend',
 		`<footer class="site-footer" data-reveal>
 			<div class="site-footer__hero">
-				<img src="/assets/img/brand/footer-scene.webp" srcset="/assets/img/brand/footer-scene-sm.webp 960w, /assets/img/brand/footer-scene.webp 1916w" sizes="100vw" alt="" class="site-footer__scene" loading="lazy" decoding="async">
+				<picture>
+					<source media="(max-width: 760px)" srcset="/assets/img/brand/footer-scene-mobile.webp">
+					<img src="/assets/img/brand/footer-scene.webp" srcset="/assets/img/brand/footer-scene-sm.webp 960w, /assets/img/brand/footer-scene.webp 1916w" sizes="100vw" alt="" class="site-footer__scene" loading="lazy" decoding="async">
+				</picture>
+				<span class="site-footer__glow" aria-hidden="true"></span>
+				<span class="site-footer__fizz" aria-hidden="true">${FIZZ.map(([x, size, time, delay]) => `<i style="--x: ${x}%; --s: ${size}px; --t: ${time}s; --d: ${delay}s"></i>`).join('')}</span>
 				<div class="container site-footer__intro">
 					<p class="site-footer__tag"><span>Embrace</span> <span>the sip</span></p>
 					<p class="site-footer__note">Cold-pressed in small batches by Hunter in Philadelphia. Real juice, nothing else in the bottle.</p>

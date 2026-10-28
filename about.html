@@ -162,7 +162,10 @@
         <section class="section">
             <div class="container">
                 <div class="cta-band cta-band--scene" data-reveal>
-                    <img src="/assets/img/brand/wholesale-scene.webp" srcset="/assets/img/brand/wholesale-scene-sm.webp 960w, /assets/img/brand/wholesale-scene.webp 1916w" sizes="(max-width: 760px) 100vw, 1200px" alt="SiponPressed bottles on ice with oranges, strawberries and spinach" class="cta-band__scene" loading="lazy" decoding="async">
+                    <picture>
+                        <source media="(max-width: 760px)" srcset="/assets/img/brand/wholesale-scene-mobile.webp">
+                        <img src="/assets/img/brand/wholesale-scene.webp" srcset="/assets/img/brand/wholesale-scene-sm.webp 960w, /assets/img/brand/wholesale-scene.webp 1916w" sizes="(max-width: 1400px) 90vw, 1240px" alt="SiponPressed bottles on ice with oranges, strawberries and spinach" class="cta-band__scene" decoding="async" fetchpriority="low" onload="this.classList.add('is-loaded')">
+                    </picture>
                     <div>
                         <p class="kicker">Studios, gyms &amp; cafes</p>
                         <h2 class="cta-band__title">Want SiponPressed in your space?</h2>

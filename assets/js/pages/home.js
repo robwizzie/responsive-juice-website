@@ -68,7 +68,27 @@ ready.then(({ juices, settings }) => {
 		const splashImg = splash && j.splash && j.splash !== 'none' ? `<img src="/assets/img/splash/${j.splash}.webp" alt="" class="cta-band__splash" loading="lazy" decoding="async">` : '';
 		return `<span class="cta-band__bottle" style="--i: ${i}; --r: ${(i - (fan.length - 1) / 2) * 7}deg">${splashImg}<img src="${j.image}" alt="" class="cta-band__img${splash ? ' is-ghost' : ''}" loading="lazy" decoding="async"></span>`;
 	};
-	document.querySelector('[data-cta-bottles]').innerHTML = `
+	const ctaBottles = document.querySelector('[data-cta-bottles]');
+	ctaBottles.innerHTML = `
 		<div class="cta-band__layer">${fan.map((j, i) => ctaBottle(j, i, true)).join('')}</div>
 		<div class="cta-band__layer">${fan.map((j, i) => ctaBottle(j, i, false)).join('')}</div>`;
+	// Play the rise only once the bottles themselves are on screen and their photos are ready,
+	// so it never starts half-loaded or out of view
+	const band = ctaBottles.closest('.cta-band');
+	const rise = () => {
+		const ready = [...ctaBottles.querySelectorAll('img')].map(img => img.decode().catch(() => {}));
+		Promise.race([Promise.all(ready), new Promise(r => setTimeout(r, 1200))]).then(() => requestAnimationFrame(() => band.classList.add('is-up')));
+	};
+	if (!('IntersectionObserver' in window)) rise();
+	else {
+		const watch = new IntersectionObserver(
+			entries => {
+				if (!entries.some(entry => entry.isIntersecting)) return;
+				watch.disconnect();
+				rise();
+			},
+			{ threshold: 0.35 }
+		);
+		watch.observe(ctaBottles);
+	}
 });

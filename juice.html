@@ -68,7 +68,23 @@
     <main id="main">
         <div data-juice-page>
             <section class="pdp-hero pdp-hero--loading">
-                <div class="container"><p class="pdp-loading">Loading&hellip;</p></div>
+                <div class="juice-loader" role="status">
+                    <svg class="juice-loader__bottle" viewBox="0 0 60 122" aria-hidden="true">
+                        <defs>
+                            <clipPath id="juice-loader-clip"><path d="M22 16h16v8q0 4 6 10t6 14v62q0 8-8 8H18q-8 0-8-8V48q0-8 6-14t6-10z"/></clipPath>
+                        </defs>
+                        <g clip-path="url(#juice-loader-clip)">
+                            <rect class="juice-loader__glass" width="60" height="122"/>
+                            <g class="juice-loader__fill">
+                                <path class="juice-loader__wave" d="M0 0q7.5-4 15 0t15 0 15 0 15 0 15 0 15 0 15 0 15 0V130H0z"/>
+                            </g>
+                            <rect class="juice-loader__label" x="10" y="56" width="40" height="38"/>
+                            <circle class="juice-loader__ring" cx="30" cy="72" r="9"/>
+                        </g>
+                        <rect class="juice-loader__cap" x="20" y="3" width="20" height="12" rx="2.5"/>
+                    </svg>
+                    <p class="juice-loader__text">Pressing your juice&hellip;</p>
+                </div>
             </section>
         </div>
     </main>
