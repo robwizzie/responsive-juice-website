@@ -64,6 +64,8 @@ body { position: relative; font-family: Archivo; background: var(--bg); color: v
 @keyframes rise { 0% { transform: translate(-50%, 110%) rotate(var(--r)); } 22%, 80% { transform: translate(-50%, 0) rotate(var(--r)); } 100% { transform: translate(-50%, 115%) rotate(var(--r)); } }
 @keyframes burst { 0%, 8% { transform: translateX(-50%) scale(0); opacity: 0; } 30%, 80% { transform: translateX(-50%) scale(1); opacity: .9; } 100% { transform: translateX(-50%) scale(.2); opacity: 0; } }
 .glow { position: absolute; left: 50%; border-radius: 50%; background: radial-gradient(closest-side, var(--c), transparent); filter: blur(30px); animation: burst ${SECONDS}s cubic-bezier(.2,.9,.2,1) infinite both; z-index: 0; }
+.band { position: absolute; left: 0; right: 0; bottom: 0; height: 92px; background: var(--band-bg); color: var(--band-fg); display: flex; align-items: center; justify-content: space-between; padding: 0 64px; font-size: 28px; font-weight: 700; z-index: 4; }
+.band b { font-family: Display; font-weight: 900; font-size: 26px; letter-spacing: 1px; text-transform: uppercase; color: var(--band-accent, inherit); }
 @keyframes spin { to { transform: rotate(40deg); } }
 @keyframes bob { to { transform: translateY(-12px); } }
 @keyframes line { 0%, 4% { transform: translateY(110%); } 22%, 80% { transform: translateY(0); } 94%, 100% { transform: translateY(-110%); } }
@@ -103,8 +105,7 @@ body { --bg: #0b0b0a; --fg: #fdf6ea; --lime: #c4dd3b; }
 .title .line:nth-child(2) { color: var(--lime); }
 .note { color: rgba(253, 246, 234, .72); font-size: 28px; }
 .stage { bottom: 92px; height: 538px; }
-.band { position: absolute; left: 0; right: 0; bottom: 0; height: 92px; background: var(--lime); color: #161513; display: flex; align-items: center; justify-content: space-between; padding: 0 64px; font-size: 28px; font-weight: 700; z-index: 4; }
-.band b { font-family: Display; font-weight: 900; font-size: 26px; letter-spacing: 1px; text-transform: uppercase; }
+.band { --band-bg: var(--lime); --band-fg: #161513; }
 </style>
 <div class="copy">
 	<div class="mark"></div>
@@ -114,20 +115,27 @@ body { --bg: #0b0b0a; --fg: #fdf6ea; --lime: #c4dd3b; }
 <div class="band"><b>Cold-pressed in Philly</b><span>siponpressed.com</span></div>`;
 }
 
+// A dark band along the bottom, like the lineup card's lime one, so the link bar contrasts with the juice
 function juicePage(juice) {
 	const color = /^#[0-9a-f]{6}$/i.test(juice.color || '') ? juice.color : '#c4dd3b';
 	const words = juice.name.split(/\s+/);
 	const status = juiceStatus(juice);
-	const badge = { 'sold-out': 'Sold out', 'coming-soon': 'Coming soon' }[status] || 'siponpressed.com';
+	const badge = { 'sold-out': 'Sold out', 'coming-soon': 'Coming soon' }[status] || 'Cold-pressed in Philly';
 	const word = words[words.length - 1].toUpperCase();
-	return `<style>${base} body { --bg: ${color}; --fg: ${onColor(color)}; }</style>
+	return `<style>${base}
+body { --bg: ${color}; --fg: ${onColor(color)}; }
+.copy { top: 52px; bottom: 136px; justify-content: flex-start; gap: 64px; }
+.stage { bottom: 92px; height: 538px; }
+.word { bottom: 40px; }
+.band { --band-bg: #0b0b0a; --band-fg: #fdf6ea; --band-accent: ${color}; }
+</style>
 <div class="word">${esc(`${word} ${word} ${word}`)}</div>
 <div class="copy">
 	<div class="mark"></div>
 	<div><p class="kicker">COLD-PRESSED${juice.sizeOz ? ` · ${juice.sizeOz} OZ` : ''}</p>${lines(words, fit(words, 530, 118))}${juice.tagline ? `<p class="note">${esc(juice.tagline)}</p>` : ''}</div>
-	<div class="pill">${esc(badge)}</div>
 </div>
-<div class="stage">${bottles([juice], 560)}</div>`;
+<div class="stage">${bottles([juice], 500)}</div>
+<div class="band"><b>${esc(badge)}</b><span>siponpressed.com</span></div>`;
 }
 
 async function record(browser, html, out) {
