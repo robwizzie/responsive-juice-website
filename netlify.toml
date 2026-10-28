@@ -2,8 +2,17 @@
   publish = "."
   functions = "netlify/functions"
 
-# Redirect rules are in _redirects file for cleaner syntax 
-# Images and video rarely change; let browsers reuse them for a week.
+[build.environment]
+  NODE_VERSION = "22"
+
+[functions]
+  node_bundler = "esbuild"
+  # The menu defaults are shared with the browser; make sure they're bundled
+  included_files = ["assets/js/shared/**"]
+
+# Redirect rules are in the _redirects file.
+
+# Images rarely change; let browsers reuse them for a week.
 # (JS/CSS keep Netlify's default revalidation since their filenames aren't versioned.)
 [[headers]]
   for = "/assets/img/*"
@@ -11,6 +20,13 @@
     Cache-Control = "public, max-age=604800"
 
 [[headers]]
-  for = "/assets/videos/*"
+  for = "/admin*"
   [headers.values]
-    Cache-Control = "public, max-age=604800"
+    X-Robots-Tag = "noindex"
+    X-Frame-Options = "DENY"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"

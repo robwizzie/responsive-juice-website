@@ -1,235 +1,90 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <!--=============== FAVICON ===============-->
-    <link rel="shortcut icon" href="/assets/img/favicon.png" type="image/x-icon">
-
-    <!--=============== REMIXICONS ===============-->
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
-
-    <!--=============== LOADER ===============-->
-    <script>
-        const loaderCss = '<style>html.page-loading body>*:not(#page-loader){visibility:hidden;opacity:0}#page-loader{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#ffffff;z-index:10000}#page-loader .spinner{width:48px;height:48px;border:5px solid #f3f3f3;border-top:5px solid #ff9700;border-radius:50%;animation:pl-spin 1s linear infinite}@keyframes pl-spin{to{transform:rotate(360deg)}}</style>';
-        document.write(loaderCss + '<div id="page-loader"><div class="spinner"></div></div>');
-        document.documentElement.classList.add('page-loading');
-    </script>
-
-    <!--=============== CSS ===============-->
-    <link rel="preload" href="/assets/css/styles.css" as="style" onload="this.rel='stylesheet'">
-    <noscript>
-        <link rel="stylesheet" href="/assets/css/styles.css">
-    </noscript>
-
-    <!-- Preconnects for Google Fonts -->
+    <title>About Hunter | SiponPressed</title>
+    <meta name="description" content="SiponPressed is a one-person cold-pressed juice company. Meet Hunter, the guy pressing every bottle in Philadelphia.">
+    <link rel="canonical" href="https://siponpressed.com/about">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="About Hunter | SiponPressed">
+    <meta property="og:description" content="SiponPressed is a one-person cold-pressed juice company. Meet Hunter, the guy pressing every bottle in Philadelphia.">
+    <meta property="og:site_name" content="SiponPressed">
+    <meta property="og:image" content="https://siponpressed.com/assets/img/brand/og-image.jpg">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="theme-color" content="#111312">
+    <link rel="icon" href="/assets/img/brand/favicon-32.png" sizes="32x32" type="image/png">
+    <link rel="icon" href="/assets/img/favicon.png" sizes="192x192" type="image/png">
+    <link rel="apple-touch-icon" href="/assets/img/brand/apple-touch-icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;0,900;1,400&family=Lemon&display=swap">
-
-    <!--=============== JS ===============-->
-    <script type="module" src="assets/js/main.js"></script>
-
-    <title>About Us - Pressed By J & H</title>
-
-    <!--=============== SEO META TAGS ===============-->
-    <meta name="description"
-        content="Learn about Pressed By J & H - your trusted source for premium cold-pressed juices. Discover our story, mission, and commitment to delivering fresh, organic, nutrient-rich beverages made with real fruits and vegetables.">
-    <meta name="keywords"
-        content="about us, cold-pressed juice company, organic juice, fresh juice, healthy beverages, juice company story, premium juice, nutrient-rich drinks">
-
-    <!-- Open Graph meta tags -->
-    <meta property="og:title" content="About Us - Pressed By J & H">
-    <meta property="og:description"
-        content="Learn about Pressed By J & H - your trusted source for premium cold-pressed juices. Discover our story, mission, and commitment to delivering fresh, organic, nutrient-rich beverages.">
-    <meta property="og:image" content="https://siponpressed.com/assets/img/og-images/juice-og-image.jpg">
-    <meta property="og:url" content="https://siponpressed.com/about">
-    <meta property="og:type" content="website">
-    <meta property="og:site_name" content="Pressed By J & H">
-
-    <!-- Twitter Card meta tags -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="About Us - Pressed By J & H">
-    <meta name="twitter:description"
-        content="Learn about Pressed By J & H - your trusted source for premium cold-pressed juices. Discover our story, mission, and commitment to delivering fresh, organic, nutrient-rich beverages.">
-    <meta name="twitter:image" content="https://siponpressed.com/assets/img/og-images/juice-og-image.jpg">
-
-    <!-- Additional SEO meta tags -->
-    <meta name="robots" content="index, follow">
-    <meta name="author" content="Pressed By J & H">
-    <link rel="canonical" href="https://siponpressed.com/about">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap">
+    <link rel="stylesheet" href="/assets/css/styles.css">
+    <script type="module" src="/assets/js/pages/about.js"></script>
 </head>
+<body class="page-about">
+    <main id="main">
+        <section class="about-hero">
+            <div class="about-hero__bg" aria-hidden="true"></div>
+            <div class="container about-hero__inner">
+                <p class="eyebrow eyebrow--lime">About SiponPressed</p>
+                <h1 class="page-hero__title">Hey, I'm Hunter. <em>I make the juice.</em></h1>
+                <p class="page-hero__lede">SiponPressed is just me: one guy, a cold press and a fridge full of fruit. Every bottle you get was pressed and labeled by my hands.</p>
+            </div>
+        </section>
 
-<body>
-    <main class="main">
-        <div class="background-shapes">
-            <div class="home__shape-small"></div>
-            <div class="home__shape-big"></div>
-            <div class="home__shape-bg"></div>
-        </div>
-
-        <!-- Story Section -->
-        <section class="about-section">
-            <div class="container">
-                <div class="about-header">
-                    <h1 class="home__title">
-                        Meet <span style="color: #ff9700;"><img src="/assets/img/branding/logo.webp"
-                                alt="Pressed By J & H" style="width: 120px; padding: 10px 0px;"></span>
-                    </h1>
-                    <p class="home__description">
-                        A passion for health, turned into something special
-                    </p>
+        <section class="section">
+            <div class="container story story--about">
+                <div class="story__copy" data-reveal>
+                    <p class="eyebrow">The story</p>
+                    <h2 class="section-title">Real juice, <em>no shortcuts.</em></h2>
+                    <p>I started pressing juice because I wanted something I'd actually drink every day: bright, filling and made from whole ingredients, not concentrate and sugar. Friends kept asking for bottles, then their friends did, and SiponPressed was born.</p>
+                    <p>Now I'm based in Philadelphia, bringing fresh bottles to yoga studios, small cafes and anyone who wants to feel a little better. I still do a Monday delivery run to South Jersey.</p>
+                    <p>The menu is simple on purpose. Three flavors, each built around a handful of ingredients that taste good together and do something good for you.</p>
+                    <p class="signature">Embrace the sip.<span>&mdash; Hunter</span></p>
                 </div>
+                <div class="about-bottles" data-reveal data-about-bottles></div>
+            </div>
+        </section>
 
-                <div class="story-grid">
-                    <div class="story-image">
-                        <video class="story-video" id="story-video" src="/assets/videos/siponpressed-video.mp4" poster="/assets/videos/siponpressed-poster.webp" preload="none" controls
-                            loop playsinline></video>
-                    </div>
-                    <div class="story-content" style="color: white;">
-                        <h2 style="font-family: var(--second-font);">Our Beginning</h2>
-                        <p style="color: white;">What started as a simple morning routine between friends has grown into
-                            something we're truly proud of. We began pressing juices in our kitchen, experimenting with
-                            different combinations and sharing them with friends and family.</p>
-                        <p style="color: white;">The response was overwhelming, and here we are today, sharing our
-                            passion for healthy, delicious juices with you.</p>
-                    </div>
+        <section class="section section--tint">
+            <div class="container">
+                <div class="section-head" data-reveal>
+                    <p class="eyebrow">What every bottle stands for</p>
+                    <h2 class="section-title">Real juice. Real health. <em>Real you.</em></h2>
+                </div>
+                <div class="values">
+                    <article class="value" data-reveal>
+                        <span class="value__icon" data-icon="snow"></span>
+                        <h3>Cold pressed</h3>
+                        <p>Pressed slowly and never heated, so the flavor and nutrients stay in the bottle.</p>
+                    </article>
+                    <article class="value" data-reveal>
+                        <span class="value__icon" data-icon="drop"></span>
+                        <h3>No added sugar</h3>
+                        <p>All the sweetness comes from the fruit. Nothing from a bag, nothing from a lab.</p>
+                    </article>
+                    <article class="value" data-reveal>
+                        <span class="value__icon" data-icon="leaf"></span>
+                        <h3>100% plant based</h3>
+                        <p>Whole fruit, greens and roots. That is the whole ingredient list.</p>
+                    </article>
                 </div>
             </div>
         </section>
 
-        <!-- Team Section -->
-        <section class="team-section">
+        <section class="section section--flush">
             <div class="container">
-                <h2 class="section-title" style="position: relative; color: white; font-family: var(--second-font);">The
-                    Faces Behind Your Juice</h2>
-                <div class="team-grid">
-                    <!-- J -->
-                    <div class="team-member">
-                        <div class="member-photo">
-                            <div class="image-placeholder">
-                                <span>J</span>
-                            </div>
-                        </div>
-                        <div class="member-info">
-                            <h3 style="color: black; font-weight: bold; font-family: var(--second-font);">J</h3>
-                            <p class="member-title">The Juice Master</p>
-                            <p class="member-bio">With a background in nutrition and a love for experimenting with
-                                flavors, J brings the perfect balance of health and taste to every recipe.</p>
-                            <a href="/juices/sweet-green">
-                                <div class="athlete-favorite-juice" style="bottom: initial; top: 1rem;">
-                                    <img src="/assets/img/juices/sweet-green.webp" alt="Favorite Juice"
-                                        class="juice-photo">
-                                    <span style="color: #969c05; font-family: var(--second-font);">Sweet Green</span>
-                                </div>
-                            </a>
-                        </div>
+                <div class="cta-band" data-reveal>
+                    <div>
+                        <p class="eyebrow eyebrow--lime">Studios, gyms &amp; cafes</p>
+                        <h2 class="cta-band__title">Want SiponPressed <em>in your space?</em></h2>
+                        <p class="cta-band__text">I'm working with yoga studios and small cafes around Philly. Reach out and I'll bring samples.</p>
                     </div>
-
-                    <!-- Hunter -->
-                    <div class="team-member">
-                        <div class="member-photo">
-                            <div class="image-placeholder">
-                                <span>H</span>
-                            </div>
-                        </div>
-                        <div class="member-info">
-                            <h3 style="color: black; font-weight: bold; font-family: var(--second-font);">Hunter</h3>
-                            <p class="member-title" style="color: #ff9700;">The Creative Force</p>
-                            <p class="member-bio">Hunter's creative approach to juice combinations and dedication to
-                                quality control ensures that every bottle meets our high standards.</p>
-                            <a href="/juices/tropical-storm">
-                                <div class="athlete-favorite-juice" style="bottom: initial; top: 1rem;">
-                                    <img src="/assets/img/juices/tropical-storm.webp" alt="Favorite Juice"
-                                        class="juice-photo">
-                                    <span style="color: #ff9700; font-family: var(--second-font);">Tropical Storm</span>
-                                </div>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Values Section -->
-        <section class="values-section">
-            <div class="container">
-                <h2 class="section-title" style="position: relative; color: white; font-family: var(--second-font);">
-                    What We Value</h2>
-                <div class="values-grid">
-                    <div class="value-card">
-                        <i class="ri-heart-line"></i>
-                        <h3 style="color: #8b000d;">Fresh & Natural</h3>
-                        <p>Every ingredient is carefully selected and pressed fresh daily</p>
-                    </div>
-                    <div class="value-card">
-                        <i class="ri-team-line"></i>
-                        <h3 style="color: #8b000d;">Community First</h3>
-                        <p>Supporting local farmers and building healthy communities</p>
-                    </div>
-                    <div class="value-card">
-                        <i class="ri-leaf-line"></i>
-                        <h3 style="color: #8b000d;">Sustainability</h3>
-                        <p>Eco-conscious practices in every step of our process</p>
-                    </div>
+                    <a href="/contact?topic=wholesale" class="btn btn--lime btn--lg">Get in touch</a>
                 </div>
             </div>
         </section>
     </main>
-
-    <!--=============== GSAP ===============-->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.10.4/gsap.min.js"></script>
-
-    <!--=============== MAIN JS ===============-->
-    <script src="/assets/js/juices-database.js"></script>
-    <script src="/assets/js/components/footer.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // Stagger animations
-            TweenMax.from('.about-header', 1, {
-                delay: .2,
-                opacity: 0,
-                y: 20,
-                ease: Expo.easeInOut
-            });
-            TweenMax.from('.story-image', 1, {
-                delay: .3,
-                opacity: 0,
-                x: -30,
-                ease: Expo.easeInOut
-            });
-            TweenMax.from('.story-content', 1, {
-                delay: .4,
-                opacity: 0,
-                x: 30,
-                ease: Expo.easeInOut
-            });
-
-            // Team members fade in
-            const teamMembers = document.querySelectorAll('.team-member');
-            teamMembers.forEach((member, index) => {
-                TweenMax.from(member, 1, {
-                    delay: .5 + (index * 0.2),
-                    opacity: 0,
-                    y: 30,
-                    ease: Expo.easeInOut
-                });
-            });
-
-            // Values cards stagger
-            const valueCards = document.querySelectorAll('.value-card');
-            valueCards.forEach((card, index) => {
-                TweenMax.from(card, 1, {
-                    delay: .7 + (index * 0.2),
-                    opacity: 0,
-                    y: 30,
-                    ease: Expo.easeInOut
-                });
-            });
-        });
-    </script>
 </body>
-
 </html>

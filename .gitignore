@@ -1,5 +1,6 @@
 .env
 node_modules
 
-# Local Netlify folder
+# Local Netlify folder (also holds local dev data)
 .netlify
+.DS_Store

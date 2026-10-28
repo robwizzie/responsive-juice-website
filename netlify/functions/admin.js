@@ -1,0 +1,72 @@
+import { randomUUID } from 'node:crypto';
+import { adminConfigured, isSignedIn, signIn, signOutCookie } from './lib/auth.js';
+import { getJuices, getSettings, imageStore, listOrders, saveJuices, saveSettings } from './lib/store.js';
+import { cleanJuices, cleanSettings } from './lib/validate.js';
+import { clientIp, error, json, readJSON } from './lib/http.js';
+import { mailConfigured } from './lib/mail.js';
+import { stripeConfigured } from './lib/stripe.js';
+
+const IMAGE_TYPES = { 'image/webp': 'webp', 'image/png': 'png', 'image/jpeg': 'jpg' };
+const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
+
+// Everything behind /admin. Requests that change data must carry the X-Admin-Request
+// header, which other websites can't add, on top of the SameSite session cookie.
+export default async (req, context) => {
+	const action = new URL(req.url).pathname.replace(/^\/api\/admin\/?/, '');
+	const mutating = req.method !== 'GET';
+	if (mutating && req.headers.get('x-admin-request') !== '1') return error('Bad request', 400);
+
+	if (action === 'session' && req.method === 'GET') {
+		return json({ configured: adminConfigured(), signedIn: isSignedIn(req) });
+	}
+
+	if (action === 'login' && req.method === 'POST') {
+		const body = await readJSON(req);
+		const result = await signIn(req, body?.password, clientIp(req, context));
+		return result.ok ? json({ ok: true }, 200, { 'Set-Cookie': result.cookie }) : error(result.error, 401);
+	}
+
+	if (action === 'logout' && req.method === 'POST') {
+		return json({ ok: true }, 200, { 'Set-Cookie': signOutCookie(req) });
+	}
+
+	if (!isSignedIn(req)) return error('Please sign in again.', 401);
+
+	if (action === 'data' && req.method === 'GET') {
+		const [juices, settings] = await Promise.all([getJuices(), getSettings()]);
+		return json({ juices, settings, status: { stripe: stripeConfigured(), email: mailConfigured(), webhook: Boolean(process.env.STRIPE_WEBHOOK_SECRET) } });
+	}
+
+	if (action === 'juices' && req.method === 'PUT') {
+		const { value, error: problem } = cleanJuices(await readJSON(req));
+		if (problem) return error(problem);
+		await saveJuices(value);
+		return json({ juices: value });
+	}
+
+	if (action === 'settings' && req.method === 'PUT') {
+		const { value, error: problem } = cleanSettings((await readJSON(req)) || {}, await getSettings());
+		if (problem) return error(problem);
+		await saveSettings(value);
+		return json({ settings: value });
+	}
+
+	if (action === 'images' && req.method === 'POST') {
+		const type = (req.headers.get('content-type') || '').split(';')[0];
+		const extension = IMAGE_TYPES[type];
+		if (!extension) return error('Upload a PNG, JPEG or WebP image.');
+		const data = await req.arrayBuffer();
+		if (data.byteLength === 0 || data.byteLength > MAX_IMAGE_BYTES) return error('That image is too large (4 MB max).');
+		const key = `${randomUUID()}.${extension}`;
+		await imageStore().set(key, data, { metadata: { contentType: type } });
+		return json({ url: `/api/images/${key}` });
+	}
+
+	if (action === 'orders' && req.method === 'GET') {
+		return json({ orders: await listOrders() });
+	}
+
+	return error('Not found', 404);
+};
+
+export const config = { path: '/api/admin/*' };

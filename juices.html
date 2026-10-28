@@ -1,117 +1,59 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <!--=============== FAVICON ===============-->
-    <link rel="shortcut icon" href="/assets/img/favicon.png" type="image/x-icon">
-
-    <!--=============== REMIXICONS ===============-->
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
-
-    <!--=============== CSS ===============-->
-    <link rel="stylesheet" href="/assets/css/styles.css">
-
-    <!-- Preconnects for performance -->
+    <title>The Menu | SiponPressed</title>
+    <meta name="description" content="Simply Orange, Simply Green and Simply Red: cold-pressed juice made from whole fruit and greens in Philadelphia. See ingredients, calories and nutrition.">
+    <link rel="canonical" href="https://siponpressed.com/juices">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="The Menu | SiponPressed">
+    <meta property="og:description" content="Simply Orange, Simply Green and Simply Red: cold-pressed juice made from whole fruit and greens in Philadelphia. See ingredients, calories and nutrition.">
+    <meta property="og:site_name" content="SiponPressed">
+    <meta property="og:image" content="https://siponpressed.com/assets/img/brand/og-image.jpg">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="theme-color" content="#111312">
+    <link rel="icon" href="/assets/img/brand/favicon-32.png" sizes="32x32" type="image/png">
+    <link rel="icon" href="/assets/img/favicon.png" sizes="192x192" type="image/png">
+    <link rel="apple-touch-icon" href="/assets/img/brand/apple-touch-icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;0,900;1,400&family=Lemon&display=swap">
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
-    <link rel="dns-prefetch" href="//cdn.jsdelivr.net">
-
-
-    <!--=============== JS ===============-->
-    <script>
-        const loaderCss = '<style>html.page-loading body>*:not(#page-loader){visibility:hidden;opacity:0}#page-loader{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#ffffff;z-index:10000}#page-loader .spinner{width:48px;height:48px;border:5px solid #f3f3f3;border-top:5px solid #ff9700;border-radius:50%;animation:pl-spin 1s linear infinite}@keyframes pl-spin{to{transform:rotate(360deg)}}</style>';
-        document.write(loaderCss + '<div id="page-loader"><div class="spinner"></div></div>');
-        document.documentElement.classList.add('page-loading');
-    </script>
-    <script type="module" src="/assets/js/main.js"></script>
-
-    <title>Our Juices - Pressed By J & H</title>
-
-    <!--=============== SEO META TAGS ===============-->
-    <meta name="description"
-        content="Explore our complete collection of premium cold-pressed juices at Pressed By J & H. From tropical flavors to green superfoods, discover fresh, organic, nutrient-rich beverages made with real fruits and vegetables.">
-    <meta name="keywords"
-        content="cold-pressed juices, juice collection, organic juice, fresh juice, tropical juice, green juice, healthy beverages, premium juice, nutrient-rich drinks, juice menu">
-
-    <!-- Open Graph meta tags -->
-    <meta property="og:title" content="Our Juices - Pressed By J & H">
-    <meta property="og:description"
-        content="Explore our complete collection of premium cold-pressed juices. From tropical flavors to green superfoods, discover fresh, organic, nutrient-rich beverages made with real fruits and vegetables.">
-    <meta property="og:image" content="https://siponpressed.com/assets/img/og-images/juice-og-image.jpg">
-    <meta property="og:url" content="https://siponpressed.com/juices">
-    <meta property="og:type" content="website">
-    <meta property="og:site_name" content="Pressed By J & H">
-
-    <!-- Twitter Card meta tags -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Our Juices - Pressed By J & H">
-    <meta name="twitter:description"
-        content="Explore our complete collection of premium cold-pressed juices. From tropical flavors to green superfoods, discover fresh, organic, nutrient-rich beverages.">
-    <meta name="twitter:image" content="https://siponpressed.com/assets/img/og-images/juice-og-image.jpg">
-
-    <!-- Additional SEO meta tags -->
-    <meta name="robots" content="index, follow">
-    <meta name="author" content="Pressed By J & H">
-    <link rel="canonical" href="https://siponpressed.com/juices">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap">
+    <link rel="stylesheet" href="/assets/css/styles.css">
+    <script type="module" src="/assets/js/pages/menu.js"></script>
 </head>
-
-<body>
-    <main class="main">
-        <div class="background-shapes">
-            <div class="home__shape-small"></div>
-            <div class="home__shape-big"></div>
-            <div class="home__shape-bg"></div>
-        </div>
-
-        <!--==================== CATALOG HERO ====================-->
-        <section class="catalog-hero container">
-            <p class="hero__eyebrow">The lineup &bull; <span data-juice-count>8</span> flavors</p>
-            <h1 class="home__title catalog-hero__title">
-                Our <span class="text-gradient text-gradient--citrus">Juices</span>
-            </h1>
-            <p class="catalog-hero__lede">
-                Cold-pressed in small batches from real fruit and greens. Pick a bottle to see what's inside.
-            </p>
-            <p class="ordering-closed"><i class="ri-store-2-line"></i> Online ordering is closed &mdash; thanks for sipping with us!</p>
+<body class="page-menu">
+    <main id="main">
+        <section class="page-hero page-hero--dark">
+            <div class="container">
+                <p class="eyebrow eyebrow--lime">The SiponPressed menu</p>
+                <h1 class="page-hero__title"><span data-flavor-count>3</span> flavors. <em>1 choice.</em></h1>
+                <p class="page-hero__lede">Cold-pressed in small batches from whole fruit and greens. Every bottle is 16 fl oz, with no added sugar and nothing artificial.</p>
+            </div>
         </section>
 
-        <!--==================== CATALOG ====================-->
-        <section class="catalog container" aria-label="All juices">
-            <ul class="catalog__grid" data-catalog></ul>
+        <section class="section section--overlap">
+            <div class="container">
+                <div class="juice-grid" data-menu></div>
+            </div>
         </section>
 
-        <!--==================== WHY ====================-->
-        <section class="perks container">
-            <h2 class="home__title section-title">Why It Hits <span class="text-gradient text-gradient--green">Different</span></h2>
-            <ul class="perks__grid">
-                <li class="perk" data-reveal>
-                    <i class="ri-drop-line"></i>
-                    <h3>Cold-pressed</h3>
-                    <p>Pressed slowly, never heated, so the flavor and nutrients stay put.</p>
-                </li>
-                <li class="perk" data-reveal>
-                    <i class="ri-plant-line"></i>
-                    <h3>Real ingredients</h3>
-                    <p>Whole fruit, greens and roots. No concentrates, no preservatives, no shortcuts.</p>
-                </li>
-                <li class="perk" data-reveal>
-                    <i class="ri-sun-line"></i>
-                    <h3>Small batches</h3>
-                    <p>Made fresh in South Jersey, a few bottles at a time.</p>
-                </li>
-            </ul>
+        <section class="section section--tint">
+            <div class="container">
+                <div class="section-head" data-reveal>
+                    <p class="eyebrow">Side by side</p>
+                    <h2 class="section-title">What's in <em>each bottle.</em></h2>
+                    <p class="section-lede">Per 16 fl oz bottle. Tap a juice for the full nutrition panel.</p>
+                </div>
+                <div class="compare" data-compare data-reveal></div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container">
+                <div class="ways" data-ways></div>
+            </div>
         </section>
     </main>
-
-    <!--=============== MAIN JS ===============-->
-    <script src="/assets/js/juices-database.js" defer></script>
-    <script src="/assets/js/components/footer.js" defer></script>
-    <script type="module" src="/assets/js/all-juices.js"></script>
 </body>
-
 </html>
