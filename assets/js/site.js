@@ -54,11 +54,11 @@ function renderFooter(settings) {
 	const year = new Date().getFullYear();
 	(main || document.body).insertAdjacentHTML(
 		main ? 'afterend' : 'beforeend',
-		`<footer class="site-footer">
+		`<footer class="site-footer" data-reveal>
 			<div class="site-footer__hero">
 				<img src="/assets/img/brand/footer-scene.webp" srcset="/assets/img/brand/footer-scene-sm.webp 960w, /assets/img/brand/footer-scene.webp 1916w" sizes="100vw" alt="" class="site-footer__scene" loading="lazy" decoding="async">
 				<div class="container site-footer__intro">
-					<p class="site-footer__tag">Embrace the sip</p>
+					<p class="site-footer__tag"><span>Embrace</span> <span>the sip</span></p>
 					<p class="site-footer__note">Cold-pressed in small batches by Hunter in Philadelphia. Real juice, nothing else in the bottle.</p>
 					<div class="site-footer__chips">
 						<a href="mailto:${e(settings.contactEmail)}" class="footer-chip">${icon('mail')}<span>${e(settings.contactEmail)}</span></a>

@@ -1137,9 +1137,12 @@ p {
 	position: relative;
 	display: flex;
 	flex-direction: column;
+	padding: 0.6rem;
 	border-radius: var(--radius-lg);
-	background: var(--card);
-	box-shadow: var(--shadow-sm);
+	background: color-mix(in srgb, var(--c) 7%, var(--card));
+	box-shadow:
+		inset 0 0 0 1px color-mix(in srgb, var(--c) 20%, transparent),
+		var(--shadow-sm);
 	transition:
 		transform 0.6s var(--spring),
 		box-shadow 0.4s var(--ease);
@@ -1147,17 +1150,31 @@ p {
 
 .juice-card:hover {
 	transform: translateY(-6px);
-	box-shadow: var(--shadow);
+	box-shadow:
+		inset 0 0 0 1px color-mix(in srgb, var(--c) 40%, transparent),
+		var(--shadow);
 }
 
+/* The photo sits in its own rounded tile inside the card, washed in the juice's color */
 .juice-card__art {
 	position: relative;
 	display: block;
 	overflow: hidden;
-	border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+	border-radius: calc(var(--radius-lg) - 0.6rem);
 	background:
-		radial-gradient(120% 90% at 50% 100%, color-mix(in srgb, var(--c) 34%, white) 0%, transparent 70%),
-		color-mix(in srgb, var(--c) 14%, var(--paper));
+		radial-gradient(75% 65% at 50% 55%, color-mix(in srgb, var(--c) 50%, var(--paper)) 0%, transparent 100%),
+		color-mix(in srgb, var(--c) 22%, var(--paper));
+}
+
+/* Just the bottle, its splash and one ingredient: calmer than the full scene */
+.juice-card .bottle-art__leaf,
+.juice-card .bottle-art__fruit--b {
+	display: none;
+}
+
+.juice-card .bottle-art__fruit--a {
+	width: 22%;
+	margin: 0 0 7% 7%;
 }
 
 .juice-card__art .bottle-art {
@@ -1180,13 +1197,26 @@ p {
 	flex: 1;
 	flex-direction: column;
 	gap: 0.35rem;
-	padding: 1.25rem 1.4rem 1.4rem;
+	padding: 1.15rem 0.85rem 0.6rem;
 }
 
 .juice-card__meta {
-	font-size: 0.875rem;
-	font-weight: 600;
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	font-size: 0.8rem;
+	font-weight: 700;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
 	color: var(--muted);
+}
+
+.juice-card__meta::before {
+	content: '';
+	width: 0.6rem;
+	height: 0.6rem;
+	border-radius: 50%;
+	background: var(--c);
 }
 
 .juice-card__name {
@@ -1211,8 +1241,21 @@ p {
 }
 
 .juice-card__ingredients {
-	font-size: 0.925rem;
-	color: var(--muted);
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.35rem;
+	margin: 0.6rem 0 1.1rem;
+	padding: 0;
+	list-style: none;
+}
+
+.juice-card__ingredients li {
+	padding: 0.22rem 0.6rem;
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--c) 14%, transparent);
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--ink-2);
 }
 
 .juice-card__foot {
@@ -1224,6 +1267,7 @@ p {
 	gap: 1rem;
 	margin-top: auto;
 	padding-top: 1rem;
+	border-top: 1px solid color-mix(in srgb, var(--c) 22%, var(--line));
 }
 
 .price {
@@ -2375,14 +2419,18 @@ p {
 }
 
 /* Wholesale band */
+/* Copy and button on the left; the bottles get the whole right half and rise out of the bottom edge */
 .cta-band {
 	position: relative;
 	display: grid;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+	grid-template-rows: 1fr auto 1fr;
 	justify-items: start;
-	gap: 2rem;
+	column-gap: 2rem;
+	min-height: clamp(380px, 36vw, 500px);
 	padding: clamp(2.25rem, 5vw, 4rem);
-	padding-right: clamp(2.25rem, 38vw, 34rem);
 	border-radius: var(--radius-xl);
+	container-type: inline-size;
 	background: var(--lime);
 	color: var(--ink);
 	overflow: hidden;
@@ -2400,11 +2448,23 @@ p {
 	color: var(--lime-ink);
 }
 
+.cta-band > div:not(.cta-band__bottles) {
+	grid-row: 2;
+}
+
+.cta-band > .btn {
+	grid-row: 3;
+	align-self: start;
+	margin-top: 2rem;
+}
+
 .cta-band__bottles {
-	position: absolute;
-	right: clamp(1.5rem, 5vw, 5rem);
-	bottom: -80px;
+	grid-column: 2;
+	grid-row: 1 / -1;
+	align-self: end;
+	justify-self: center;
 	display: grid;
+	margin-bottom: calc(clamp(2.25rem, 5vw, 4rem) * -1 - 50px);
 	pointer-events: none;
 }
 
@@ -2422,7 +2482,7 @@ p {
 .cta-band__bottle {
 	position: relative;
 	display: flex;
-	margin-left: -18px;
+	margin-inline: clamp(-1.5rem, -1vw, -0.5rem);
 	transform-origin: 50% 100%;
 	transform: translateY(105%) rotate(calc(var(--r, 0deg) * 3));
 	transition: transform 1.2s var(--spring);
@@ -2432,13 +2492,13 @@ p {
 .cta-band__img {
 	position: relative;
 	z-index: 1;
-	height: clamp(300px, 30vw, 430px);
+	height: clamp(300px, 34cqi, 420px);
 	width: auto;
 	filter: drop-shadow(0 18px 18px rgba(30, 40, 5, 0.3));
 }
 
 .cta-band__bottle:nth-child(2) .cta-band__img {
-	height: clamp(340px, 34vw, 490px);
+	height: clamp(340px, 39cqi, 480px);
 }
 
 .cta-band__splash {
@@ -2488,17 +2548,26 @@ html:not(.js) .cta-band__splash {
 
 @media (max-width: 760px) {
 	.cta-band {
-		padding-right: clamp(2.25rem, 5vw, 4rem);
+		grid-template-columns: minmax(0, 1fr);
+		grid-template-rows: none;
+		min-height: 0;
 		padding-bottom: 0;
+	}
+
+	.cta-band > div:not(.cta-band__bottles),
+	.cta-band > .btn {
+		grid-row: auto;
+	}
+
+	.cta-band > .btn {
+		margin-top: 1.5rem;
 	}
 
 	/* On phones the bottles stand in a row under the button, bleeding off the bottom edge */
 	.cta-band__bottles {
-		position: relative;
-		right: auto;
-		bottom: auto;
-		justify-self: center;
-		margin-top: 0.5rem;
+		grid-column: 1;
+		grid-row: auto;
+		margin-top: 2rem;
 		margin-bottom: -60px;
 	}
 
@@ -2511,7 +2580,71 @@ html:not(.js) .cta-band__splash {
 	}
 
 	.cta-band__bottle {
-		margin-left: -12px;
+		margin-inline: -6px;
+	}
+}
+
+/* About page: the same band over a dark product shot, the copy in its empty left side */
+.cta-band--scene {
+	--ink: #fff;
+	--lime-ink: #cfc9bd;
+	--kicker-dot: var(--lime);
+	min-height: clamp(380px, 40vw, 520px);
+	background: #060606;
+	color: #fff;
+	isolation: isolate;
+}
+
+.cta-band--scene .kicker {
+	color: #e9e4da;
+}
+
+.cta-band > .cta-band__scene {
+	position: absolute;
+	inset: 0;
+	z-index: -2;
+	width: 100%;
+	height: 100%;
+	max-width: none;
+	object-fit: cover;
+	object-position: 100% 50%;
+	scale: 1.08;
+	transition: scale 2.4s var(--ease);
+}
+
+.cta-band--scene.is-revealed > .cta-band__scene,
+html:not(.js) .cta-band--scene > .cta-band__scene {
+	scale: 1;
+}
+
+.cta-band--scene::before {
+	content: '';
+	position: absolute;
+	inset: 0;
+	z-index: -1;
+	background: linear-gradient(90deg, #060606 22%, rgba(6, 6, 6, 0.7) 42%, transparent 62%);
+}
+
+@media (max-width: 760px) {
+	.cta-band--scene {
+		padding-bottom: clamp(2.25rem, 5vw, 4rem);
+	}
+
+	/* Phones: the photo becomes a banner across the top */
+	.cta-band > .cta-band__scene {
+		position: relative;
+		z-index: 0;
+		justify-self: stretch;
+		width: calc(100% + 2 * clamp(2.25rem, 5vw, 4rem));
+		height: auto;
+		aspect-ratio: 4 / 3;
+		margin: calc(clamp(2.25rem, 5vw, 4rem) * -1) calc(clamp(2.25rem, 5vw, 4rem) * -1) 0;
+		object-position: 78% 50%;
+		mask-image: linear-gradient(#000 60%, transparent);
+	}
+
+	.cta-band--scene::before {
+		content: none;
 	}
 }
 
@@ -2565,13 +2698,76 @@ html:not(.js) .cta-band__splash {
 	min-height: clamp(400px, 38vw, 540px);
 	padding: clamp(2rem, 5vw, 4rem);
 	border-radius: var(--radius-xl);
+	/* Each bottle throws a glow in its own color (set per juice from menu.js) */
 	background:
-		radial-gradient(40% 70% at 76% 70%, rgba(196, 221, 59, 0.2), transparent 70%),
+		radial-gradient(26% 60% at 62% 78%, color-mix(in srgb, var(--c1, #f59e1b) 80%, transparent), transparent 70%),
+		radial-gradient(28% 66% at 76% 58%, color-mix(in srgb, var(--c2, #8db62f) 80%, transparent), transparent 70%),
+		radial-gradient(26% 60% at 90% 78%, color-mix(in srgb, var(--c3, #e0322f) 80%, transparent), transparent 70%),
+		radial-gradient(60% 90% at 0% 0%, rgba(196, 221, 59, 0.14), transparent 60%),
 		var(--night);
+	box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
 	color: #fff;
 	overflow: hidden;
 	isolation: isolate;
 	container-type: inline-size;
+}
+
+.menu-card__chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	margin-top: 1.6rem;
+}
+
+.menu-chip {
+	position: relative;
+	z-index: 2;
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+	padding: 0.45rem 0.9rem 0.45rem 0.6rem;
+	border-radius: 999px;
+	background: rgba(255, 255, 255, 0.07);
+	box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+	color: #fff;
+	font-size: 0.92rem;
+	font-weight: 600;
+	text-decoration: none;
+	transition:
+		background-color 0.25s,
+		color 0.25s,
+		transform 0.4s var(--spring);
+}
+
+.menu-chip::before {
+	content: '';
+	width: 0.8rem;
+	height: 0.8rem;
+	border-radius: 50%;
+	background: var(--c);
+	box-shadow: 0 0 10px var(--c);
+}
+
+.menu-chip:hover {
+	background: var(--c);
+	color: #161513;
+	transform: translateY(-2px);
+}
+
+.menu-chip:hover::before {
+	background: #161513;
+	box-shadow: none;
+}
+
+.menu-card__actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.75rem;
+	margin-top: 1.75rem;
+}
+
+.menu-card__actions .btn--outline {
+	color: #fff;
 }
 
 .menu-card__kicker {
@@ -2666,6 +2862,8 @@ html:not(.js) .cta-band__splash {
 .js .menu-hero:not(.is-in) .hero__line > span,
 .js .menu-hero:not(.is-in) .menu-card__kicker,
 .js .menu-hero:not(.is-in) .menu-card__lede,
+.js .menu-hero:not(.is-in) .menu-card__chips,
+.js .menu-hero:not(.is-in) .menu-card__actions,
 .js .menu-hero:not(.is-in) .menu-card__bottle {
 	opacity: 0;
 }
@@ -2679,8 +2877,18 @@ html:not(.js) .cta-band__splash {
 }
 
 .menu-hero.is-in .menu-card__kicker,
-.menu-hero.is-in .menu-card__lede {
+.menu-hero.is-in .menu-card__lede,
+.menu-hero.is-in .menu-card__chips,
+.menu-hero.is-in .menu-card__actions {
 	animation: hero-fade 0.8s var(--ease) 0.4s both;
+}
+
+.menu-hero.is-in .menu-card__chips {
+	animation-delay: 0.5s;
+}
+
+.menu-hero.is-in .menu-card__actions {
+	animation-delay: 0.6s;
 }
 
 .menu-hero.is-in .menu-card__kicker {
@@ -2708,6 +2916,19 @@ html:not(.js) .cta-band__splash {
 
 	.menu-card__title {
 		font-size: 12cqi;
+	}
+
+	.menu-card {
+		background:
+			radial-gradient(26% 26% at 24% 90%, color-mix(in srgb, var(--c1, #f59e1b) 55%, transparent), transparent 72%),
+			radial-gradient(30% 30% at 50% 82%, color-mix(in srgb, var(--c2, #8db62f) 55%, transparent), transparent 72%),
+			radial-gradient(26% 26% at 76% 90%, color-mix(in srgb, var(--c3, #e0322f) 55%, transparent), transparent 72%),
+			radial-gradient(80% 50% at 0% 0%, rgba(196, 221, 59, 0.12), transparent 60%),
+			var(--night);
+	}
+
+	.menu-card__actions .btn {
+		flex: 1 1 0;
 	}
 
 	.menu-card__fan {
@@ -4757,6 +4978,7 @@ a.contact-card:hover {
 	align-items: center;
 	min-height: clamp(380px, 40vw, 600px);
 	isolation: isolate;
+	overflow: hidden;
 }
 
 .site-footer__scene {
@@ -4906,6 +5128,118 @@ a.contact-card:hover {
 	color: #8a8478;
 }
 
+/* Motion: the photo drifts slowly, a soft light passes over the bottles now and then,
+   and the copy rises in the first time the footer scrolls into view */
+.js .site-footer[data-reveal] {
+	opacity: 1;
+	transform: none;
+}
+
+.site-footer__scene {
+	animation: footer-drift 28s var(--ease-in-out) infinite alternate;
+}
+
+@keyframes footer-drift {
+	from {
+		scale: 1.02;
+		translate: 0 0;
+	}
+	to {
+		scale: 1.1;
+		translate: -1.5% -1%;
+	}
+}
+
+.site-footer__hero::before {
+	content: '';
+	position: absolute;
+	inset: 0;
+	z-index: -1;
+	background: linear-gradient(105deg, transparent 40%, rgba(255, 250, 230, 0.16) 50%, transparent 60%) no-repeat;
+	background-size: 60% 100%;
+	background-position: -120% 0;
+	mix-blend-mode: soft-light;
+	animation: footer-sheen 9s var(--ease-in-out) 2s infinite;
+	pointer-events: none;
+}
+
+@keyframes footer-sheen {
+	0% {
+		background-position: -120% 0;
+	}
+	45%,
+	100% {
+		background-position: 260% 0;
+	}
+}
+
+/* The tag line gets a slow lime shimmer */
+.site-footer__tag span {
+	display: inline-block;
+	background: linear-gradient(100deg, var(--lime) 40%, #f4ffb0 50%, var(--lime) 60%) 0 0 / 300% 100%;
+	-webkit-background-clip: text;
+	background-clip: text;
+	color: transparent;
+	animation: footer-shine 7s linear infinite;
+}
+
+.site-footer__tag span + span {
+	animation-delay: -0.4s;
+}
+
+@keyframes footer-shine {
+	from {
+		background-position: 100% 0;
+	}
+	to {
+		background-position: -200% 0;
+	}
+}
+
+.js .site-footer:not(.is-revealed) .site-footer__tag span,
+.js .site-footer:not(.is-revealed) .site-footer__note,
+.js .site-footer:not(.is-revealed) .footer-chip {
+	opacity: 0;
+	translate: 0 28px;
+}
+
+.site-footer__tag span,
+.site-footer__note,
+.footer-chip {
+	transition:
+		opacity 0.8s var(--ease),
+		translate 1s var(--spring);
+}
+
+.site-footer__tag span + span {
+	transition-delay: 0.08s;
+}
+
+.site-footer__note {
+	transition-delay: 0.2s;
+}
+
+.footer-chip {
+	transition:
+		opacity 0.8s var(--ease) var(--chip-delay, 0.3s),
+		translate 1s var(--spring) var(--chip-delay, 0.3s),
+		background-color 0.25s,
+		color 0.25s,
+		transform 0.4s var(--spring);
+}
+
+.footer-chip + .footer-chip {
+	--chip-delay: 0.38s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.site-footer__scene,
+	.site-footer__hero::before,
+	.site-footer__tag span {
+		animation: none;
+	}
+}
+
 /* Phones: the product shot becomes a banner on top, the copy below it */
 @media (max-width: 760px) {
 	.site-footer__hero {
@@ -4917,6 +5251,13 @@ a.contact-card:hover {
 	.site-footer__scene {
 		height: 62vw;
 		object-position: 82% 50%;
+		transform-origin: 50% 0;
+		mask-image: linear-gradient(#000 55%, transparent 98%);
+	}
+
+	.site-footer__hero::before {
+		inset: 0 0 auto;
+		height: 62vw;
 	}
 
 	.site-footer__hero::after {

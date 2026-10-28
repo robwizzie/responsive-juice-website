@@ -68,7 +68,7 @@ export function juiceCard(juice, { eager = false } = {}) {
 				<p class="juice-card__meta">${juice.sizeOz} fl oz${calories ? ` &middot; ${calories} cal` : ''}</p>
 				<h3 class="juice-card__name"><a href="/juices/${juice.slug}">${e(juice.name)}</a></h3>
 				${juice.tagline ? `<p class="juice-card__tagline">${e(juice.tagline)}</p>` : ''}
-				${juice.ingredients.length ? `<p class="juice-card__ingredients">${juice.ingredients.map(e).join(', ')}</p>` : ''}
+				${juice.ingredients.length ? `<ul class="juice-card__ingredients" aria-label="Ingredients">${juice.ingredients.map(item => `<li>${e(item)}</li>`).join('')}</ul>` : ''}
 				<div class="juice-card__foot">
 					${status === 'coming-soon' ? `<span class="juice-card__note">${juice.price ? `${money(juice.price)} when it lands` : 'Price soon'}</span>` : `<span class="price">${money(juice.price)}</span>`}
 					${buyButton(juice)}

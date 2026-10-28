@@ -52,6 +52,12 @@ ready.then(({ juices, settings }) => {
 		const href = back ? '' : ` href="/juices/${j.slug}" tabindex="-1"`;
 		return `<${tag}${href} class="menu-card__bottle${i === mid ? ' is-mid' : ''}" style="--i: ${i}; --r: ${(i - mid) * 6}deg">${splash}<img src="${j.image}" alt="" class="menu-card__img${back ? ' is-ghost' : ''}" decoding="async"></${tag}>`;
 	};
+	// Each bottle casts a glow in its own color, and the flavors are listed as quick links
+	const card = document.querySelector('.menu-card');
+	shown.forEach((j, i) => card.style.setProperty(`--c${i + 1}`, j.color));
+	document.querySelector('[data-menu-chips]').innerHTML = juices
+		.map(j => `<a href="/juices/${j.slug}" class="menu-chip" style="--c: ${j.color}">${e(j.name)}</a>`)
+		.join('');
 	fan.innerHTML = `<div class="menu-card__layer">${shown.map((j, i) => slot(j, i, true)).join('')}</div><div class="menu-card__layer">${shown.map((j, i) => slot(j, i, false)).join('')}</div>`;
 	const playIn = () => requestAnimationFrame(() => document.querySelector('[data-menu-hero]').classList.add('is-in'));
 	Promise.race([Promise.all([...fan.querySelectorAll('.menu-card__img')].map(img => img.decode().catch(() => {}))), new Promise(r => setTimeout(r, 1500))]).then(playIn);
