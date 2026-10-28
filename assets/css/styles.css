@@ -5676,3 +5676,165 @@ a.contact-card:hover {
 	gap: 0.75rem;
 	margin-top: 2rem;
 }
+
+/*=============== PHONES: ONE CENTERED AXIS ===============*/
+/* On small screens headings, copy and calls to action share the page's center line so every
+   section lines up the same way. Forms, nutrition data and lists stay left-aligned for reading. */
+@media (max-width: 720px) {
+	.section-head {
+		flex-direction: column;
+		align-items: center;
+		gap: 1rem;
+		text-align: center;
+	}
+
+	.section-head > div,
+	.section-lede {
+		margin-inline: auto;
+	}
+
+	.statement {
+		text-align: center;
+	}
+
+	.fact {
+		justify-items: center;
+		text-align: center;
+	}
+
+	/* Carousel copy */
+	.flavors__panel {
+		text-align: center;
+	}
+
+	.flavors__tagline {
+		margin-inline: auto;
+	}
+
+	/* Pickup / delivery cards: the heading block centers, the detail list sits centered as a block */
+	.way {
+		align-items: center;
+		text-align: center;
+	}
+
+	.way__list {
+		align-self: center;
+		text-align: left;
+	}
+
+	/* Wholesale bands */
+	.cta-band {
+		justify-items: center;
+		text-align: center;
+	}
+
+	.cta-band .kicker {
+		justify-content: center;
+	}
+
+	.cta-band__text {
+		margin-inline: auto;
+	}
+
+	/* Home story and About pages */
+	.story__copy,
+	.about-story__copy,
+	.signoff,
+	.value {
+		text-align: center;
+	}
+
+	.value__num {
+		margin-inline: auto;
+	}
+
+	.about-hero__inner,
+	.page-hero .container {
+		text-align: center;
+	}
+
+	.page-hero__lede {
+		margin-inline: auto;
+	}
+
+	.hero-actions {
+		justify-content: center;
+	}
+
+	.page-hero .kicker {
+		justify-content: center;
+	}
+
+	/* Juices page header and cards */
+	.menu-card__copy {
+		text-align: center;
+	}
+
+	.menu-card__lede {
+		margin-inline: auto;
+	}
+
+	.menu-card__actions {
+		justify-content: center;
+	}
+
+	.juice-card__body {
+		text-align: center;
+	}
+
+	.juice-card__meta,
+	.juice-card__ingredients {
+		justify-content: center;
+	}
+
+	/* Juice page panel and section headings */
+	.pdp-panel,
+	.inside > div > [data-reveal]:first-child,
+	.vitamins > h3,
+	.about-story > [data-reveal]:first-child,
+	.press-day__copy {
+		text-align: center;
+	}
+
+	.press-day__steps {
+		text-align: left;
+	}
+
+	.contact__form [type='submit'] {
+		width: 100%;
+	}
+
+	.pdp-panel__meta {
+		justify-content: center;
+	}
+
+	.pdp-panel .chips,
+	.pdp-panel__buy,
+	.pdp-panel .badges {
+		justify-content: center;
+	}
+
+	/* Footer */
+	.site-footer__intro,
+	.site-footer__row,
+	.site-footer__bottom {
+		text-align: center;
+	}
+
+	.site-footer__tag,
+	.site-footer__note {
+		margin-inline: auto;
+	}
+
+	.site-footer__row {
+		justify-content: center;
+	}
+
+	.site-footer__links {
+		justify-items: center;
+	}
+
+	.site-footer__bottom {
+		align-items: center;
+	}
+}
