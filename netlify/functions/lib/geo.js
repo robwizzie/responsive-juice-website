@@ -1,7 +1,6 @@
 /**
  * Turns a delivery address into coordinates so we can check the delivery radius.
- * Uses the free US Census geocoder (no key needed). If GOOGLE_MAPS_API_KEY is set it is
- * used as a fallback for addresses the Census data doesn't know.
+ * Uses the free US Census geocoder (no key needed).
  */
 import { nearestZone } from '../../../assets/js/shared/order-rules.js';
 
@@ -21,14 +20,6 @@ async function census(address) {
 	return match ? { lat: match.coordinates.y, lng: match.coordinates.x, matched: match.matchedAddress } : null;
 }
 
-async function google(address) {
-	const url = new URL('https://maps.googleapis.com/maps/api/geocode/json');
-	url.search = new URLSearchParams({ address, key: process.env.GOOGLE_MAPS_API_KEY, components: 'country:US' });
-	const data = await fetchJSON(url);
-	const match = data?.results?.[0];
-	return match ? { ...match.geometry.location, matched: match.formatted_address } : null;
-}
-
 export const formatAddress = ({ line1, line2, city, state, zip }) => [line1, line2, city, `${state || 'NJ'} ${zip || ''}`.trim()].filter(Boolean).join(', ');
 
 /**
@@ -40,14 +31,11 @@ export async function checkDeliveryAddress(address, settings) {
 	let point = null;
 	let serviceFailed = false;
 
-	for (const lookup of [census, process.env.GOOGLE_MAPS_API_KEY ? google : null].filter(Boolean)) {
-		try {
-			point = await lookup(oneLine);
-			if (point) break;
-		} catch (err) {
-			console.error('Geocoding failed:', err.message);
-			serviceFailed = true;
-		}
+	try {
+		point = await census(oneLine);
+	} catch (err) {
+		console.error('Geocoding failed:', err.message);
+		serviceFailed = true;
 	}
 
 	if (!point) return { status: serviceFailed ? 'unverified' : 'unknown' };

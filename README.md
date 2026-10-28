@@ -34,7 +34,6 @@ Add these under **Site configuration → Environment variables**, then redeploy:
 | `CONTACT_EMAIL` | Optional | Where order and contact emails go. Defaults to the email in admin settings (siponpressed@yahoo.com). |
 | `STRIPE_SECRET_KEY_TEST` | Optional | Used instead of the live key when running locally. |
 | `ADMIN_SESSION_SECRET` | Optional | Extra secret for signing admin sessions. |
-| `GOOGLE_MAPS_API_KEY` | Optional | Backup geocoder for delivery addresses (needs the Geocoding API enabled). |
 
 **Stripe webhook:** in Stripe → Developers → Webhooks, add an endpoint at `https://siponpressed.com/webhook/stripe` (the same address the old site used) listening for `checkout.session.completed` and `checkout.session.async_payment_succeeded`. Copy its signing secret into `STRIPE_WEBHOOK_SECRET`.
 
