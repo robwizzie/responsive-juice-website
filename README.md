@@ -11,7 +11,7 @@ Website for SiponPressed, Hunter's cold-pressed juice company in Philadelphia. I
 | `assets/js/shared/content.js` | Every piece of page text (and the few photos) Hunter can change in **Admin → Pages**, with its default. The HTML marks each spot with `data-copy="<key>"`. |
 | `assets/js/shared/catalog.js` | The starting menu (Simply Orange, Green, Red) and default shop settings. |
 | `assets/js/shared/order-rules.js` | Dates, minimums, delivery fee and pricing. Used by both the order page and the checkout function, so they always agree. |
-| `netlify/functions/` | `page` (serves Home, Juices, About, Order and Contact with Hunter's page text already in the HTML), `catalog` (public menu), `checkout` (Stripe Checkout), `stripe-webhook` (saves paid orders, sends emails), `delivery-check`, `contact`, `admin`, `images`, `order-summary`, `og` (share images), `juice-page`, `sitemap`. |
+| `netlify/functions/` | `catalog` (public menu, settings and Hunter's page text, which `site.js` fills into each page), `checkout` (Stripe Checkout), `stripe-webhook` (saves paid orders, sends emails), `delivery-check`, `contact`, `admin`, `images`, `order-summary`, `og` (share images), `juice-page`, `sitemap`. |
 | `assets/js/shared/seo.js` | Page titles, descriptions, share tags and structured data. Baked into each page's `<head>` by `node scripts/bake-header.mjs`. |
 
 Menu edits, settings, uploaded photos and orders are stored in **Netlify Blobs**, which every Netlify site has built in. There is no database to set up. Until something is saved in the admin, the defaults in `catalog.js` are used.
