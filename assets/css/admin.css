@@ -34,8 +34,12 @@ code {
 }
 
 .login__mark {
+	margin: 0 0 0.25rem;
 	color: var(--ink);
-	font-size: 1.6rem;
+}
+
+.login__mark svg {
+	height: 30px;
 }
 
 .login__title {
@@ -178,7 +182,9 @@ code {
 }
 
 .admin-title {
-	font-family: var(--serif);
+	font-weight: 800;
+	font-stretch: 110%;
+	letter-spacing: -0.02em;
 	font-size: 2.2rem;
 }
 
@@ -246,16 +252,23 @@ code {
 }
 
 .menu-row__img {
+	display: grid;
+	place-items: center;
+	height: 84px;
+}
+
+.menu-row__img img,
+.menu-row__img .mystery-bottle {
 	height: 84px;
 	width: auto;
-	justify-self: center;
 }
 
 .menu-row__name {
 	margin: 0;
-	font-family: var(--serif);
+	font-weight: 800;
+	font-stretch: 110%;
+	letter-spacing: -0.02em;
 	font-size: 1.35rem;
-	font-weight: 600;
 }
 
 .menu-row__meta {
@@ -333,7 +346,9 @@ code {
 }
 
 .editor__title {
-	font-family: var(--serif);
+	font-weight: 800;
+	font-stretch: 110%;
+	letter-spacing: -0.02em;
 	font-size: 1.6rem;
 }
 
@@ -593,7 +608,9 @@ code {
 
 .settings__card h2 {
 	margin-bottom: 1.25rem;
-	font-family: var(--serif);
+	font-weight: 800;
+	font-stretch: 110%;
+	letter-spacing: -0.02em;
 	font-size: 1.5rem;
 }
 
@@ -655,7 +672,9 @@ code {
 }
 
 .order-day__head h2 {
-	font-family: var(--serif);
+	font-weight: 800;
+	font-stretch: 110%;
+	letter-spacing: -0.02em;
 	font-size: 1.5rem;
 }
 
@@ -720,7 +739,7 @@ code {
 	flex-wrap: wrap;
 	align-items: center;
 	gap: 0.35rem;
-	color: var(--text);
+	color: var(--ink);
 }
 
 .order-card__items {
@@ -745,4 +764,242 @@ code {
 
 .toast--error .icon {
 	color: #ffb4a8;
+}
+
+/* Wordmark in the dark bar */
+.admin-bar .wordmark {
+	color: #fff;
+}
+
+.admin-bar .wordmark svg {
+	height: 24px;
+}
+
+/* Availability: quick switch on each menu row */
+.status-switch {
+	display: inline-flex;
+	flex-wrap: wrap;
+	gap: 2px;
+	padding: 3px;
+	border-radius: 99px;
+	background: var(--paper-2);
+}
+
+.status-switch__btn {
+	padding: 0.35rem 0.8rem;
+	border: 0;
+	border-radius: 99px;
+	background: transparent;
+	color: var(--muted);
+	font: inherit;
+	font-size: 0.78rem;
+	font-weight: 700;
+	cursor: pointer;
+	transition: background 0.25s var(--ease), color 0.25s var(--ease), box-shadow 0.25s var(--ease);
+}
+
+.status-switch__btn:hover {
+	color: var(--ink);
+}
+
+.status-switch__btn[aria-pressed='true'] {
+	background: var(--card);
+	color: var(--ink);
+	box-shadow: var(--shadow-sm);
+}
+
+.status-switch__btn--available[aria-pressed='true'] {
+	background: var(--lime);
+	color: var(--lime-ink);
+}
+
+.status-switch__btn--sold-out[aria-pressed='true'] {
+	background: var(--ink);
+	color: #fff;
+}
+
+.status-switch__btn--coming-soon[aria-pressed='true'] {
+	background: #fff1c9;
+	color: #7a4f00;
+}
+
+/* Availability: cards in the editor */
+.status-picks {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 0.6rem;
+	margin-bottom: 1rem;
+}
+
+.status-pick input,
+.backdrop-pick input {
+	position: absolute;
+	opacity: 0;
+	pointer-events: none;
+}
+
+.status-pick > span {
+	display: grid;
+	gap: 0.15rem;
+	height: 100%;
+	padding: 0.8rem 0.9rem;
+	border-radius: var(--radius-sm);
+	background: var(--card);
+	box-shadow: inset 0 0 0 1.5px var(--line);
+	cursor: pointer;
+	transition: box-shadow 0.25s var(--ease), background 0.25s var(--ease), transform 0.35s var(--spring);
+}
+
+.status-pick svg {
+	width: 22px;
+	height: 22px;
+	margin-bottom: 0.2rem;
+	color: var(--muted);
+}
+
+.status-pick strong {
+	font-size: 0.92rem;
+}
+
+.status-pick small {
+	color: var(--muted);
+	font-size: 0.75rem;
+	line-height: 1.35;
+}
+
+.status-pick:hover > span {
+	box-shadow: inset 0 0 0 1.5px var(--line-strong);
+}
+
+.status-pick input:checked + span {
+	box-shadow: inset 0 0 0 2px var(--ink);
+	transform: translateY(-2px);
+}
+
+.status-pick input:focus-visible + span,
+.backdrop-pick input:focus-visible ~ .backdrop-pick__thumb {
+	outline: 3px solid var(--lime);
+	outline-offset: 2px;
+}
+
+.status-pick--available input:checked + span svg {
+	color: var(--lime-deep);
+}
+
+.status-pick--sold-out input:checked + span svg {
+	color: var(--ink);
+}
+
+.status-pick--coming-soon input:checked + span svg {
+	color: #b07400;
+}
+
+/* Page background picker */
+.backdrop-picks {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	gap: 0.6rem;
+	margin: 0.8rem 0 0.9rem;
+}
+
+.backdrop-pick {
+	display: grid;
+	gap: 0.4rem;
+	cursor: pointer;
+}
+
+.backdrop-pick__thumb {
+	display: grid;
+	place-items: center;
+	aspect-ratio: 4 / 3;
+	border-radius: var(--radius-xs);
+	background: var(--paper-2) center / cover no-repeat;
+	box-shadow: inset 0 0 0 1.5px var(--line);
+	color: var(--muted);
+	transition: box-shadow 0.25s var(--ease), transform 0.35s var(--spring), opacity 0.25s;
+}
+
+.backdrop-pick__thumb svg {
+	width: 24px;
+	height: 24px;
+}
+
+.backdrop-pick__thumb[style] svg {
+	display: none;
+}
+
+.backdrop-pick__thumb--color {
+	background: radial-gradient(circle at 50% 60%, color-mix(in srgb, var(--c, var(--lime)) 70%, white), var(--c, var(--lime)));
+}
+
+.backdrop-pick__thumb--cream {
+	background: radial-gradient(circle at 50% 55%, #fff, var(--paper-2));
+}
+
+.backdrop-pick__thumb.is-busy {
+	opacity: 0.5;
+}
+
+.backdrop-pick__label {
+	font-size: 0.78rem;
+	font-weight: 600;
+	color: var(--muted);
+}
+
+.backdrop-pick input:checked ~ .backdrop-pick__thumb {
+	box-shadow: inset 0 0 0 2px var(--card), 0 0 0 2px var(--ink);
+	transform: scale(0.97);
+}
+
+.backdrop-pick input:checked ~ .backdrop-pick__label {
+	color: var(--ink);
+}
+
+.backdrop-pick input:disabled ~ * {
+	opacity: 0.55;
+	cursor: default;
+}
+
+.backdrop-upload {
+	cursor: pointer;
+}
+
+/* About photo in settings */
+.photo__preview--portrait {
+	width: 120px;
+	height: 150px;
+	background: var(--paper-2);
+	color: var(--muted);
+}
+
+.photo__preview--portrait svg {
+	width: 32px;
+	height: 32px;
+}
+
+.photo__preview--portrait img {
+	width: 100%;
+	height: 100%;
+	max-height: none;
+	object-fit: cover;
+}
+
+.photo__btns {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+}
+
+@media (max-width: 560px) {
+	.status-picks {
+		grid-template-columns: 1fr;
+	}
+
+	.backdrop-picks {
+		grid-template-columns: repeat(2, 1fr);
+	}
+
+	.photo {
+		align-items: flex-start;
+	}
 }

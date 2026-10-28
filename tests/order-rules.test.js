@@ -43,8 +43,13 @@ test('prices come from the menu, not the request, and bad items are rejected', (
 	assert.equal(order.total, 1500);
 	const unknown = priceOrder({ items: [{ slug: 'nope', qty: 1 }], type: 'pickup' }, DEFAULT_JUICES, DEFAULT_SETTINGS, WED);
 	assert.equal(unknown.ok, false);
-	const soldOut = priceOrder({ items: [{ slug: 'simply-red', qty: 1 }], type: 'pickup' }, DEFAULT_JUICES.map(j => ({ ...j, inStock: false })), DEFAULT_SETTINGS, WED);
+	const soldOut = priceOrder({ items: [{ slug: 'simply-red', qty: 1 }], type: 'pickup' }, DEFAULT_JUICES.map(j => ({ ...j, status: 'sold-out' })), DEFAULT_SETTINGS, WED);
 	assert.match(soldOut.errors[0], /sold out/);
+	const teaser = priceOrder({ items: [{ slug: 'simply-red', qty: 1 }], type: 'pickup' }, DEFAULT_JUICES.map(j => ({ ...j, status: 'coming-soon' })), DEFAULT_SETTINGS, WED);
+	assert.match(teaser.errors[0], /isn't available yet/);
+	// Menus saved before statuses existed only have inStock
+	const legacy = priceOrder({ items: [{ slug: 'simply-red', qty: 1 }], type: 'pickup' }, DEFAULT_JUICES.map(({ status, ...j }) => ({ ...j, inStock: false })), DEFAULT_SETTINGS, WED);
+	assert.match(legacy.errors[0], /sold out/);
 });
 
 test('dates outside the allowed list are rejected', () => {

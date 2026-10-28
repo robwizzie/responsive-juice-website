@@ -71,3 +71,18 @@ export async function prepareBottle(file) {
 	}
 	return { blobs: outputs, hasTransparency: box.hasTransparency, preview: URL.createObjectURL(outputs.imageSmall) };
 }
+
+/** Resizes an ordinary photo (a page background or Hunter's portrait) to a web-friendly WebP. */
+export async function preparePhoto(file, maxSide = 1800) {
+	const img = await loadImage(file);
+	const scale = Math.min(1, maxSide / Math.max(img.naturalWidth, img.naturalHeight));
+	const canvas = document.createElement('canvas');
+	canvas.width = Math.round(img.naturalWidth * scale);
+	canvas.height = Math.round(img.naturalHeight * scale);
+	const ctx = canvas.getContext('2d');
+	ctx.imageSmoothingQuality = 'high';
+	ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+	URL.revokeObjectURL(img.src);
+	const blob = await toBlob(canvas, 'image/webp', 0.84);
+	return { blob, preview: URL.createObjectURL(blob) };
+}

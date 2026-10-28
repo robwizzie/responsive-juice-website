@@ -1,35 +1,57 @@
 import { ready } from '../site.js';
+import { juiceStatus } from '../shared/catalog.js';
 import { escapeHtml as e } from '../lib/catalog.js';
-import { juiceCard, waysToOrder } from '../lib/components.js';
+import { bottleImage, juiceCard, waysToOrder } from '../lib/components.js';
 
-const ROWS = [
-	['Calories', j => j.nutrition.calories],
-	['Sugars (natural)', j => `${j.nutrition.sugars} g`],
-	['Carbs', j => `${j.nutrition.carbs} g`],
-	['Protein', j => `${j.nutrition.protein} g`],
-	['Sodium', j => `${j.nutrition.sodium} mg`]
+const METERS = [
+	['Natural sugars', 'sugars', 'g'],
+	['Carbs', 'carbs', 'g'],
+	['Protein', 'protein', 'g'],
+	['Sodium', 'sodium', 'mg']
 ];
 
-function compareTable(juices) {
-	return `
-		<div class="compare__scroll">
-			<table class="compare__table">
-				<thead><tr><th scope="col"><span class="visually-hidden">Nutrient</span></th>${juices
-					.map(j => `<th scope="col" style="--c: ${j.color}"><a href="/juices/${j.slug}"><img src="${j.imageSmall || j.image}" alt="" loading="lazy">${e(j.name)}</a></th>`)
-					.join('')}</tr></thead>
-				<tbody>
-					${ROWS.map(([label, value]) => `<tr><th scope="row">${label}</th>${juices.map(j => `<td>${value(j)}</td>`).join('')}</tr>`).join('')}
-					<tr><th scope="row">Standouts</th>${juices
-						.map(j => `<td><ul class="compare__vits">${j.vitamins.slice(0, 2).map(v => `<li><strong>${v.dv}%</strong> ${e(v.name)}</li>`).join('')}</ul></td>`)
-						.join('')}</tr>
-				</tbody>
-			</table>
-		</div>`;
+/** One column per juice; the bars are scaled against the biggest value on the menu. */
+function compare(juices) {
+	const listed = juices.filter(j => j.nutrition?.calories);
+	const max = key => Math.max(1, ...listed.map(j => j.nutrition[key] || 0));
+	return juices
+		.map(j => {
+			const n = j.nutrition || {};
+			const known = Boolean(n.calories);
+			return `
+			<a href="/juices/${j.slug}" class="compare-col" style="--c: ${j.color}">
+				${bottleImage(j, { small: true, className: 'compare-col__bottle' })}
+				<h3 class="compare-col__name">${e(j.name)}</h3>
+				${
+					known
+						? `<p class="compare-col__cal"><strong>${n.calories}</strong><span>calories</span></p>
+				${METERS.map(
+					([label, key, unit]) => `
+					<div class="meter">
+						<div class="meter__label"><span>${label}</span><span>${n[key]} ${unit}</span></div>
+						<div class="meter__track"><span style="--w: ${Math.max(3, ((n[key] || 0) / max(key)) * 100)}%"></span></div>
+					</div>`
+				).join('')}
+				${j.vitamins.length ? `<ul class="compare-col__vits">${j.vitamins.slice(0, 3).map(v => `<li><strong>${v.dv}%</strong> ${e(v.name)}</li>`).join('')}</ul>` : ''}`
+						: `<p class="compare-col__soon">${juiceStatus(j) === 'coming-soon' ? 'Nutrition facts when it lands.' : 'Nutrition facts coming soon.'}</p>`
+				}
+			</a>`;
+		})
+		.join('');
 }
 
 ready.then(({ juices, settings }) => {
 	document.querySelector('[data-menu]').innerHTML = juices.map((juice, i) => juiceCard(juice, { eager: i < 3 })).join('');
-	document.querySelector('[data-flavor-count]').textContent = juices.length;
-	document.querySelector('[data-compare]').innerHTML = compareTable(juices);
+	const fan = document.querySelector('[data-fan]');
+	const shown = juices.slice(0, 5);
+	fan.innerHTML = shown
+		.map((j, i) => {
+			const mid = (shown.length - 1) / 2;
+			return `<a href="/juices/${j.slug}" tabindex="-1" style="--r: ${(i - mid) * 8}deg; --y: ${Math.abs(i - mid) * 10}px; z-index: ${10 - Math.abs(i - mid)}">${bottleImage(j, { eager: true, small: true })}</a>`;
+		})
+		.join('');
+	const table = document.querySelector('[data-compare]');
+	table.style.setProperty('--n', Math.min(juices.length, 4));
+	table.innerHTML = compare(juices);
 	document.querySelector('[data-ways]').innerHTML = waysToOrder(settings);
 });

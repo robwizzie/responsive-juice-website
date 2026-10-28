@@ -3,6 +3,7 @@
  * dates a customer sees are exactly what the server will charge and accept.
  * All money is handled in cents; all dates are YYYY-MM-DD in Philadelphia time.
  */
+import { juiceStatus } from './catalog.js';
 
 export const TIME_ZONE = 'America/New_York';
 const DAY_MS = 86400000;
@@ -73,8 +74,9 @@ export function priceOrder({ items = [], type = 'pickup', date = null }, juices,
 			errors.push('One of the juices in your cart is no longer on the menu.');
 			continue;
 		}
-		if (!juice.inStock) {
-			errors.push(`${juice.name} is sold out right now.`);
+		const status = juiceStatus(juice);
+		if (status !== 'available') {
+			errors.push(status === 'coming-soon' ? `${juice.name} isn't available yet.` : `${juice.name} is sold out right now.`);
 			continue;
 		}
 		if (!(quantity > 0)) continue;

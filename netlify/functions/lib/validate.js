@@ -2,7 +2,7 @@
  * Cleans what the admin page sends before it is saved, so a typo can't break the site.
  * Each function returns { value } or { error }.
  */
-import { SPLASH_STYLES, slugify } from '../../../assets/js/shared/catalog.js';
+import { BACKDROPS, DEFAULT_BACKDROP, JUICE_STATUSES, SPLASH_STYLES, juiceStatus, slugify } from '../../../assets/js/shared/catalog.js';
 
 const text = (value, max = 500) => String(value ?? '').trim().slice(0, max);
 const number = (value, { min = 0, max = 100000, fallback = 0 } = {}) => {
@@ -21,11 +21,14 @@ export function cleanJuice(input) {
 	const slug = slugify(input.slug || name);
 	if (!slug) return { error: `"${name}" needs a name with letters or numbers.` };
 
-	const price = number(input.price, { min: 0, max: 500, fallback: NaN });
-	if (!(price >= 0.5)) return { error: `${name} needs a price of at least $0.50.` };
+	// A "coming soon" juice can be teased before it has a price or a photo
+	const status = JUICE_STATUSES[input.status] ? input.status : juiceStatus(input);
+	const teaser = status === 'coming-soon';
+	const price = number(input.price, { min: 0, max: 500, fallback: teaser ? 0 : NaN });
+	if (!(price >= 0.5) && !teaser) return { error: `${name} needs a price of at least $0.50.` };
 
 	const image = imagePath(input.image);
-	if (!image) return { error: `${name} needs a bottle photo.` };
+	if (!image && !teaser) return { error: `${name} needs a bottle photo.` };
 
 	const n = input.nutrition || {};
 	return {
@@ -43,6 +46,7 @@ export function cleanJuice(input) {
 			splash: SPLASH_STYLES.includes(input.splash) ? input.splash : 'none',
 			image,
 			imageSmall: imagePath(input.imageSmall) || image,
+			backdrop: BACKDROPS[input.backdrop] ? input.backdrop : imagePath(input.backdrop) || DEFAULT_BACKDROP,
 			emailImage: imagePath(input.emailImage) || '',
 			sizeOz: number(input.sizeOz, { min: 1, max: 64, fallback: 16 }),
 			nutrition: {
@@ -61,7 +65,10 @@ export function cleanJuice(input) {
 				.filter(v => v.name)
 				.slice(0, 8),
 			active: input.active !== false,
-			inStock: input.inStock !== false
+			status,
+			statusNote: text(input.statusNote, 40),
+			// Kept for anything still reading the old flag
+			inStock: status === 'available'
 		}
 	};
 }
@@ -112,6 +119,7 @@ export function cleanSettings(input, current) {
 				cutoffDays: number(d.cutoffDays, { min: 0, max: 6, fallback: current.delivery.cutoffDays }),
 				areaLabel: text(d.areaLabel, 60) || current.delivery.areaLabel
 			},
+			aboutPhoto: input.aboutPhoto === '' ? '' : imagePath(input.aboutPhoto) || current.aboutPhoto || '',
 			maxBottlesPerOrder: number(input.maxBottlesPerOrder, { min: 1, max: 500, fallback: current.maxBottlesPerOrder })
 		}
 	};

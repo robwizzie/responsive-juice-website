@@ -12,60 +12,78 @@
     <meta property="og:site_name" content="SiponPressed">
     <meta property="og:image" content="https://siponpressed.com/assets/img/brand/og-image.jpg">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="theme-color" content="#111312">
+    <meta name="theme-color" content="#fdf6ea">
+    <link rel="icon" href="/assets/img/brand/favicon.svg" type="image/svg+xml">
     <link rel="icon" href="/assets/img/brand/favicon-32.png" sizes="32x32" type="image/png">
     <link rel="icon" href="/assets/img/favicon.png" sizes="192x192" type="image/png">
     <link rel="apple-touch-icon" href="/assets/img/brand/apple-touch-icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,100..900;1,62..125,100..900&display=swap">
     <link rel="stylesheet" href="/assets/css/styles.css">
+    <script>document.documentElement.classList.add('js')</script>
     <script type="module" src="/assets/js/pages/about.js"></script>
 </head>
 <body class="page-about">
     <main id="main">
         <section class="about-hero">
-            <div class="about-hero__bg" aria-hidden="true"></div>
             <div class="container about-hero__inner">
-                <p class="eyebrow eyebrow--lime">About SiponPressed</p>
-                <h1 class="page-hero__title">Hey, I'm Hunter. <em>I make the juice.</em></h1>
-                <p class="page-hero__lede">SiponPressed is just me: one guy, a cold press and a fridge full of fruit. Every bottle you get was pressed and labeled by my hands.</p>
+                <div>
+                    <p class="kicker">About SiponPressed</p>
+                    <h1 class="page-hero__title">Hey, I'm Hunter.</h1>
+                    <p class="page-hero__lede">SiponPressed is just me: one guy, a cold press and a fridge full of fruit. Every bottle you get was pressed and labeled by my hands, here in Philadelphia.</p>
+                    <div class="hero-actions">
+                        <a href="/juices" class="btn btn--ink btn--lg">Try the juices</a>
+                        <a href="/contact" class="btn btn--ghost btn--lg">Say hi</a>
+                    </div>
+                </div>
+                <figure class="portrait" data-portrait>
+                    <span class="portrait__tape" aria-hidden="true"></span>
+                    <div class="portrait__frame">
+                        <div class="portrait__photo" data-portrait-photo></div>
+                        <figcaption class="portrait__caption">Hunter &middot; Philadelphia</figcaption>
+                    </div>
+                </figure>
             </div>
         </section>
 
         <section class="section">
-            <div class="container story story--about">
-                <div class="story__copy" data-reveal>
-                    <p class="eyebrow">The story</p>
-                    <h2 class="section-title">Real juice, <em>no shortcuts.</em></h2>
-                    <p>I started pressing juice because I wanted something I'd actually drink every day: bright, filling and made from whole ingredients, not concentrate and sugar. Friends kept asking for bottles, then their friends did, and SiponPressed was born.</p>
-                    <p>Now I'm based in Philadelphia, bringing fresh bottles to yoga studios, small cafes and anyone who wants to feel a little better. I still do a Monday delivery run to South Jersey.</p>
-                    <p>The menu is simple on purpose. Three flavors, each built around a handful of ingredients that taste good together and do something good for you.</p>
-                    <p class="signature">Embrace the sip.<span>&mdash; Hunter</span></p>
+            <div class="container about-story">
+                <div data-reveal>
+                    <p class="kicker">The story</p>
+                    <h2 class="section-title">Real juice, no shortcuts.</h2>
+                    <div class="about-bottles" data-about-bottles></div>
                 </div>
-                <div class="about-bottles" data-reveal data-about-bottles></div>
+                <div class="about-story__copy" data-reveal>
+                    <p>I started pressing juice because I wanted something I'd actually drink every day: bright, filling and made from whole ingredients, not concentrate and sugar.</p>
+                    <p>Friends kept asking for bottles, then their friends did, and SiponPressed was born. Now I'm based in Philly, bringing fresh bottles to yoga studios, small cafes and anyone who wants to feel a little better. I still do a Monday delivery run to South Jersey.</p>
+                    <p>The menu is simple on purpose. Each flavor is built around a handful of ingredients that taste good together and do something good for you.</p>
+                    <p class="signoff">Embrace the sip. &mdash; Hunter</p>
+                </div>
             </div>
         </section>
 
         <section class="section section--tint">
             <div class="container">
                 <div class="section-head" data-reveal>
-                    <p class="eyebrow">What every bottle stands for</p>
-                    <h2 class="section-title">Real juice. Real health. <em>Real you.</em></h2>
+                    <div>
+                        <p class="kicker">What every bottle stands for</p>
+                        <h2 class="section-title">Real juice. Real health. Real you.</h2>
+                    </div>
                 </div>
                 <div class="values">
                     <article class="value" data-reveal>
-                        <span class="value__icon" data-icon="snow"></span>
+                        <span class="value__num">01</span>
                         <h3>Cold pressed</h3>
                         <p>Pressed slowly and never heated, so the flavor and nutrients stay in the bottle.</p>
                     </article>
                     <article class="value" data-reveal>
-                        <span class="value__icon" data-icon="drop"></span>
+                        <span class="value__num">02</span>
                         <h3>No added sugar</h3>
                         <p>All the sweetness comes from the fruit. Nothing from a bag, nothing from a lab.</p>
                     </article>
                     <article class="value" data-reveal>
-                        <span class="value__icon" data-icon="leaf"></span>
+                        <span class="value__num">03</span>
                         <h3>100% plant based</h3>
                         <p>Whole fruit, greens and roots. That is the whole ingredient list.</p>
                     </article>
@@ -73,15 +91,15 @@
             </div>
         </section>
 
-        <section class="section section--flush">
+        <section class="section">
             <div class="container">
                 <div class="cta-band" data-reveal>
                     <div>
-                        <p class="eyebrow eyebrow--lime">Studios, gyms &amp; cafes</p>
-                        <h2 class="cta-band__title">Want SiponPressed <em>in your space?</em></h2>
+                        <p class="kicker" style="--kicker-dot: #161513">Studios, gyms &amp; cafes</p>
+                        <h2 class="cta-band__title">Want SiponPressed in your space?</h2>
                         <p class="cta-band__text">I'm working with yoga studios and small cafes around Philly. Reach out and I'll bring samples.</p>
                     </div>
-                    <a href="/contact?topic=wholesale" class="btn btn--lime btn--lg">Get in touch</a>
+                    <a href="/contact?topic=wholesale" class="btn btn--ink btn--lg">Get in touch</a>
                 </div>
             </div>
         </section>

@@ -10,7 +10,8 @@
     <meta property="og:url" content="https://siponpressed.com/">
     <meta property="og:title" content="SiponPressed | Embrace the sip.">
     <meta property="og:description" content="Real juice. Real health. Real you. Cold-pressed in small batches in Philadelphia.">
-    <meta name="theme-color" content="#111312">
+    <meta name="theme-color" content="#fdf6ea">
+    <link rel="icon" href="/assets/img/brand/favicon.svg" type="image/svg+xml">
     <link rel="icon" href="/assets/img/brand/favicon-32.png" sizes="32x32" type="image/png">
     <link rel="icon" href="/assets/img/favicon.png" sizes="192x192" type="image/png">
     <link rel="apple-touch-icon" href="/assets/img/brand/apple-touch-icon.png">
@@ -19,105 +20,94 @@
     <meta name="twitter:card" content="summary_large_image">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,100..900;1,62..125,100..900&display=swap">
     <link rel="stylesheet" href="/assets/css/styles.css">
-    <link rel="preload" as="image" href="/assets/img/bottles/simply-green.webp" fetchpriority="high">
+    <script>document.documentElement.classList.add('js')</script>
+    <link rel="preload" as="image" href="/assets/img/bottles/simply-orange.webp" fetchpriority="high">
     <script type="module" src="/assets/js/pages/home.js"></script>
 </head>
 <body class="page-home">
     <main id="main">
-        <!--==================== HERO ====================-->
-        <section class="hero">
-            <div class="container hero__inner">
-                <div class="hero__copy">
-                    <p class="eyebrow eyebrow--lime hero__eyebrow">Cold-pressed juice &middot; Philadelphia &middot; Est. 2026</p>
-                    <h1 class="hero__title">Embrace <em>the sip.</em></h1>
-                    <p class="hero__lede">Real juice. Real health. Real you. Three small-batch flavors, pressed fresh by Hunter and nothing else added.</p>
-                    <div class="hero__actions">
-                        <a href="/order" class="btn btn--lime btn--lg">Order now</a>
-                        <a href="/juices" class="btn btn--outline-light btn--lg">See the menu</a>
-                    </div>
-                    <ul class="hero__facts">
-                        <li><strong>16 oz</strong> bottles</li>
-                        <li><strong>0 g</strong> added sugar</li>
-                        <li><strong>100%</strong> plant based</li>
-                    </ul>
-                </div>
+        <!--==================== FLAVOR CAROUSEL ====================-->
+        <section class="flavors" data-flavors aria-label="SiponPressed juices">
+            <noscript><div class="container section"><h1 class="page-hero__title">Embrace the sip.</h1><p class="page-hero__lede"><a href="/juices">See the juices</a></p></div></noscript>
+        </section>
 
-                <div class="hero__stage" data-parallax data-hero-stage aria-hidden="true">
-                    <span class="hero__ring"></span>
-                    <img src="/assets/img/ingredients/orange.webp" alt="" class="hero__fruit hero__fruit--1" data-depth="34">
-                    <img src="/assets/img/ingredients/strawberry.webp" alt="" class="hero__fruit hero__fruit--2" data-depth="28">
-                    <img src="/assets/img/ingredients/spinach.webp" alt="" class="hero__fruit hero__fruit--3" data-depth="22">
-                    <img src="/assets/img/ingredients/pineapple.webp" alt="" class="hero__fruit hero__fruit--4" data-depth="18">
-                    <img src="/assets/img/leaf.webp" alt="" class="hero__leaf hero__leaf--1" data-depth="40">
-                    <img src="/assets/img/leaf.webp" alt="" class="hero__leaf hero__leaf--2" data-depth="30">
-                    <div class="hero__bottles">
-                        <div class="hero__bottle hero__bottle--left" style="--c: #f59e1b" data-depth="12"><img src="/assets/img/bottles/simply-orange.webp" alt=""></div>
-                        <div class="hero__bottle hero__bottle--right" style="--c: #e0322f" data-depth="12"><img src="/assets/img/bottles/simply-red.webp" alt=""></div>
-                        <div class="hero__bottle hero__bottle--center" style="--c: #8db62f" data-depth="16"><img src="/assets/img/bottles/simply-green.webp" alt="" fetchpriority="high"></div>
-                    </div>
-                </div>
+        <!--==================== STATEMENT ====================-->
+        <section class="section">
+            <div class="container">
+                <h1 class="statement" data-reveal>
+                    Cold-pressed juice made by Hunter in Philly
+                    <img class="statement__img" src="/assets/img/ingredients/orange.webp" alt="" style="--r: -12deg; --bg: #ffe7c2">
+                    from whole fruit
+                    <img class="statement__img" src="/assets/img/ingredients/strawberry.webp" alt="" style="--r: 10deg; --bg: #ffd9d6">
+                    and greens
+                    <img class="statement__img" src="/assets/img/ingredients/spinach.webp" alt="" style="--r: -6deg; --bg: #e4f0c8">
+                    <span class="dim">with nothing else in the bottle.</span>
+                </h1>
+                <ul class="facts" data-reveal>
+                    <li class="fact"><span data-icon="snow"></span> Cold pressed, never heated</li>
+                    <li class="fact"><span data-icon="drop"></span> No added sugar</li>
+                    <li class="fact"><span data-icon="leaf"></span> 100% plant based</li>
+                    <li class="fact"><span data-icon="pin"></span> Made in Philadelphia</li>
+                </ul>
             </div>
         </section>
 
-        <!--==================== MARQUEE ====================-->
-        <div class="marquee" aria-hidden="true">
-            <div class="marquee__track">
-                <span>Cold pressed</span><i></i><span>No added sugar</span><i></i><span>100% plant based</span><i></i><span>Made in Philly</span><i></i><span>Real juice. Real health. Real you.</span><i></i>
-                <span>Cold pressed</span><i></i><span>No added sugar</span><i></i><span>100% plant based</span><i></i><span>Made in Philly</span><i></i><span>Real juice. Real health. Real you.</span><i></i>
-            </div>
-        </div>
-
-        <!--==================== MENU ====================-->
-        <section class="section" id="menu">
+        <!--==================== JUICES ====================-->
+        <section class="section section--tint" id="juices">
             <div class="container">
                 <div class="section-head" data-reveal>
-                    <p class="eyebrow">The SiponPressed menu</p>
-                    <h2 class="section-title"><span data-flavor-count>3</span> flavors. <em>1 choice.</em></h2>
-                    <p class="section-lede">Every bottle is pressed to order from whole fruit and greens. No concentrates, no added sugar, no shortcuts.</p>
+                    <div>
+                        <p class="kicker">The lineup</p>
+                        <h2 class="section-title">Pick your bottle.</h2>
+                    </div>
+                    <a href="/juices" class="link-arrow">Compare all juices <span data-icon="arrowRight"></span></a>
                 </div>
                 <div class="juice-grid" data-menu></div>
             </div>
         </section>
 
         <!--==================== HOW IT WORKS ====================-->
-        <section class="section section--tint">
+        <section class="section">
             <div class="container">
                 <div class="section-head" data-reveal>
-                    <p class="eyebrow">How to get your juice</p>
-                    <h2 class="section-title">Pickup in Philly or <em>Monday delivery.</em></h2>
+                    <div>
+                        <p class="kicker">Getting your juice</p>
+                        <h2 class="section-title">Pickup in Philly or Monday delivery.</h2>
+                    </div>
                 </div>
                 <div class="ways" data-ways></div>
             </div>
         </section>
 
         <!--==================== HUNTER ====================-->
-        <section class="section">
+        <section class="section section--tint">
             <div class="container story">
                 <div class="story__media" data-reveal>
                     <img src="/assets/img/backdrops/riverfront-sm.webp" alt="The Delaware River and Ben Franklin Bridge in Philadelphia" class="story__photo" loading="lazy" decoding="async">
-                    <img src="/assets/img/bottles/simply-orange-sm.webp" alt="" class="story__bottle" loading="lazy" decoding="async">
+                    <img src="/assets/img/bottles/simply-orange.webp" alt="" class="story__bottle" loading="lazy" decoding="async" data-story-bottle>
                 </div>
                 <div class="story__copy" data-reveal>
-                    <p class="eyebrow">Created by Hunter</p>
-                    <h2 class="section-title">Pressed by hand, <em>one batch at a time.</em></h2>
+                    <p class="kicker">Created by Hunter</p>
+                    <h2 class="section-title">One guy, one press, every bottle.</h2>
                     <p>SiponPressed is a one-person juice company. Hunter picks the produce and presses every bottle himself. The recipes are simple on purpose: a few whole ingredients that taste good and make you feel good.</p>
-                    <a href="/about" class="btn btn--ink">Meet Hunter</a>
+                    <a href="/about" class="btn btn--ink btn--lg">Meet Hunter</a>
                 </div>
             </div>
         </section>
 
         <!--==================== WHOLESALE ====================-->
-        <section class="section section--flush">
+        <section class="section">
             <div class="container">
                 <div class="cta-band" data-reveal>
+                    <div class="cta-band__bottles" aria-hidden="true" data-cta-bottles></div>
                     <div>
-                        <p class="eyebrow eyebrow--lime">For yoga studios, gyms &amp; cafes</p>
-                        <h2 class="cta-band__title">Put SiponPressed <em>in your fridge.</em></h2>
-                        <p class="cta-band__text">Fresh bottles delivered weekly for your members and customers. Let's talk about a standing order.</p>
+                        <p class="kicker" style="--kicker-dot: #161513">For yoga studios, gyms &amp; cafes</p>
+                        <h2 class="cta-band__title">Put SiponPressed in your fridge.</h2>
+                        <p class="cta-band__text">Fresh bottles every week for your members and customers. Let's set up a standing order.</p>
                     </div>
-                    <a href="/contact?topic=wholesale" class="btn btn--lime btn--lg">Ask about wholesale</a>
+                    <a href="/contact?topic=wholesale" class="btn btn--ink btn--lg">Ask about wholesale</a>
                 </div>
             </div>
         </section>

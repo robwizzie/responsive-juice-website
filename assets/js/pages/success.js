@@ -11,8 +11,8 @@ function render(order, settings) {
 	const pickup = order.type !== 'delivery';
 	root.innerHTML = `
 		<span class="confirm__check">${icon('check')}</span>
-		<p class="eyebrow">Order confirmed</p>
-		<h1 class="section-title">Thanks${order.firstName ? `, ${e(order.firstName)}` : ''}! <em>You're all set.</em></h1>
+		<p class="kicker">Order confirmed</p>
+		<h1 class="section-title">Thanks${order.firstName ? `, ${e(order.firstName)}` : ''}! You're all set.</h1>
 		<p class="section-lede">A confirmation is on its way to ${e(order.email)}. Your juice gets pressed fresh for ${pickup ? 'pickup' : 'delivery'} on <strong>${formatDate(order.date)}</strong>.</p>
 		<div class="card confirm__card">
 			${order.lines.map(l => `<div class="confirm__line"><span>${l.qty} &times; ${e(l.name)}</span><span>${formatMoney(l.amount)}</span></div>`).join('')}
@@ -29,8 +29,8 @@ function render(order, settings) {
 function renderFallback(settings) {
 	root.innerHTML = `
 		<span class="confirm__check">${icon('check')}</span>
-		<p class="eyebrow">Thank you</p>
-		<h1 class="section-title">Your order <em>is in.</em></h1>
+		<p class="kicker">Thank you</p>
+		<h1 class="section-title">Your order is in.</h1>
 		<p class="section-lede">Check your email for the confirmation. Questions? Email <a href="mailto:${e(settings.contactEmail)}">${e(settings.contactEmail)}</a>.</p>
 		<div class="confirm__actions"><a href="/juices" class="btn btn--ink btn--lg">Back to the menu</a></div>`;
 }

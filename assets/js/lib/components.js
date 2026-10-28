@@ -1,4 +1,4 @@
-import { ingredientIcon } from '../shared/catalog.js';
+import { ingredientIcon, juiceStatus } from '../shared/catalog.js';
 import { escapeHtml as e } from './catalog.js';
 import { icon } from './icons.js';
 
@@ -7,55 +7,78 @@ export const money = dollars => `$${Number(dollars).toFixed(2)}`;
 // "$7" rather than "$7.00" for round amounts in running text
 export const moneyShort = dollars => (Number.isInteger(Number(dollars)) ? `$${Number(dollars)}` : money(dollars));
 
+/** Dark or light text, whichever reads better on a juice's color. */
+export function onColor(hex = '#000000') {
+	const [r, g, b] = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16) / 255).map(c => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4));
+	const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+	return luminance > 0.24 ? '#161513' : '#ffffff';
+}
+
 /** First two ingredients that have a photo, used as the floating garnish around a bottle. */
-const garnishFor = juice =>
+export const garnishFor = juice =>
 	juice.ingredients
 		.map(ingredientIcon)
 		.filter(Boolean)
 		.slice(0, 2);
 
+/** The bottle photo, or a shimmering "?" bottle for a coming-soon juice that has no photo yet. */
+export function bottleImage(juice, { small = false, eager = false, className = '' } = {}) {
+	if (!juice.image) return `<span class="mystery-bottle ${className}" style="--c: ${juice.color}" role="img" aria-label="${e(juice.name)}, coming soon"></span>`;
+	const src = small ? juice.imageSmall || juice.image : juice.image;
+	return `<img src="${src}" alt="" class="${className}" loading="${eager ? 'eager' : 'lazy'}" decoding="async"${eager ? ' fetchpriority="high"' : ''}>`;
+}
+
+export function statusStamp(juice, { className = '' } = {}) {
+	const status = juiceStatus(juice);
+	if (status === 'available') return '';
+	const label = juice.statusNote || (status === 'sold-out' ? 'Sold out' : 'Coming soon');
+	return `<span class="stamp stamp--${status} ${className}">${icon(status === 'sold-out' ? 'prohibit' : 'hourglass')}${e(label)}</span>`;
+}
+
 /**
  * The "floating juice" scene: the bottle over its colour splash with ingredients and leaves
- * drifting around it. Layers with data-depth move with the pointer (see initParallax).
+ * drifting around it. Layers move a little with the pointer (see initParallax).
  */
 export function bottleArt(juice, { size = 'md', eager = false, small = false } = {}) {
 	const [fruitA, fruitB] = garnishFor(juice);
 	const loading = eager ? 'eager' : 'lazy';
 	const splash = juice.splash && juice.splash !== 'none' ? `/assets/img/splash/${juice.splash}${small ? '-sm' : ''}.webp` : null;
+	const layer = (cls, src) => `<span class="${cls}"><img src="${src}" alt="" loading="${loading}" decoding="async"></span>`;
 	return `
 		<div class="bottle-art bottle-art--${size}" style="--c: ${juice.color}" data-parallax aria-hidden="true">
 			<span class="bottle-art__glow"></span>
-			${splash ? `<img src="${splash}" alt="" class="bottle-art__splash" data-depth="8" loading="${loading}" decoding="async">` : ''}
-			${fruitA ? `<img src="${fruitA}" alt="" class="bottle-art__fruit bottle-art__fruit--a" data-depth="26" loading="${loading}" decoding="async">` : ''}
-			${fruitB ? `<img src="${fruitB}" alt="" class="bottle-art__fruit bottle-art__fruit--b" data-depth="20" loading="${loading}" decoding="async">` : ''}
-			<img src="/assets/img/leaf.webp" alt="" class="bottle-art__leaf bottle-art__leaf--a" data-depth="34" loading="${loading}" decoding="async">
-			<img src="/assets/img/leaf.webp" alt="" class="bottle-art__leaf bottle-art__leaf--b" data-depth="28" loading="${loading}" decoding="async">
-			<div class="bottle-art__float" data-depth="14">
-				<img src="${small ? juice.imageSmall || juice.image : juice.image}" alt="" class="bottle-art__bottle" loading="${loading}" decoding="async" ${eager ? 'fetchpriority="high"' : ''}>
-			</div>
+			${splash ? `<img src="${splash}" alt="" class="bottle-art__splash" loading="${loading}" decoding="async">` : ''}
+			${fruitA ? layer('bottle-art__fruit bottle-art__fruit--a', fruitA) : ''}
+			${fruitB ? layer('bottle-art__fruit bottle-art__fruit--b', fruitB) : ''}
+			${layer('bottle-art__leaf bottle-art__leaf--a', '/assets/img/leaf.webp')}
+			${layer('bottle-art__leaf bottle-art__leaf--b', '/assets/img/leaf.webp')}
+			<div class="bottle-art__float">${bottleImage(juice, { small, eager, className: 'bottle-art__bottle' })}</div>
 		</div>`;
 }
 
+/** Add-to-cart for an available juice, otherwise a quiet note about when it's back. */
+export function buyButton(juice, { size = 'sm', label = 'Add' } = {}) {
+	if (juiceStatus(juice) !== 'available') return `<a href="/juices/${juice.slug}" class="btn btn--ghost btn--${size}">Details</a>`;
+	return `<button type="button" class="btn btn--ink btn--${size}" data-add="${juice.slug}">${icon('plus')} ${label}</button>`;
+}
+
 export function juiceCard(juice, { eager = false } = {}) {
-	const soldOut = !juice.inStock;
+	const status = juiceStatus(juice);
+	const calories = juice.nutrition?.calories;
 	return `
-		<article class="juice-card${soldOut ? ' is-sold-out' : ''}" style="--c: ${juice.color}" data-reveal>
-			<a href="/juices/${juice.slug}" class="juice-card__art" aria-label="${e(juice.name)}">
+		<article class="juice-card is-${status}" style="--c: ${juice.color}" data-reveal>
+			<div class="juice-card__art">
 				${bottleArt(juice, { size: 'card', eager, small: true })}
-				${soldOut ? '<span class="tag tag--dark juice-card__tag">Sold out</span>' : ''}
-			</a>
+				${statusStamp(juice, { className: 'juice-card__stamp' })}
+			</div>
 			<div class="juice-card__body">
-				<p class="eyebrow">${juice.nutrition?.calories ? `${juice.nutrition.calories} cal &middot; ` : ''}${juice.sizeOz} fl oz</p>
+				<p class="juice-card__meta">${juice.sizeOz} fl oz${calories ? ` &middot; ${calories} cal` : ''}</p>
 				<h3 class="juice-card__name"><a href="/juices/${juice.slug}">${e(juice.name)}</a></h3>
 				${juice.tagline ? `<p class="juice-card__tagline">${e(juice.tagline)}</p>` : ''}
-				<p class="juice-card__ingredients">${juice.ingredients.map(e).join(' &middot; ')}</p>
+				${juice.ingredients.length ? `<p class="juice-card__ingredients">${juice.ingredients.map(e).join(', ')}</p>` : ''}
 				<div class="juice-card__foot">
-					<span class="price">${money(juice.price)}</span>
-					${
-						soldOut
-							? `<a href="/juices/${juice.slug}" class="btn btn--ghost btn--sm">Details</a>`
-							: `<button type="button" class="btn btn--ink btn--sm" data-add="${juice.slug}">${icon('plus')} Add</button>`
-					}
+					${status === 'coming-soon' ? `<span class="juice-card__note">${juice.price ? `${money(juice.price)} when it lands` : 'Price soon'}</span>` : `<span class="price">${money(juice.price)}</span>`}
+					${buyButton(juice)}
 				</div>
 			</div>
 		</article>`;
@@ -93,7 +116,7 @@ export function waysToOrder(settings) {
 				<p class="way__text">Order online and grab your bottles fresh. Hunter confirms the spot and time once your order is pressed.</p>
 				<ul class="way__list">
 					<li>${icon('calendar')} Pickup ${dayList(pickup.days)}</li>
-					<li>${icon('sparkle')} Order ${pickup.leadDays > 0 ? `${pickup.leadDays} day${pickup.leadDays === 1 ? '' : 's'} ahead` : 'same day'}, pressed to order</li>
+					<li>${icon('clock')} Order ${pickup.leadDays > 0 ? `${pickup.leadDays} day${pickup.leadDays === 1 ? '' : 's'} ahead` : 'same day'}, pressed to order</li>
 					<li>${icon('check')} No minimum</li>
 				</ul>
 			</article>`);

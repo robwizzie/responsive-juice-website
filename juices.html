@@ -12,27 +12,32 @@
     <meta property="og:site_name" content="SiponPressed">
     <meta property="og:image" content="https://siponpressed.com/assets/img/brand/og-image.jpg">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="theme-color" content="#111312">
+    <meta name="theme-color" content="#fdf6ea">
+    <link rel="icon" href="/assets/img/brand/favicon.svg" type="image/svg+xml">
     <link rel="icon" href="/assets/img/brand/favicon-32.png" sizes="32x32" type="image/png">
     <link rel="icon" href="/assets/img/favicon.png" sizes="192x192" type="image/png">
     <link rel="apple-touch-icon" href="/assets/img/brand/apple-touch-icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,100..900;1,62..125,100..900&display=swap">
     <link rel="stylesheet" href="/assets/css/styles.css">
+    <script>document.documentElement.classList.add('js')</script>
     <script type="module" src="/assets/js/pages/menu.js"></script>
 </head>
 <body class="page-menu">
     <main id="main">
-        <section class="page-hero page-hero--dark">
-            <div class="container">
-                <p class="eyebrow eyebrow--lime">The SiponPressed menu</p>
-                <h1 class="page-hero__title"><span data-flavor-count>3</span> flavors. <em>1 choice.</em></h1>
-                <p class="page-hero__lede">Cold-pressed in small batches from whole fruit and greens. Every bottle is 16 fl oz, with no added sugar and nothing artificial.</p>
+        <section class="page-hero">
+            <div class="container menu-hero">
+                <div>
+                    <p class="kicker">The juices</p>
+                    <h1 class="page-hero__title">Pressed this week.</h1>
+                    <p class="page-hero__lede">Small batches from whole fruit and greens. Every bottle is 16 fl oz, with no added sugar and nothing artificial.</p>
+                </div>
+                <div class="bottle-fan" data-fan aria-hidden="true"></div>
             </div>
         </section>
 
-        <section class="section section--overlap">
+        <section class="section section--tight">
             <div class="container">
                 <div class="juice-grid" data-menu></div>
             </div>
@@ -41,9 +46,11 @@
         <section class="section section--tint">
             <div class="container">
                 <div class="section-head" data-reveal>
-                    <p class="eyebrow">Side by side</p>
-                    <h2 class="section-title">What's in <em>each bottle.</em></h2>
-                    <p class="section-lede">Per 16 fl oz bottle. Tap a juice for the full nutrition panel.</p>
+                    <div>
+                        <p class="kicker">Side by side</p>
+                        <h2 class="section-title">What's in each bottle.</h2>
+                        <p class="section-lede">Per 16 fl oz bottle. Tap a juice for the full nutrition label.</p>
+                    </div>
                 </div>
                 <div class="compare" data-compare data-reveal></div>
             </div>

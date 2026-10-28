@@ -360,7 +360,7 @@ ready.then(catalog => {
 	settings = catalog.settings;
 
 	if (!settings.orderingEnabled) {
-		root.innerHTML = `<div class="card closed"><h2 class="section-title section-title--sm">Online ordering is <em>paused.</em></h2><p>Hunter isn't taking online orders right now. Message him on Instagram <a href="https://instagram.com/${e(settings.instagram)}">@${e(settings.instagram)}</a> or <a href="/contact">send a note</a>.</p></div>`;
+		root.innerHTML = `<div class="card closed"><h2 class="section-title section-title--sm">Online ordering is paused.</h2><p>Hunter isn't taking online orders right now. Message him on Instagram <a href="https://instagram.com/${e(settings.instagram)}">@${e(settings.instagram)}</a> or <a href="/contact">send a note</a>.</p></div>`;
 		return;
 	}
 

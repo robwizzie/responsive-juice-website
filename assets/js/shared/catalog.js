@@ -7,6 +7,32 @@
 
 export const SPLASH_STYLES = ['orange', 'green', 'red', 'purple', 'berry', 'pink', 'lime', 'crimson'];
 
+/** Whether a juice can be ordered. Hunter sets this per juice in /admin. */
+export const JUICE_STATUSES = {
+	available: 'Available',
+	'sold-out': 'Sold out',
+	'coming-soon': 'Coming soon'
+};
+
+/** Older saved menus only had an inStock flag, so fall back to it. */
+export const juiceStatus = juice => (JUICE_STATUSES[juice?.status] ? juice.status : juice?.inStock === false ? 'sold-out' : 'available');
+export const isOrderable = juice => juiceStatus(juice) === 'available';
+
+/**
+ * Backgrounds for a juice's page. Hunter can pick one of these or upload his own photo,
+ * in which case `backdrop` holds the photo's path instead of one of these keys.
+ */
+export const BACKDROPS = {
+	riverfront: {
+		label: 'Philly riverfront',
+		image: '/assets/img/backdrops/riverfront.webp',
+		imageSmall: '/assets/img/backdrops/riverfront-sm.webp'
+	},
+	color: { label: 'Juice color' },
+	cream: { label: 'Clean cream' }
+};
+export const DEFAULT_BACKDROP = 'riverfront';
+
 // Ingredient photos that ship with the site, keyed by file name in /assets/img/ingredients.
 export const INGREDIENT_ICONS = [
 	'agave',
@@ -95,7 +121,9 @@ export const DEFAULT_JUICES = [
 			{ name: 'Vitamin K', dv: 20 }
 		],
 		active: true,
-		inStock: true
+		status: 'available',
+		statusNote: '',
+		backdrop: 'riverfront'
 	},
 	{
 		slug: 'simply-green',
@@ -119,7 +147,9 @@ export const DEFAULT_JUICES = [
 			{ name: 'Vitamin B9', dv: 40 }
 		],
 		active: true,
-		inStock: true
+		status: 'available',
+		statusNote: '',
+		backdrop: 'riverfront'
 	},
 	{
 		slug: 'simply-red',
@@ -143,7 +173,9 @@ export const DEFAULT_JUICES = [
 			{ name: 'Vitamin A', dv: 10 }
 		],
 		active: true,
-		inStock: true
+		status: 'available',
+		statusNote: '',
+		backdrop: 'riverfront'
 	}
 ];
 
@@ -180,5 +212,7 @@ export const DEFAULT_SETTINGS = {
 		// Monday orders close at the end of Thursday (Monday minus 4 days)
 		cutoffDays: 4
 	},
-	maxBottlesPerOrder: 60
+	maxBottlesPerOrder: 60,
+	// Hunter's photo on the About page (uploaded in /admin). Empty shows a placeholder.
+	aboutPhoto: ''
 };

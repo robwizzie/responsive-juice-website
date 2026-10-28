@@ -4,11 +4,12 @@
  */
 import { loadCatalog, escapeHtml as e } from './lib/catalog.js';
 import { addToCart, cartCount, cartLines, getCart, setQty } from './lib/cart.js';
-import { flashAdded, money } from './lib/components.js';
+import { wordmark } from './lib/brand.js';
+import { bottleImage, flashAdded, money } from './lib/components.js';
 import { icon } from './lib/icons.js';
 
 const NAV = [
-	{ href: '/juices', label: 'Menu', match: ['/juices'] },
+	{ href: '/juices', label: 'Juices', match: ['/juices'] },
 	{ href: '/about', label: 'About', match: ['/about'] },
 	{ href: '/contact', label: 'Contact', match: ['/contact'] }
 ];
@@ -30,13 +31,14 @@ function renderHeader() {
 		<div class="announcement" hidden></div>
 		<header class="site-header">
 			<div class="container site-header__inner">
-				<a href="/" class="wordmark" aria-label="SiponPressed home">SiponPressed</a>
+				<a href="/" class="wordmark" aria-label="SiponPressed home">${wordmark('SiponPressed')}</a>
 				<nav class="nav" id="site-nav" aria-label="Main">
 					${links}
 					<a href="/order" class="nav__link nav__link--order">Order</a>
+					<div class="nav__foot" data-nav-bottles aria-hidden="true"></div>
 				</nav>
 				<div class="site-header__actions">
-					<a href="/order" class="btn btn--lime btn--sm site-header__order">Order now</a>
+					<a href="/order" class="btn btn--ink btn--sm site-header__order">Order now</a>
 					<button type="button" class="icon-btn cart-btn" data-cart-open aria-label="Open cart">
 						${icon('cart')}<span class="cart-btn__count" data-cart-count hidden>0</span>
 					</button>
@@ -50,11 +52,14 @@ function renderHeader() {
 
 	const header = document.querySelector('.site-header');
 	const toggle = header.querySelector('.nav-toggle');
-	toggle.addEventListener('click', () => {
-		const open = header.classList.toggle('is-open');
+	const setOpen = open => {
+		header.classList.toggle('is-open', open);
 		toggle.setAttribute('aria-expanded', open);
 		toggle.innerHTML = icon(open ? 'close' : 'menu');
-	});
+		document.documentElement.classList.toggle('no-scroll', open);
+	};
+	toggle.addEventListener('click', () => setOpen(!header.classList.contains('is-open')));
+	document.addEventListener('keydown', event => event.key === 'Escape' && header.classList.contains('is-open') && setOpen(false));
 
 	const onScroll = () => header.classList.toggle('is-scrolled', window.scrollY > 8);
 	onScroll();
@@ -62,24 +67,31 @@ function renderHeader() {
 }
 
 /*=============== FOOTER ===============*/
+const fan = list =>
+	list
+		.slice(0, 3)
+		.map((juice, i) => (juice.image ? `<img src="${juice.imageSmall || juice.image}" alt="" loading="lazy" style="--r: ${(i - 1) * 9}deg; --i: ${i}">` : ''))
+		.join('');
+
 function renderFooter(settings) {
 	const main = document.querySelector('main');
 	const year = new Date().getFullYear();
 	(main || document.body).insertAdjacentHTML(
 		main ? 'afterend' : 'beforeend',
 		`<footer class="site-footer">
+			<div class="site-footer__bottles" aria-hidden="true">${fan(juices)}</div>
 			<div class="container">
 				<div class="site-footer__top">
 					<div class="site-footer__brand">
-						<a href="/" class="wordmark wordmark--lg">SiponPressed</a>
+						<a href="/" class="wordmark wordmark--lg" aria-label="SiponPressed home">${wordmark('SiponPressed')}</a>
 						<p class="site-footer__tag">Embrace the sip.</p>
 						<p class="site-footer__note">Real juice. Real health. Real you. Cold-pressed in small batches by Hunter in Philadelphia.</p>
 					</div>
 					<div class="site-footer__cols">
 						<div>
 							<h2 class="site-footer__title">Shop</h2>
-							<a href="/juices">The menu</a>
-							<a href="/order">Order pickup or delivery</a>
+							<a href="/juices">All juices</a>
+							<a href="/order">Pickup or delivery</a>
 							<a href="/contact?topic=wholesale">Wholesale for cafes &amp; studios</a>
 						</div>
 						<div>
@@ -95,14 +107,9 @@ function renderFooter(settings) {
 						</div>
 					</div>
 				</div>
-				<div class="site-footer__badges">
-					<span>${icon('snow')} Cold pressed</span>
-					<span>${icon('drop')} No added sugar</span>
-					<span>${icon('leaf')} 100% plant based</span>
-				</div>
 				<div class="site-footer__bottom">
 					<p>&copy; ${year} SiponPressed &middot; Philadelphia, PA</p>
-					<p>Keep refrigerated &middot; Shake well</p>
+					<p>Cold pressed &middot; No added sugar &middot; Keep refrigerated</p>
 				</div>
 			</div>
 		</footer>`
@@ -147,7 +154,7 @@ function renderDrawer() {
 	const lines = cartLines(juices);
 
 	if (lines.length === 0) {
-		body.innerHTML = `<div class="drawer__empty"><p>Your cart is empty.</p><a href="/juices" class="btn btn--ink">Browse the menu</a></div>`;
+		body.innerHTML = `<div class="drawer__empty"><div class="drawer__empty-bottles" aria-hidden="true">${fan(juices)}</div><p>Your cart is empty. Let's fix that.</p><a href="/juices" class="btn btn--ink">See the juices</a></div>`;
 		foot.innerHTML = '';
 		return;
 	}
@@ -171,7 +178,7 @@ function renderDrawer() {
 	const min = settings?.delivery?.minBottles || 0;
 	const deliveryNote =
 		settings?.delivery?.enabled && bottles < min
-			? `<p class="drawer__hint">${icon('truck')} Add ${min - bottles} more bottle${min - bottles === 1 ? '' : 's'} to unlock Monday delivery.</p>`
+			? `<p class="drawer__hint">${icon('truck')} Add ${min - bottles} more bottle${min - bottles === 1 ? '' : 's'} to unlock Monday delivery.</p><div class="drawer__progress"><span style="--w: ${Math.round((bottles / min) * 100)}%"></span></div>`
 			: settings?.delivery?.enabled
 				? `<p class="drawer__hint drawer__hint--ok">${icon('check')} Your order qualifies for Monday delivery.</p>`
 				: '';
@@ -219,6 +226,38 @@ export function toast(html) {
 	}, 2600);
 }
 
+/** Sends a little bottle from the button into the cart icon. */
+function flyToCart(button) {
+	const juice = juices.find(j => j.slug === button.dataset.add);
+	const target = document.querySelector('.cart-btn');
+	if (reducedMotion || !juice?.image || !target || !button.animate) return;
+	const from = button.getBoundingClientRect();
+	const to = target.getBoundingClientRect();
+	const img = document.createElement('img');
+	img.src = juice.imageSmall || juice.image;
+	img.className = 'fly-bottle';
+	img.style.left = `${from.left + from.width / 2 - 14}px`;
+	img.style.top = `${from.top - 40}px`;
+	document.body.append(img);
+	const dx = to.left + to.width / 2 - (from.left + from.width / 2);
+	const dy = to.top - from.top + 20;
+	img
+		.animate(
+			[
+				{ transform: 'translate(0, 0) scale(0.6) rotate(0deg)', opacity: 0 },
+				{ transform: `translate(${dx * 0.35}px, ${Math.min(dy, 0) - 90}px) scale(1) rotate(-12deg)`, opacity: 1, offset: 0.35 },
+				{ transform: `translate(${dx}px, ${dy}px) scale(0.25) rotate(20deg)`, opacity: 0.9 }
+			],
+			{ duration: 850, easing: 'cubic-bezier(0.5, 0, 0.3, 1)' }
+		)
+		.finished.then(() => {
+			img.remove();
+			target.classList.remove('is-bumped');
+			void target.offsetWidth;
+			target.classList.add('is-bumped');
+		});
+}
+
 function updateBadge() {
 	const count = cartCount();
 	document.querySelectorAll('[data-cart-count]').forEach(badge => {
@@ -234,6 +273,7 @@ function bindCart() {
 			const qty = Number(add.dataset.qty || 1);
 			addToCart(add.dataset.add, qty);
 			flashAdded(add);
+			flyToCart(add);
 			const juice = juices.find(j => j.slug === add.dataset.add);
 			toast(`${icon('check')} <span>${qty > 1 ? `${qty} &times; ` : ''}${e(juice?.name || 'Juice')} added</span> <button type="button" class="toast__link" data-cart-open>View cart</button>`);
 			return;
@@ -277,7 +317,7 @@ export function revealOnScroll(root = document) {
 					observer.unobserve(entry.target);
 				});
 		},
-		{ threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
+		{ threshold: 0.01, rootMargin: '0px 0px -6% 0px' }
 	);
 	items.forEach(el => observer.observe(el));
 }
@@ -310,6 +350,7 @@ export function initParallax(root = document) {
 // Static markup can ask for an icon with <span data-icon="name"></span>
 export const fillIcons = (root = document) => root.querySelectorAll('[data-icon]:empty').forEach(el => (el.innerHTML = icon(el.dataset.icon)));
 
+document.documentElement.classList.add('js');
 renderHeader();
 fillIcons();
 renderDrawerShell();
@@ -322,6 +363,8 @@ export const ready = loadCatalog().then(catalog => {
 	renderAnnouncement(settings);
 	renderFooter(settings);
 	renderDrawer();
+	const navBottles = document.querySelector('[data-nav-bottles]');
+	if (navBottles) navBottles.innerHTML = juices.filter(j => j.image).slice(0, 4).map((j, i) => bottleImage(j, { small: true }).replace('<img ', `<img style="--i: ${i}; --r: ${(i - 1) * 7}deg" `)).join('');
 	return catalog;
 });
 
