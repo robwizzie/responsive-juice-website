@@ -3,7 +3,7 @@ import { escapeHtml as e } from '../lib/catalog.js';
 import { icon } from '../lib/icons.js';
 
 /** The hero entrance: plays once the portrait photo is decoded, so nothing pops in halfway through. */
-const HUNTER_PHOTO = '/assets/img/hunter-portrait.webp';
+const HUNTER_PHOTO = '/assets/img/hunter-portrait-warm.webp';
 const hero = document.querySelector('[data-about-hero]');
 let played = false;
 function playHero(photo) {
