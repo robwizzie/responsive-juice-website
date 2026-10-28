@@ -134,10 +134,10 @@ export function metaTags({ path, title, shareTitle, description, image, imageAlt
 	return tags.join('\n');
 }
 
-/** Head tags for one of the static pages in PAGE_META. */
-export const pageMetaTags = path => {
+/** Head tags for one of the static pages in PAGE_META. `site` points the images at a deploy preview. */
+export const pageMetaTags = (path, site = SITE_URL) => {
 	const page = PAGE_META[path];
-	return metaTags({ path, ...page, image: `/og/${page.og}.png`, video: page.video ? LINEUP_VIDEO : null });
+	return metaTags({ path, ...page, site, image: `/og/${page.og}.png`, video: page.video ? LINEUP_VIDEO : null });
 };
 
 /** Head tags and structured data for a juice's page. */
