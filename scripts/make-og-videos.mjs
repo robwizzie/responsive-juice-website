@@ -63,6 +63,7 @@ body { position: relative; font-family: Archivo; background: var(--bg); color: v
 .word { position: absolute; left: 0; bottom: -50px; white-space: nowrap; font: 900 300px/1 Display; opacity: .13; letter-spacing: -4px; animation: drift ${SECONDS}s ease-in-out infinite; }
 @keyframes rise { 0% { transform: translate(-50%, 110%) rotate(var(--r)); } 22%, 80% { transform: translate(-50%, 0) rotate(var(--r)); } 100% { transform: translate(-50%, 115%) rotate(var(--r)); } }
 @keyframes burst { 0%, 8% { transform: translateX(-50%) scale(0); opacity: 0; } 30%, 80% { transform: translateX(-50%) scale(1); opacity: .9; } 100% { transform: translateX(-50%) scale(.2); opacity: 0; } }
+.glow { position: absolute; left: 50%; border-radius: 50%; background: radial-gradient(closest-side, var(--c), transparent); filter: blur(30px); animation: burst ${SECONDS}s cubic-bezier(.2,.9,.2,1) infinite both; z-index: 0; }
 @keyframes spin { to { transform: rotate(40deg); } }
 @keyframes bob { to { transform: translateY(-12px); } }
 @keyframes line { 0%, 4% { transform: translateY(110%); } 22%, 80% { transform: translateY(0); } 94%, 100% { transform: translateY(-110%); } }
@@ -70,7 +71,7 @@ body { position: relative; font-family: Archivo; background: var(--bg); color: v
 @keyframes drift { 50% { transform: translateX(-120px); } }
 `;
 
-function bottles(juices, height) {
+function bottles(juices, height, glow = false) {
 	const shown = juices.filter(juice => juice.image).slice(0, 3);
 	const mid = (shown.length - 1) / 2;
 	const step = shown.length > 1 ? 170 : 0;
@@ -80,7 +81,8 @@ function bottles(juices, height) {
 			const lift = shown.length > 1 && i === Math.round(mid) ? 26 : 0;
 			const delay = `${i * 0.1}s`;
 			const splash = `/assets/img/splash/${juice.splash || 'orange'}.webp`;
-			return `
+			const halo = glow && /^#[0-9a-f]{6}$/i.test(juice.color || '') ? `<div class="glow" style="--c:${juice.color}66; left:${x}px; width:${height * 0.75}px; height:${height * 0.75}px; bottom:${height * 0.2}px; animation-delay:${delay}"></div>` : '';
+			return `${halo}
 <div class="splash" style="left:${x}px; width:${height * 0.9}px; bottom:${height * 0.05}px; animation-delay:${delay}"><img src="${splash}"></div>
 <div class="bottle" style="left:${x}px; height:${height}px; bottom:${lift}px; --r:${(i - mid) * 6}deg; animation-delay:${delay}"><img src="${esc(juice.image)}" style="animation-delay:-${i * 0.8}s"></div>`;
 		})
@@ -90,16 +92,26 @@ function bottles(juices, height) {
 const lines = (words, size) => `<h1 class="title" style="--size:${size}px">${words.map(word => `<span class="line"><span>${esc(word)}</span></span>`).join('')}</h1>`;
 const fit = (words, maxWidth, max) => Math.round(Math.min(max, maxWidth / (Math.max(...words.map(w => w.length)) * 0.95)));
 
+// Night card: the juices glow on black, and a lime band along the bottom keeps the
+// link bar iMessage tints from the image's bottom edge in the brand green
 function lineupPage(juices) {
 	const prices = juices.filter(juice => juiceStatus(juice) === 'available').map(juice => Number(juice.price)).filter(Boolean);
 	const words = ['Embrace', 'the sip'];
-	return `<style>${base} body { --bg: #c4dd3b; --fg: #161513; }</style>
+	return `<style>${base}
+body { --bg: #0b0b0a; --fg: #fdf6ea; --lime: #c4dd3b; }
+.copy { bottom: 136px; top: 52px; }
+.title .line:nth-child(2) { color: var(--lime); }
+.note { color: rgba(253, 246, 234, .72); font-size: 28px; }
+.stage { bottom: 92px; height: 538px; }
+.band { position: absolute; left: 0; right: 0; bottom: 0; height: 92px; background: var(--lime); color: #161513; display: flex; align-items: center; justify-content: space-between; padding: 0 64px; font-size: 28px; font-weight: 700; z-index: 4; }
+.band b { font-family: Display; font-weight: 900; font-size: 26px; letter-spacing: 1px; text-transform: uppercase; }
+</style>
 <div class="copy">
 	<div class="mark"></div>
 	<div>${lines(words, fit(words, 530, 124))}<p class="note">Small-batch cold-pressed juice, made by Hunter in Philly</p></div>
-	<div class="pill">${prices.length ? `From $${Math.min(...prices).toFixed(2)}` : 'siponpressed.com'}</div>
 </div>
-<div class="stage">${bottles(juices, 470)}</div>`;
+<div class="stage">${bottles(juices, 405, true)}</div>
+<div class="band"><b>${prices.length ? `From $${Math.min(...prices).toFixed(2)}` : 'Cold-pressed in Philly'}</b><span>siponpressed.com</span></div>`;
 }
 
 function juicePage(juice) {

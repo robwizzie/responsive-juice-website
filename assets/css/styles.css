@@ -3676,7 +3676,8 @@ html:not(.js) .cta-band .cta-band__scene {
 	gap: 0.45rem;
 	padding: 0.3rem 0.8rem 0.3rem 0.3rem;
 	border-radius: 999px;
-	background: color-mix(in srgb, var(--c) 14%, white);
+	background: color-mix(in srgb, var(--c) 16%, var(--card));
+	color: var(--ink);
 	font-size: 0.9rem;
 	font-weight: 600;
 }
@@ -5107,7 +5108,7 @@ a.contact-card:hover {
 }
 
 .drawer__hint--ok {
-	background: color-mix(in srgb, var(--lime) 35%, white);
+	background: color-mix(in srgb, var(--lime) 35%, var(--card));
 }
 
 .drawer__progress {
