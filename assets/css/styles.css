@@ -749,8 +749,21 @@ p {
 		color: var(--ink);
 	}
 
-	.nav__link.is-active span {
-		background: linear-gradient(var(--lime), var(--lime)) 0 88% / 100% 0.32em no-repeat;
+	/* The current page gets a lime dot before its name instead of an underline through the letters */
+	.nav__link span {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.55rem;
+	}
+
+	.nav__link.is-active span::before {
+		content: '';
+		flex: none;
+		width: 0.42em;
+		height: 0.42em;
+		border-radius: 50%;
+		background: var(--lime);
+		box-shadow: 0 0 0 0.14em color-mix(in srgb, var(--lime) 30%, transparent);
 	}
 
 	.nav__links > *,
@@ -2484,6 +2497,27 @@ p {
 	transform: scale(1.12);
 }
 
+/* Hunter's photo: a framed portrait at a sensible size rather than a full-column close-up */
+.story__media--photo {
+	justify-self: center;
+	width: min(100%, 400px);
+}
+
+.story__media--photo .story__photo {
+	transform: none;
+}
+
+.story__media--photo:hover .story__photo {
+	transform: scale(1.03);
+}
+
+@media (max-width: 720px) {
+	.story__media--photo {
+		width: min(72%, 290px);
+	}
+
+}
+
 .story__bottle {
 	position: absolute;
 	left: 0;
@@ -3779,7 +3813,7 @@ html:not(.js) .cta-band .cta-band__scene {
 .portrait {
 	position: relative;
 	justify-self: center;
-	width: min(100%, 440px);
+	width: min(100%, 360px);
 	transform: rotate(2.5deg);
 	transition: transform 0.8s var(--spring);
 }
@@ -4099,7 +4133,7 @@ html:not(.js) .cta-band .cta-band__scene {
 	}
 
 	.portrait {
-		width: min(86%, 380px);
+		width: min(76%, 290px);
 	}
 }
 
