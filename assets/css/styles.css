@@ -2505,6 +2505,7 @@ p {
 }
 
 .story__media--photo .story__photo {
+	object-position: 50% 0;
 	transform: none;
 }
 

@@ -163,7 +163,7 @@ async function pageCard(origin, page, juices, settings) {
 }
 
 async function portrait(origin, settings) {
-	const photo = (await optionalPicture(origin, settings.aboutPhoto, 560)) || (await optionalPicture(origin, '/assets/img/hunter.webp', 560));
+	const photo = (await optionalPicture(origin, settings.aboutPhoto, 560)) || (await optionalPicture(origin, '/assets/img/hunter-portrait.webp', 560));
 	if (!photo) return h('div', {});
 	return h(
 		'div',

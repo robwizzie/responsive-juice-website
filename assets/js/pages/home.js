@@ -50,7 +50,7 @@ ready.then(({ juices, settings }) => {
 
 	// Hunter's own photo in the story block once he's uploaded one, otherwise a bottle on the river
 	const media = document.querySelector('[data-story-media]');
-	const portrait = settings.aboutPhoto || '/assets/img/hunter.webp';
+	const portrait = settings.aboutPhoto || '/assets/img/hunter-portrait.webp';
 	if (portrait) {
 		media.classList.add('story__media--photo');
 		media.innerHTML = `<img src="${e(portrait)}" alt="Hunter, the founder of SiponPressed" class="story__photo" loading="lazy" decoding="async">`;
