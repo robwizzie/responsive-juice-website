@@ -40,7 +40,7 @@ function compare(juices) {
 		.join('');
 }
 
-ready.then(({ juices, settings }) => {
+ready.then(({ juices, settings, copy }) => {
 	document.querySelector('[data-menu]').innerHTML = juices.map((juice, i) => juiceCard(juice, { eager: i < 3 })).join('');
 	// Header lineup: splashes on their own layer behind, so none paints over a neighbouring bottle
 	const fan = document.querySelector('[data-fan]');
@@ -61,5 +61,5 @@ ready.then(({ juices, settings }) => {
 	const table = document.querySelector('[data-compare]');
 	table.style.setProperty('--n', Math.min(juices.length, 4));
 	table.innerHTML = compare(juices);
-	document.querySelector('[data-ways]').innerHTML = waysToOrder(settings);
+	document.querySelector('[data-ways]').innerHTML = waysToOrder(settings, copy);
 });

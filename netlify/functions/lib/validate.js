@@ -2,7 +2,8 @@
  * Cleans what the admin page sends before it is saved, so a typo can't break the site.
  * Each function returns { value } or { error }.
  */
-import { BACKDROPS, DEFAULT_BACKDROP, JUICE_STATUSES, SPLASH_STYLES, juiceStatus, slugify } from '../../../assets/js/shared/catalog.js';
+import { BACKDROPS, DEFAULT_BACKDROP, JUICE_STATUSES, SPLASH_STYLES, ingredientKey, juiceStatus, slugify } from '../../../assets/js/shared/catalog.js';
+import { COPY_FIELDS, DEFAULT_COPY } from '../../../assets/js/shared/content.js';
 
 const text = (value, max = 500) => String(value ?? '').trim().slice(0, max);
 const number = (value, { min = 0, max = 100000, fallback = 0 } = {}) => {
@@ -24,24 +25,35 @@ export function cleanJuice(input) {
 	// A "coming soon" juice can be teased before it has a price or a photo
 	const status = JUICE_STATUSES[input.status] ? input.status : juiceStatus(input);
 	const teaser = status === 'coming-soon';
-	const price = number(input.price, { min: 0, max: 500, fallback: teaser ? 0 : NaN });
-	if (!(price >= 0.5) && !teaser) return { error: `${name} needs a price of at least $0.50.` };
+	// Without its own price a juice uses the shop's bottle price (see priceJuice)
+	const customPrice = input.customPrice === true;
+	const price = number(input.price, { min: 0, max: 500, fallback: 0 });
+	if (customPrice && !(price >= 0.5) && !teaser) return { error: `${name} needs a price of at least $0.50.` };
 
 	const image = imagePath(input.image);
 	if (!image && !teaser) return { error: `${name} needs a bottle photo.` };
 
 	const n = input.nutrition || {};
+	const ingredients = (Array.isArray(input.ingredients) ? input.ingredients : String(input.ingredients || '').split(','))
+		.map(item => text(item, 40))
+		.filter(Boolean)
+		.slice(0, 12);
+	// Photos Hunter uploaded for ingredients the site has no picture of, kept only for ones still listed
+	const ingredientImages = {};
+	for (const item of ingredients) {
+		const photo = imagePath(input.ingredientImages?.[ingredientKey(item)]);
+		if (photo) ingredientImages[ingredientKey(item)] = photo;
+	}
 	return {
 		value: {
 			slug,
 			name,
 			tagline: text(input.tagline, 80),
 			description: text(input.description, 600),
-			ingredients: (Array.isArray(input.ingredients) ? input.ingredients : String(input.ingredients || '').split(','))
-				.map(item => text(item, 40))
-				.filter(Boolean)
-				.slice(0, 12),
+			ingredients,
+			ingredientImages,
 			price: Math.round(price * 100) / 100,
+			customPrice,
 			color: color(input.color),
 			splash: SPLASH_STYLES.includes(input.splash) ? input.splash : 'none',
 			image,
@@ -97,6 +109,7 @@ export function cleanSettings(input, current) {
 		value: {
 			...current,
 			orderingEnabled: input.orderingEnabled !== false,
+			bottlePrice: Math.round(number(input.bottlePrice, { min: 0.5, max: 500, fallback: current.bottlePrice }) * 100) / 100,
 			announcement: text(input.announcement, 160),
 			contactEmail: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.contactEmail || '') ? text(input.contactEmail, 120) : current.contactEmail,
 			instagram: text(input.instagram, 40).replace(/^@/, '') || current.instagram,
@@ -123,4 +136,16 @@ export function cleanSettings(input, current) {
 			maxBottlesPerOrder: number(input.maxBottlesPerOrder, { min: 1, max: 500, fallback: current.maxBottlesPerOrder })
 		}
 	};
+}
+
+/** Page text from /admin → Pages. Only known fields are kept, and only where they differ from the default. */
+export function cleanCopy(input) {
+	if (!input || typeof input !== 'object' || Array.isArray(input)) return { error: 'Expected page text.' };
+	const value = {};
+	for (const field of COPY_FIELDS) {
+		if (!(field.key in input)) continue;
+		const saved = field.type === 'image' ? imagePath(input[field.key]) : text(input[field.key], field.max || (field.long ? 800 : 160));
+		if (saved && saved !== DEFAULT_COPY[field.key]) value[field.key] = saved;
+	}
+	return { value };
 }

@@ -1,4 +1,5 @@
-import { DEFAULT_JUICES, DEFAULT_SETTINGS } from '../shared/catalog.js';
+import { DEFAULT_JUICES, DEFAULT_SETTINGS, priceJuices } from '../shared/catalog.js';
+import { DEFAULT_COPY } from '../shared/content.js';
 
 let request;
 
@@ -6,7 +7,8 @@ let request;
 export function loadCatalog() {
 	request ??= fetch('/api/catalog')
 		.then(res => (res.ok ? res.json() : Promise.reject(new Error(res.statusText))))
-		.catch(() => ({ juices: DEFAULT_JUICES.filter(juice => juice.active), settings: DEFAULT_SETTINGS, offline: true }));
+		.then(catalog => ({ ...catalog, copy: { ...DEFAULT_COPY, ...catalog.copy } }))
+		.catch(() => ({ juices: priceJuices(DEFAULT_JUICES.filter(juice => juice.active), DEFAULT_SETTINGS), settings: DEFAULT_SETTINGS, copy: DEFAULT_COPY, offline: true }));
 	return request;
 }
 

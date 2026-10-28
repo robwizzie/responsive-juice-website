@@ -69,7 +69,7 @@ function fulfilmentBlock(order, settings, forOwner) {
 	const when = e(formatDate(order.date));
 	if (order.type === 'delivery') {
 		const zone = order.zoneCheck?.status === 'in' ? `${order.zoneCheck.miles} mi from ${e(order.zoneCheck.zone)}` : 'Distance not verified, double-check the address';
-		return `<p style="margin:0 0 4px;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:#6b6f6a">Monday delivery</p>
+		return `<p style="margin:0 0 4px;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:#6b6f6a">Delivery</p>
 <p style="margin:0 0 12px;font-size:18px"><strong>${when}</strong></p>
 <p style="margin:0;line-height:1.5">${addressText(order.address)}</p>${forOwner ? `<p style="margin:6px 0 0;font-size:13px;color:#6b6f6a">${zone}</p>` : ''}`;
 	}

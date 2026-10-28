@@ -61,6 +61,34 @@ test('admin requires sign in and the admin header', async () => {
 	assert.equal(broken.status, 400);
 });
 
+test('one bottle price reprices the whole menu, and page text edits reach the public catalog', async () => {
+	const ctx = { ip: '5.6.7.8' };
+	const login = await fns.admin(req('/api/admin/login', { method: 'POST', body: { password: 'secret' }, headers: { 'x-admin-request': '1' } }), ctx);
+	const headers = { cookie: login.headers.get('set-cookie').split(';')[0], 'x-admin-request': '1' };
+	const call = (path, method, body) => fns.admin(req(`/api/admin/${path}`, { method, body, headers }), ctx).then(res => res.json());
+
+	// A menu saved back when bottles were $7.50 picks up the $8 shop price
+	const { juices, settings } = await call('data', 'GET');
+	await fns.store.saveJuices(juices.map(j => ({ ...j, price: 7.5, customPrice: undefined })));
+	let menu = await (await fns.catalog(req('/api/catalog'))).json();
+	assert.ok(menu.juices.every(j => j.price === 8));
+
+	// Changing the bottle price changes every juice, except one with its own price
+	await call('juices', 'PUT', juices.map(j => (j.slug === 'simply-green' ? { ...j, customPrice: true, price: 9.5 } : j)));
+	const saved = await call('settings', 'PUT', { ...settings, bottlePrice: 8.5 });
+	assert.deepEqual(saved.juices.map(j => j.price), [8.5, 9.5, 8.5]);
+	menu = await (await fns.catalog(req('/api/catalog'))).json();
+	assert.deepEqual(menu.juices.map(j => j.price), [8.5, 9.5]);
+
+	// Page text: saved edits show up in the catalog the pages read, defaults fill the rest
+	const copy = await call('copy', 'PUT', { 'home.hero.line1': 'Sip on', 'home.hero.line2': 'the sip' });
+	assert.deepEqual(copy.copy, { 'home.hero.line1': 'Sip on' });
+	menu = await (await fns.catalog(req('/api/catalog'))).json();
+	assert.equal(menu.copy['home.hero.line1'], 'Sip on');
+	assert.equal(menu.copy['home.hero.line2'], 'the sip');
+	assert.deepEqual((await call('data', 'GET')).copy, { 'home.hero.line1': 'Sip on' });
+});
+
 test('paid Stripe session turns a pending order into a saved order, once', async () => {
 	const order = { id: 'order-1', type: 'pickup', date: '2026-11-03', customer: { name: 'Pat Doe', email: 'pat@example.com', phone: '2155550100' }, lines: [{ slug: 'simply-green', name: 'Simply Green', qty: 2, unit: 750, amount: 1500 }], subtotal: 1500, deliveryFee: 0, total: 1500 };
 	await fns.store.savePending(order);

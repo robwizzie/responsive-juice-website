@@ -4,7 +4,8 @@
  * assets/js/shared/catalog.js are used.
  */
 import { getStore } from '@netlify/blobs';
-import { DEFAULT_JUICES, DEFAULT_SETTINGS } from '../../../assets/js/shared/catalog.js';
+import { DEFAULT_JUICES, DEFAULT_SETTINGS, priceJuices } from '../../../assets/js/shared/catalog.js';
+import { DEFAULT_COPY } from '../../../assets/js/shared/content.js';
 
 const shop = () => getStore({ name: 'shop', consistency: 'strong' });
 export const imageStore = () => getStore({ name: 'images' });
@@ -23,9 +24,11 @@ export function mergeDeep(base, override) {
 	return out;
 }
 
-export async function getJuices() {
-	const saved = await shop().get('juices', { type: 'json' });
-	return Array.isArray(saved) ? saved : DEFAULT_JUICES;
+// Juices come back with their live price already filled in from the shop's bottle price, so
+// everything downstream (checkout, emails, share images) just reads juice.price.
+export async function getJuices(settings) {
+	const [saved, shopSettings] = await Promise.all([shop().get('juices', { type: 'json' }), settings || getSettings()]);
+	return priceJuices(Array.isArray(saved) ? saved : DEFAULT_JUICES, shopSettings);
 }
 
 export const saveJuices = juices => shop().setJSON('juices', juices);
@@ -35,6 +38,19 @@ export async function getSettings() {
 }
 
 export const saveSettings = settings => shop().setJSON('settings', settings);
+
+/* Page text and photos Hunter has changed. Only his edits are saved; everything else is the default. */
+export async function getCopy() {
+	const saved = await shop().get('copy', { type: 'json' });
+	return { ...DEFAULT_COPY, ...(isObject(saved) ? saved : {}) };
+}
+
+export async function getCopyEdits() {
+	const saved = await shop().get('copy', { type: 'json' });
+	return isObject(saved) ? saved : {};
+}
+
+export const saveCopy = edits => shop().setJSON('copy', edits);
 
 /* Orders are keyed by fulfilment date so they list in pickup/delivery order */
 export const orderKey = order => `${order.date}/${order.id}`;

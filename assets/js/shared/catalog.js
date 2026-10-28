@@ -97,6 +97,24 @@ export function ingredientIcon(name = '') {
 	return INGREDIENT_ICONS.includes(singular) ? `/assets/img/ingredients/${singular}.webp` : null;
 }
 
+/** Key used for a juice's own ingredient photos, so "Mango" and "mango " match. */
+export const ingredientKey = name => String(name || '').trim().toLowerCase();
+
+/** The photo for one of a juice's ingredients: Hunter's upload first, then the bundled one. */
+export const ingredientPhoto = (juice, name) => juice?.ingredientImages?.[ingredientKey(name)] || ingredientIcon(name);
+
+/**
+ * Every bottle costs the shop's bottle price unless Hunter gave that juice its own price.
+ * The saved menu and the defaults both go through this, so one edit reprices the whole site:
+ * cards, cart, checkout, share images and emails.
+ */
+export function priceJuice(juice, settings) {
+	const shop = Number(settings?.bottlePrice);
+	if (juice.customPrice || !(shop > 0)) return juice;
+	return { ...juice, price: shop };
+}
+export const priceJuices = (juices, settings) => juices.map(juice => priceJuice(juice, settings));
+
 export const slugify = text =>
 	String(text || '')
 		.toLowerCase()
@@ -113,7 +131,8 @@ export const DEFAULT_JUICES = [
 		description:
 			'Sunny oranges, pineapple and mango, grounded with carrot and a warming hit of fresh ginger and turmeric. Our brightest bottle, and a big dose of vitamin C.',
 		ingredients: ['Oranges', 'Pineapple', 'Mango', 'Carrots', 'Ginger', 'Turmeric'],
-		price: 7.5,
+		price: 8,
+		customPrice: false,
 		color: '#f59e1b',
 		splash: 'orange',
 		image: '/assets/img/bottles/simply-orange.webp',
@@ -139,7 +158,8 @@ export const DEFAULT_JUICES = [
 		description:
 			'A full handful of spinach blended with sweet oranges, banana and pineapple. Smooth, fruity and loaded with vitamin K, so you get your greens without tasting like a salad.',
 		ingredients: ['Spinach', 'Oranges', 'Bananas', 'Pineapple'],
-		price: 7.5,
+		price: 8,
+		customPrice: false,
 		color: '#8db62f',
 		splash: 'green',
 		image: '/assets/img/bottles/simply-green.webp',
@@ -165,7 +185,8 @@ export const DEFAULT_JUICES = [
 		description:
 			'Ripe strawberries and crisp apples pressed with fresh lemon and coconut water. Light, tart and hydrating, the easiest bottle to finish.',
 		ingredients: ['Strawberries', 'Apples', 'Lemon', 'Coconut Water'],
-		price: 7.5,
+		price: 8,
+		customPrice: false,
 		color: '#e0322f',
 		splash: 'red',
 		image: '/assets/img/bottles/simply-red.webp',
@@ -188,6 +209,8 @@ export const DEFAULT_JUICES = [
 
 export const DEFAULT_SETTINGS = {
 	orderingEnabled: true,
+	// What one bottle costs. Every juice uses it unless it has its own price set in /admin.
+	bottlePrice: 8,
 	// Optional banner shown across the top of every page (e.g. "Back in stock Monday!")
 	announcement: '',
 	contactEmail: 'siponpressed@yahoo.com',
