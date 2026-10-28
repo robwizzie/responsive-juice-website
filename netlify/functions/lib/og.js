@@ -14,6 +14,8 @@ export const OG_HEIGHT = 630;
 const INK = '#161513';
 const LIME = '#c4dd3b';
 const PAPER = '#fdf6ea';
+const NIGHT = '#0b0b0a';
+const BAND = 92;
 
 // A tiny hyperscript so the layouts below read like markup
 const h = (type, style = {}, ...children) => {
@@ -73,14 +75,15 @@ const splashFor = juice => `/assets/img/splash/${juice.splash || 'orange'}.webp`
 const STATUS_TEXT = { 'sold-out': 'Sold out', 'coming-soon': 'Coming soon' };
 const priceText = juice => (Number(juice.price) ? `$${Number(juice.price).toFixed(2)}` : '');
 
-/** Big stacked headline; the size shrinks so the longest line fits the column. */
+/** Big stacked headline; the size shrinks so the longest line fits the column. `color` can be one per line. */
 function headline(lines, color, maxWidth, maxSize) {
+	const colors = [].concat(color);
 	const longest = Math.max(...lines.map(line => line.length));
 	const size = Math.round(Math.min(maxSize, maxWidth / (longest * 0.95)));
 	return h(
 		'div',
-		{ flexDirection: 'column', fontFamily: 'Archivo Expanded', fontWeight: 900, fontSize: size, lineHeight: 0.92, color, letterSpacing: -1 },
-		lines.map(line => h('div', {}, line))
+		{ flexDirection: 'column', fontFamily: 'Archivo Expanded', fontWeight: 900, fontSize: size, lineHeight: 0.92, letterSpacing: -1 },
+		lines.map((line, i) => h('div', { color: colors[Math.min(i, colors.length - 1)] }, line))
 	);
 }
 
@@ -129,49 +132,57 @@ function pageCopy(page, juices, settings) {
 		case 'juices':
 			return { lines: ['PRESSED', 'THIS WEEK'], note: juices.map(juice => juice.name).slice(0, 4).join(' · ') || 'Cold-pressed juice', cta: from };
 		case 'order':
-			return { lines: ['ORDER', 'FRESH'], note: `Pickup in ${settings.pickup?.area || 'Philadelphia'} or delivery`, cta: `Order at ${SITE}` };
+			return { lines: ['ORDER', 'FRESH'], note: `Pickup in ${settings.pickup?.area || 'Philadelphia'} or delivery`, cta: 'Order online' };
 		case 'about':
 			return { lines: ["HEY, I'M", 'HUNTER'], note: 'One guy, one press, every bottle', cta: 'Meet the maker', photo: true };
 		case 'contact':
-			return { lines: ['SAY', 'HELLO'], note: 'Questions, big orders and wholesale', cta: settings.contactEmail || SITE };
+			return { lines: ['SAY', 'HELLO'], note: 'Questions, big orders and wholesale', cta: 'Get in touch' };
 		default:
 			return { lines: ['EMBRACE', 'THE SIP'], note: 'Small-batch cold-pressed juice, made by Hunter in Philly', cta: from };
 	}
 }
 
+// Page cards sit on black with a lime band along the bottom: iMessage tints the link bar under
+// the preview from the image's bottom edge, so the band keeps that bar in the brand green
 async function pageCard(origin, page, juices, settings) {
 	const copy = pageCopy(page, juices, settings);
 	const left = 620;
-	const art = copy.photo ? await portrait(origin, settings) : await bottleFan(origin, juices, OG_WIDTH - left - 20, OG_HEIGHT - 50);
+	const artH = OG_HEIGHT - BAND;
+	const art = copy.photo ? await portrait(origin, settings, artH) : await bottleFan(origin, juices, OG_WIDTH - left - 20, artH - 50);
 	return h(
 		'div',
-		{ width: OG_WIDTH, height: OG_HEIGHT, background: LIME, position: 'relative', fontFamily: 'Archivo', overflow: 'hidden' },
+		{ width: OG_WIDTH, height: OG_HEIGHT, background: NIGHT, position: 'relative', fontFamily: 'Archivo', overflow: 'hidden' },
 		h(
 			'div',
-			{ flexDirection: 'column', justifyContent: 'space-between', width: left, height: OG_HEIGHT, padding: '56px 0 56px 64px' },
-			img(await wordmark(origin, INK), { width: 300, height: 48 }),
+			{ flexDirection: 'column', justifyContent: 'space-between', width: left, height: artH, padding: '52px 0 44px 64px' },
+			img(await wordmark(origin, PAPER), { width: 300, height: 48 }),
 			h(
 				'div',
 				{ flexDirection: 'column', gap: 22 },
-				headline(copy.lines, INK, left - 84, 124),
-				h('div', { fontSize: 30, fontWeight: 500, color: INK, maxWidth: 500, lineHeight: 1.25 }, copy.note)
-			),
-			h('div', { gap: 14 }, pill(copy.cta, INK, PAPER))
+				headline(copy.lines, [PAPER, LIME], left - 84, 124),
+				h('div', { fontSize: 28, fontWeight: 500, color: 'rgba(253,246,234,0.72)', maxWidth: 500, lineHeight: 1.25 }, copy.note)
+			)
 		),
-		h('div', { position: 'absolute', right: 0, bottom: 0 }, art)
+		h('div', { position: 'absolute', right: 0, bottom: BAND }, art),
+		h(
+			'div',
+			{ position: 'absolute', left: 0, bottom: 0, width: OG_WIDTH, height: BAND, background: LIME, color: INK, alignItems: 'center', justifyContent: 'space-between', padding: '0 64px' },
+			h('div', { fontFamily: 'Archivo Expanded', fontWeight: 900, fontSize: 26, letterSpacing: 1 }, copy.cta.toUpperCase()),
+			h('div', { fontSize: 28, fontWeight: 700 }, SITE)
+		)
 	);
 }
 
-async function portrait(origin, settings) {
+async function portrait(origin, settings, height) {
 	const photo = (await optionalPicture(origin, settings.aboutPhoto, 560)) || (await optionalPicture(origin, '/assets/img/hunter-portrait.webp', 560));
 	if (!photo) return h('div', {});
 	return h(
 		'div',
-		{ padding: '0 70px 0 0', height: OG_HEIGHT, alignItems: 'center' },
+		{ padding: '0 90px 0 0', height, alignItems: 'center' },
 		h(
 			'div',
-			{ width: 400, height: 500, borderRadius: 36, overflow: 'hidden', border: `6px solid ${INK}`, transform: 'rotate(3deg)' },
-			img(photo.src, { width: 400, height: 500, objectFit: 'cover' })
+			{ width: 340, height: 425, borderRadius: 32, overflow: 'hidden', border: `6px solid ${LIME}`, transform: 'rotate(3deg)' },
+			img(photo.src, { width: 340, height: 425, objectFit: 'cover' })
 		)
 	);
 }
