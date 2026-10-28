@@ -154,7 +154,7 @@ function render(juice, juices, settings) {
 				<div class="section-head" data-reveal>
 					<div>
 						<p class="kicker">Keep sipping</p>
-						<h2 class="section-title">More juices.</h2>
+						<h2 class="section-title">More juices</h2>
 					</div>
 					<div class="rail__nav">
 						<button type="button" class="icon-btn rail__btn" data-rail-prev aria-label="Scroll back">${icon('arrowLeft')}</button>

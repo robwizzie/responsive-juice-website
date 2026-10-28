@@ -4,51 +4,19 @@
  */
 import { loadCatalog, escapeHtml as e } from './lib/catalog.js';
 import { addToCart, cartCount, cartLines, getCart, setQty } from './lib/cart.js';
+import { bottleImage, flashAdded, money, moneyShort } from './lib/components.js';
+import { juiceStatus } from './shared/catalog.js';
 import { wordmark } from './lib/brand.js';
-import { bottleImage, flashAdded, money } from './lib/components.js';
+import { headerHTML } from './lib/header.js';
 import { icon } from './lib/icons.js';
-
-const NAV = [
-	{ href: '/juices', label: 'Juices', match: ['/juices'] },
-	{ href: '/about', label: 'About', match: ['/about'] },
-	{ href: '/contact', label: 'Contact', match: ['/contact'] }
-];
 
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 
 /*=============== HEADER ===============*/
 function renderHeader() {
-	const path = location.pathname.replace(/\.html$/, '');
-	const links = NAV.map(link => {
-		const active = link.match.some(m => path === m || path.startsWith(`${m}/`));
-		return `<a href="${link.href}" class="nav__link${active ? ' is-active' : ''}"${active ? ' aria-current="page"' : ''}>${link.label}</a>`;
-	}).join('');
-
-	document.body.insertAdjacentHTML(
-		'afterbegin',
-		`<a class="skip-link" href="#main">Skip to content</a>
-		<div class="announcement" hidden></div>
-		<header class="site-header">
-			<div class="container site-header__inner">
-				<a href="/" class="wordmark" aria-label="SiponPressed home">${wordmark('SiponPressed')}</a>
-				<nav class="nav" id="site-nav" aria-label="Main">
-					${links}
-					<a href="/order" class="nav__link nav__link--order">Order</a>
-					<div class="nav__foot" data-nav-bottles aria-hidden="true"></div>
-				</nav>
-				<div class="site-header__actions">
-					<a href="/order" class="btn btn--ink btn--sm site-header__order">Order now</a>
-					<button type="button" class="icon-btn cart-btn" data-cart-open aria-label="Open cart">
-						${icon('cart')}<span class="cart-btn__count" data-cart-count hidden>0</span>
-					</button>
-					<button type="button" class="icon-btn nav-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="Menu">
-						${icon('menu')}
-					</button>
-				</div>
-			</div>
-		</header>`
-	);
+	// Pages ship with the header baked in so it paints right away; build it only if one doesn't
+	if (!document.querySelector('.site-header')) document.body.insertAdjacentHTML('afterbegin', headerHTML(location.pathname));
 
 	const header = document.querySelector('.site-header');
 	const toggle = header.querySelector('.nav-toggle');
@@ -65,6 +33,14 @@ function renderHeader() {
 	onScroll();
 	window.addEventListener('scroll', onScroll, { passive: true });
 }
+
+/** A juice in the mobile menu: its bottle standing up out of a tinted card */
+const navTile = (juice, i) => `
+	<a href="/juices/${juice.slug}" class="nav-tile is-${juiceStatus(juice)}" style="--c: ${juice.color}; --i: ${i}">
+		<span class="nav-tile__bottle">${bottleImage(juice, { small: true })}</span>
+		<span class="nav-tile__name">${e(juice.name)}</span>
+		<span class="nav-tile__meta">${juiceStatus(juice) === 'available' ? moneyShort(juice.price) : juiceStatus(juice) === 'sold-out' ? 'Sold out' : 'Soon'}</span>
+	</a>`;
 
 /*=============== FOOTER ===============*/
 const fan = list =>
@@ -84,7 +60,7 @@ function renderFooter(settings) {
 				<div class="site-footer__top">
 					<div class="site-footer__brand">
 						<a href="/" class="wordmark wordmark--lg" aria-label="SiponPressed home">${wordmark('SiponPressed')}</a>
-						<p class="site-footer__tag">Embrace the sip.</p>
+						<p class="site-footer__tag">Embrace the sip</p>
 						<p class="site-footer__note">Real juice. Real health. Real you. Cold-pressed in small batches by Hunter in Philadelphia.</p>
 					</div>
 					<div class="site-footer__cols">
@@ -363,8 +339,8 @@ export const ready = loadCatalog().then(catalog => {
 	renderAnnouncement(settings);
 	renderFooter(settings);
 	renderDrawer();
-	const navBottles = document.querySelector('[data-nav-bottles]');
-	if (navBottles) navBottles.innerHTML = juices.filter(j => j.image).slice(0, 4).map((j, i) => bottleImage(j, { small: true }).replace('<img ', `<img style="--i: ${i}; --r: ${(i - 1) * 7}deg" `)).join('');
+	const navJuices = document.querySelector('[data-nav-juices]');
+	if (navJuices) navJuices.innerHTML = juices.map(navTile).join('');
 	return catalog;
 });
 

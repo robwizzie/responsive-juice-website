@@ -6,7 +6,7 @@
  */
 import { juiceStatus } from '../shared/catalog.js';
 import { escapeHtml as e } from './catalog.js';
-import { bottleImage, garnishFor, money, statusStamp } from './components.js';
+import { bottleImage, garnishFor, money, onColor, statusStamp } from './components.js';
 import { icon } from './icons.js';
 
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -55,6 +55,7 @@ export function flavorCarousel(root, juices) {
 				<div class="flavors__dots">${juices.map((j, i) => `<button type="button" class="flavors__dot" data-dot="${i}" aria-label="${e(j.name)}"></button>`).join('')}</div>
 			</div>
 		</div>
+		<p class="flavors__word" aria-hidden="true"></p>
 		<div class="flavors__stage">
 			<span class="flavors__disc" aria-hidden="true"></span>
 			${juices.map(item).join('')}
@@ -62,6 +63,7 @@ export function flavorCarousel(root, juices) {
 	root.setAttribute('aria-roledescription', 'carousel');
 	root.style.setProperty('--autoplay', `${AUTOPLAY_MS}ms`);
 
+	const word = root.querySelector('.flavors__word');
 	const items = [...root.querySelectorAll('[data-item]')];
 	const slides = [...root.querySelectorAll('[data-slide]')];
 	const dots = [...root.querySelectorAll('[data-dot]')];
@@ -92,6 +94,13 @@ export function flavorCarousel(root, juices) {
 	function render(dir) {
 		const juice = juices[active];
 		root.style.setProperty('--flavor', juice.color);
+		root.style.setProperty('--on-flavor', onColor(juice.color));
+		// The flavor's last word set huge behind the bottles ("ORANGE"), re-stamped on every change
+		word.textContent = juice.name.split(' ').pop();
+		word.style.setProperty('--len', word.textContent.length);
+		word.classList.remove('is-in');
+		void word.offsetWidth;
+		word.classList.add('is-in');
 		slides.forEach((s, i) => {
 			s.classList.toggle('is-active', i === active);
 			s.setAttribute('aria-hidden', i !== active);

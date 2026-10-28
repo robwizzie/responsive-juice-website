@@ -30,7 +30,7 @@ function renderFallback(settings) {
 	root.innerHTML = `
 		<span class="confirm__check">${icon('check')}</span>
 		<p class="kicker">Thank you</p>
-		<h1 class="section-title">Your order is in.</h1>
+		<h1 class="section-title">Your order is in</h1>
 		<p class="section-lede">Check your email for the confirmation. Questions? Email <a href="mailto:${e(settings.contactEmail)}">${e(settings.contactEmail)}</a>.</p>
 		<div class="confirm__actions"><a href="/juices" class="btn btn--ink btn--lg">Back to the menu</a></div>`;
 }

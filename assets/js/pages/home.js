@@ -1,35 +1,48 @@
 import { ready } from '../site.js';
 import { flavorCarousel } from '../lib/carousel.js';
-import { bottleImage, garnishFor, onColor, statusStamp, waysToOrder } from '../lib/components.js';
+import { bottleImage, garnishFor, statusStamp, waysToOrder } from '../lib/components.js';
 import { escapeHtml as e } from '../lib/catalog.js';
-import { icon } from '../lib/icons.js';
 import { juiceStatus } from '../shared/catalog.js';
 
-/** One arch in the hero: the juice's color, its bottle standing in it, two ingredients floating by. */
-function pillar(juice, i) {
+/** One bottle in the hero, standing over its splash with two ingredients floating by. */
+function heroBottle(juice, i) {
 	const [fruitA, fruitB] = garnishFor(juice);
 	const fruit = (src, cls) => (src ? `<span class="hero__fruit ${cls}"><img src="${src}" alt="" decoding="async"></span>` : '');
+	const splash = juice.splash && juice.splash !== 'none' ? `<img src="/assets/img/splash/${juice.splash}.webp" alt="" class="hero__splash" decoding="async">` : '';
 	return `
-		<a href="/juices/${juice.slug}" class="hero__pillar is-${juiceStatus(juice)}" style="--c: ${juice.color}; --on-c: ${onColor(juice.color)}; --i: ${i}">
-			<span class="hero__arch"></span>
+		<a href="/juices/${juice.slug}" class="hero__bottle is-${juiceStatus(juice)}" style="--c: ${juice.color}; --i: ${i}" aria-label="${e(juice.name)}">
+			${splash}
 			${fruit(fruitA, 'hero__fruit--a')}
 			${fruit(fruitB, 'hero__fruit--b')}
-			<span class="hero__bottle">${bottleImage(juice, { eager: true })}</span>
+			${bottleImage(juice, { eager: true, className: 'hero__img' })}
 			${statusStamp(juice, { className: 'hero__stamp' })}
-			<span class="hero__name">${e(juice.name)}${icon('arrowRight')}</span>
 		</a>`;
 }
+
+/** Plays the hero entrance once the bottle photos are ready, on every load. */
+function playHero(hero) {
+	hero.classList.remove('is-in');
+	const imgs = [...hero.querySelectorAll('.hero__img')].filter(img => img.tagName === 'IMG');
+	const ready = imgs.map(img => (img.decode ? img.decode().catch(() => {}) : Promise.resolve()));
+	const timeout = new Promise(resolve => setTimeout(resolve, 1500));
+	Promise.race([Promise.all(ready), timeout]).then(() => requestAnimationFrame(() => hero.classList.add('is-in')));
+}
+
+const hero = document.querySelector('[data-hero]');
+playHero(hero);
+// Coming back with the browser's back button restores the page as it was; replay the entrance
+window.addEventListener('pageshow', event => event.persisted && playHero(hero));
 
 ready.then(({ juices, settings }) => {
 	// The hero ships with the three launch bottles; rebuild it only if Hunter's menu differs
 	const trio = document.querySelector('[data-hero-trio]');
 	const shown = juices.slice(0, 3);
-	const current = [...trio.querySelectorAll('.hero__pillar')].map(a => a.getAttribute('href')).join();
+	const current = [...trio.querySelectorAll('.hero__bottle')].map(a => a.getAttribute('href')).join();
 	const wanted = shown.map(j => `/juices/${j.slug}`).join();
-	const changed = shown.some((j, i) => j.status !== 'available' || !trio.querySelectorAll('.hero__bottle img')[i]?.src.endsWith(j.image));
+	const changed = shown.some((j, i) => juiceStatus(j) !== 'available' || !trio.querySelectorAll('.hero__img')[i]?.src?.endsWith(j.image));
 	if (shown.length && (current !== wanted || changed)) {
-		trio.innerHTML = shown.map(pillar).join('');
-		trio.dataset.count = shown.length;
+		trio.innerHTML = shown.map(heroBottle).join('');
+		playHero(hero);
 	}
 
 	flavorCarousel(document.querySelector('[data-flavors]'), juices);
