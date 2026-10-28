@@ -206,9 +206,10 @@ function closeCart() {
 }
 
 let toastTimer;
-export function toast(html) {
+export function toast(html, variant = '') {
 	const el = document.querySelector('.toast');
 	el.innerHTML = html;
+	el.className = `toast${variant ? ` toast--${variant}` : ''}${el.classList.contains('is-visible') ? ' is-visible' : ''}`;
 	el.hidden = false;
 	requestAnimationFrame(() => el.classList.add('is-visible'));
 	clearTimeout(toastTimer);
@@ -267,7 +268,12 @@ function bindCart() {
 			flashAdded(add);
 			flyToCart(add);
 			const juice = juices.find(j => j.slug === add.dataset.add);
-			toast(`${icon('check')} <span>${qty > 1 ? `${qty} &times; ` : ''}${e(juice?.name || 'Juice')} added</span> <button type="button" class="toast__link" data-cart-open>View cart</button>`);
+			toast(
+				`${juice?.image ? `<img class="toast__thumb" src="${e(juice.image)}" alt="">` : `<span class="toast__thumb">${icon('check')}</span>`}
+				<span class="toast__text"><small>${icon('check')} Added to cart</small><strong>${qty > 1 ? `${qty} &times; ` : ''}${e(juice?.name || 'Juice')}</strong></span>
+				<button type="button" class="toast__link" data-cart-open>View cart ${icon('arrowRight')}</button>`,
+				'cart'
+			);
 			return;
 		}
 		if (event.target.closest('[data-cart-open]')) return openCart();
