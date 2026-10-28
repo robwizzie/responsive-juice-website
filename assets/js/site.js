@@ -70,7 +70,7 @@ function renderHeader() {
 const fan = list =>
 	list
 		.slice(0, 3)
-		.map((juice, i) => (juice.image ? `<img src="${juice.imageSmall || juice.image}" alt="" loading="lazy" style="--r: ${(i - 1) * 9}deg; --i: ${i}">` : ''))
+		.map((juice, i) => (juice.image ? `<img src="${juice.imageSmall || juice.image}" alt="" loading="lazy" style="--i: ${i}">` : ''))
 		.join('');
 
 function renderFooter(settings) {

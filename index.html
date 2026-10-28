@@ -22,21 +22,54 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,100..900;1,62..125,100..900&display=swap">
     <link rel="stylesheet" href="/assets/css/styles.css">
-    <script>document.documentElement.classList.add('js')</script>
+    <script>document.documentElement.classList.add('js');try{sessionStorage.getItem('sp-intro')||(document.documentElement.classList.add('intro'),sessionStorage.setItem('sp-intro','1'))}catch(e){}</script>
     <link rel="preload" as="image" href="/assets/img/bottles/simply-orange.webp" fetchpriority="high">
     <script type="module" src="/assets/js/pages/home.js"></script>
 </head>
 <body class="page-home">
     <main id="main">
-        <!--==================== FLAVOR CAROUSEL ====================-->
-        <section class="flavors" data-flavors aria-label="SiponPressed juices">
-            <noscript><div class="container section"><h1 class="page-hero__title">Embrace the sip.</h1><p class="page-hero__lede"><a href="/juices">See the juices</a></p></div></noscript>
+        <!--==================== HERO ====================-->
+        <section class="hero" data-hero>
+            <div class="container hero__inner">
+                <div class="hero__copy">
+                    <p class="kicker hero__kicker">Cold-pressed in Philadelphia</p>
+                    <h1 class="hero__title"><span class="hero__line"><span>Embrace</span></span> <span class="hero__line"><span>the sip.</span></span></h1>
+                    <p class="hero__lede">Small-batch juice pressed by Hunter from whole fruit and greens. Nothing else in the bottle.</p>
+                    <div class="hero__actions">
+                        <a href="/order" class="btn btn--ink btn--lg">Order now</a>
+                        <a href="/juices" class="btn btn--ghost btn--lg">See the juices</a>
+                    </div>
+                </div>
+                <div class="hero__trio" data-hero-trio>
+                    <a href="/juices/simply-orange" class="hero__pillar" style="--c: #f59e1b; --on-c: #161513; --i: 0">
+                        <span class="hero__arch"></span>
+                        <span class="hero__fruit hero__fruit--a"><img src="/assets/img/ingredients/orange.webp" alt="" decoding="async"></span>
+                        <span class="hero__fruit hero__fruit--b"><img src="/assets/img/ingredients/pineapple.webp" alt="" decoding="async"></span>
+                        <span class="hero__bottle"><img src="/assets/img/bottles/simply-orange.webp" alt="Simply Orange" decoding="async" fetchpriority="high"></span>
+                        <span class="hero__name">Simply Orange<span data-icon="arrowRight"></span></span>
+                    </a>
+                    <a href="/juices/simply-green" class="hero__pillar" style="--c: #8db62f; --on-c: #161513; --i: 1">
+                        <span class="hero__arch"></span>
+                        <span class="hero__fruit hero__fruit--a"><img src="/assets/img/ingredients/spinach.webp" alt="" decoding="async"></span>
+                        <span class="hero__fruit hero__fruit--b"><img src="/assets/img/ingredients/banana.webp" alt="" decoding="async"></span>
+                        <span class="hero__bottle"><img src="/assets/img/bottles/simply-green.webp" alt="Simply Green" decoding="async" fetchpriority="high"></span>
+                        <span class="hero__name">Simply Green<span data-icon="arrowRight"></span></span>
+                    </a>
+                    <a href="/juices/simply-red" class="hero__pillar" style="--c: #e0322f; --on-c: #ffffff; --i: 2">
+                        <span class="hero__arch"></span>
+                        <span class="hero__fruit hero__fruit--a"><img src="/assets/img/ingredients/strawberry.webp" alt="" decoding="async"></span>
+                        <span class="hero__fruit hero__fruit--b"><img src="/assets/img/ingredients/lemon.webp" alt="" decoding="async"></span>
+                        <span class="hero__bottle"><img src="/assets/img/bottles/simply-red.webp" alt="Simply Red" decoding="async" fetchpriority="high"></span>
+                        <span class="hero__name">Simply Red<span data-icon="arrowRight"></span></span>
+                    </a>
+                </div>
+            </div>
         </section>
 
         <!--==================== STATEMENT ====================-->
-        <section class="section">
+        <section class="section section--statement">
             <div class="container">
-                <h1 class="statement" data-reveal>
+                <h2 class="statement" data-reveal>
                     Cold-pressed juice made by Hunter in Philly
                     <img class="statement__img" src="/assets/img/ingredients/orange.webp" alt="" style="--r: -12deg; --bg: #ffe7c2">
                     from whole fruit
@@ -44,7 +77,7 @@
                     and greens
                     <img class="statement__img" src="/assets/img/ingredients/spinach.webp" alt="" style="--r: -6deg; --bg: #e4f0c8">
                     <span class="dim">with nothing else in the bottle.</span>
-                </h1>
+                </h2>
                 <ul class="facts" data-reveal>
                     <li class="fact"><span data-icon="snow"></span> Cold pressed, never heated</li>
                     <li class="fact"><span data-icon="drop"></span> No added sugar</li>
@@ -54,7 +87,7 @@
             </div>
         </section>
 
-        <!--==================== JUICES ====================-->
+        <!--==================== FLAVOR CAROUSEL ====================-->
         <section class="section section--tint" id="juices">
             <div class="container">
                 <div class="section-head" data-reveal>
@@ -64,7 +97,7 @@
                     </div>
                     <a href="/juices" class="link-arrow">Compare all juices <span data-icon="arrowRight"></span></a>
                 </div>
-                <div class="juice-grid" data-menu></div>
+                <div class="flavors" data-flavors aria-label="SiponPressed juices" data-reveal></div>
             </div>
         </section>
 
@@ -84,7 +117,7 @@
         <!--==================== HUNTER ====================-->
         <section class="section section--tint">
             <div class="container story">
-                <div class="story__media" data-reveal>
+                <div class="story__media" data-reveal data-story-media>
                     <img src="/assets/img/backdrops/riverfront-sm.webp" alt="The Delaware River and Ben Franklin Bridge in Philadelphia" class="story__photo" loading="lazy" decoding="async">
                     <img src="/assets/img/bottles/simply-orange.webp" alt="" class="story__bottle" loading="lazy" decoding="async" data-story-bottle>
                 </div>

@@ -47,7 +47,7 @@ ready.then(({ juices, settings }) => {
 	fan.innerHTML = shown
 		.map((j, i) => {
 			const mid = (shown.length - 1) / 2;
-			return `<a href="/juices/${j.slug}" tabindex="-1" style="--r: ${(i - mid) * 8}deg; --y: ${Math.abs(i - mid) * 10}px; z-index: ${10 - Math.abs(i - mid)}">${bottleImage(j, { eager: true, small: true })}</a>`;
+			return `<a href="/juices/${j.slug}" tabindex="-1" class="${i === mid ? 'is-mid' : ''}" style="--i: ${i}; z-index: ${10 - Math.abs(i - mid)}">${bottleImage(j, { eager: true })}</a>`;
 		})
 		.join('');
 	const table = document.querySelector('[data-compare]');

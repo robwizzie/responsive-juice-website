@@ -6,7 +6,7 @@
  */
 import { juiceStatus } from '../shared/catalog.js';
 import { escapeHtml as e } from './catalog.js';
-import { bottleImage, garnishFor, money, onColor, statusStamp } from './components.js';
+import { bottleImage, garnishFor, money, statusStamp } from './components.js';
 import { icon } from './icons.js';
 
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -15,13 +15,11 @@ const pad = n => String(n).padStart(2, '0');
 
 function slide(juice, i, total) {
 	const status = juiceStatus(juice);
-	const dark = onColor(juice.color) !== '#ffffff';
-	const primary = dark ? 'btn--ink' : 'btn--white';
 	const actions =
 		status === 'available'
-			? `<button type="button" class="btn ${primary} btn--lg" data-add="${juice.slug}">${icon('plus')} Add to cart &middot; ${money(juice.price)}</button>
-				<a href="/juices/${juice.slug}" class="btn btn--outline btn--lg">Details</a>`
-			: `${statusStamp(juice)}<a href="/juices/${juice.slug}" class="btn btn--outline btn--lg">Take a look</a>`;
+			? `<button type="button" class="btn btn--ink btn--lg" data-add="${juice.slug}">${icon('plus')} Add &middot; ${money(juice.price)}</button>
+				<a href="/juices/${juice.slug}" class="btn btn--ghost btn--lg">Details</a>`
+			: `${statusStamp(juice)}<a href="/juices/${juice.slug}" class="btn btn--ghost btn--lg">Take a look</a>`;
 	return `
 		<div class="flavors__slide" data-slide="${i}" aria-roledescription="slide" aria-label="${i + 1} of ${total}">
 			<p class="flavors__count">${pad(i + 1)} / ${pad(total)}</p>
@@ -33,7 +31,7 @@ function slide(juice, i, total) {
 
 function item(juice, i) {
 	const [fruitA, fruitB] = garnishFor(juice);
-	const splash = juice.splash && juice.splash !== 'none' ? `<img src="/assets/img/splash/${juice.splash}-sm.webp" alt="" class="flavors__splash" decoding="async">` : '';
+	const splash = juice.splash && juice.splash !== 'none' ? `<img src="/assets/img/splash/${juice.splash}.webp" alt="" class="flavors__splash" loading="lazy" decoding="async">` : '';
 	const fruit = (src, cls) => (src ? `<span class="flavors__fruit ${cls}"><img src="${src}" alt="" decoding="async"></span>` : '');
 	return `
 		<div class="flavors__item is-${juiceStatus(juice)}" data-item="${i}" role="button" tabindex="-1" aria-label="Show ${e(juice.name)}">
@@ -58,7 +56,7 @@ export function flavorCarousel(root, juices) {
 			</div>
 		</div>
 		<div class="flavors__stage">
-			<span class="flavors__floor" aria-hidden="true"></span>
+			<span class="flavors__disc" aria-hidden="true"></span>
 			${juices.map(item).join('')}
 		</div>`;
 	root.setAttribute('aria-roledescription', 'carousel');
@@ -93,8 +91,7 @@ export function flavorCarousel(root, juices) {
 
 	function render(dir) {
 		const juice = juices[active];
-		root.style.setProperty('--c', juice.color);
-		root.style.setProperty('--on-c', onColor(juice.color));
+		root.style.setProperty('--flavor', juice.color);
 		slides.forEach((s, i) => {
 			s.classList.toggle('is-active', i === active);
 			s.setAttribute('aria-hidden', i !== active);
