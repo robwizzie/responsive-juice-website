@@ -2928,9 +2928,6 @@ html:not(.js) .cta-band .cta-band__scene {
 	--accent: #f7a531;
 }
 
-.page-card--red {
-	--accent: #ff5d4f;
-}
 
 /* Order: the three steps as numbered tiles */
 .page-card__steps {

@@ -1,4 +1,5 @@
-import { ingredientIcon, juiceStatus } from '../shared/catalog.js';
+import { ingredientPhoto, juiceStatus } from '../shared/catalog.js';
+import { DEFAULT_COPY, copyText } from '../shared/content.js';
 import { escapeHtml as e } from './catalog.js';
 import { icon } from './icons.js';
 
@@ -10,7 +11,7 @@ export const moneyShort = dollars => (Number.isInteger(Number(dollars)) ? `$${Nu
 /** First two ingredients that have a photo, used as the floating garnish around a bottle. */
 export const garnishFor = juice =>
 	juice.ingredients
-		.map(ingredientIcon)
+		.map(name => ingredientPhoto(juice, name))
 		.filter(Boolean)
 		.slice(0, 2);
 
@@ -96,8 +97,9 @@ const dayList = days => {
 	return names.length === 7 ? 'every day' : names.join(', ');
 };
 
-/** The two ways to get juice (pickup and delivery), described from the live settings. */
-export function waysToOrder(settings) {
+/** The two ways to get juice (pickup and delivery), described from the live settings. Pass the page text to use Hunter's wording. */
+export function waysToOrder(settings, copy = DEFAULT_COPY) {
+	const t = key => e(copyText(copy, key, settings));
 	const { pickup, delivery } = settings;
 	const weekday = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 	const cards = [];
@@ -106,7 +108,7 @@ export function waysToOrder(settings) {
 			<article class="way" data-reveal>
 				<span class="way__icon">${icon('store')}</span>
 				<h3 class="way__title">Pickup in ${e(pickup.area.split(',')[0])}</h3>
-				<p class="way__text">Order online and grab your bottles fresh. Hunter confirms the spot and time once your order is pressed.</p>
+				<p class="way__text">${t('ways.pickup')}</p>
 				<ul class="way__list">
 					<li>${icon('calendar')} Pickup ${dayList(pickup.days)}</li>
 					<li>${icon('clock')} Order ${pickup.leadDays > 0 ? `${pickup.leadDays} day${pickup.leadDays === 1 ? '' : 's'} ahead` : 'same day'}, pressed to order</li>
@@ -120,7 +122,7 @@ export function waysToOrder(settings) {
 			<article class="way way--feature" data-reveal>
 				<span class="way__icon">${icon('truck')}</span>
 				<h3 class="way__title">${weekday[delivery.day]} delivery in ${e(delivery.areaLabel)}</h3>
-				<p class="way__text">Hunter drives a fresh batch to your door every ${weekday[delivery.day]}, within ${delivery.radiusMiles} miles of ${delivery.zones.map(z => e(z.label.split(',')[0])).join(' and ')}.</p>
+				<p class="way__text">${t('ways.delivery')}</p>
 				<ul class="way__list">
 					<li>${icon('bag')} ${delivery.minBottles} bottle minimum</li>
 					<li>${icon('truck')} ${moneyShort(delivery.fee)} delivery${delivery.freeOver > 0 ? `, free over ${moneyShort(delivery.freeOver)}` : ''}</li>

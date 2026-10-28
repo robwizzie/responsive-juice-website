@@ -6,17 +6,19 @@ import { icon } from '../lib/icons.js';
 import { wordmark } from '../lib/brand.js';
 import { escapeHtml as e } from '../lib/catalog.js';
 import { bottleImage, juiceCard, money } from '../lib/components.js';
-import { BACKDROPS, DEFAULT_BACKDROP, JUICE_STATUSES, SPLASH_STYLES, juiceStatus, slugify } from '../shared/catalog.js';
+import { BACKDROPS, DEFAULT_BACKDROP, JUICE_STATUSES, SPLASH_STYLES, ingredientKey, ingredientPhoto, juiceStatus, priceJuice, slugify } from '../shared/catalog.js';
 import { formatDate, formatMoney, todayISO, weekdayName } from '../shared/order-rules.js';
 import { prepareBottle, preparePhoto } from './image.js';
+import { renderPages, pagesDirty } from './pages.js';
+import { renderIngredients } from './ingredients.js';
 
 const app = document.getElementById('admin');
-const state = { juices: [], settings: null, status: {}, orders: null, tab: 'menu' };
+const state = { juices: [], settings: null, copy: {}, status: {}, orders: null, tab: 'menu' };
 
 /*=============== API ===============*/
 class AuthError extends Error {}
 
-async function api(path, { method = 'GET', json, blob } = {}) {
+export async function api(path, { method = 'GET', json, blob } = {}) {
 	const headers = {};
 	if (method !== 'GET') headers['X-Admin-Request'] = '1';
 	if (json !== undefined) headers['Content-Type'] = 'application/json';
@@ -28,7 +30,7 @@ async function api(path, { method = 'GET', json, blob } = {}) {
 	return data;
 }
 
-async function guarded(task) {
+export async function guarded(task) {
 	try {
 		return await task();
 	} catch (err) {
@@ -42,7 +44,7 @@ async function guarded(task) {
 }
 
 let toastTimer;
-function toast(message, isError = false) {
+export function toast(message, isError = false) {
 	const el = document.querySelector('.toast');
 	el.innerHTML = `${icon(isError ? 'info' : 'check')} <span>${e(message)}</span>`;
 	el.classList.toggle('toast--error', isError);
@@ -92,8 +94,10 @@ function renderLogin(message = '', configured = true) {
 /*=============== SHELL ===============*/
 const TABS = [
 	{ id: 'menu', label: 'Menu', icon: 'leaf' },
+	{ id: 'ingredients', label: 'Ingredients', icon: 'orange' },
+	{ id: 'pages', label: 'Pages', icon: 'edit' },
 	{ id: 'orders', label: 'Orders', icon: 'bag' },
-	{ id: 'settings', label: 'Ordering & settings', icon: 'calendar' }
+	{ id: 'settings', label: 'Settings', icon: 'calendar' }
 ];
 
 function renderShell() {
@@ -132,12 +136,38 @@ function renderStatus() {
 }
 
 function showTab() {
-	state.tab = TABS.some(t => `#${t.id}` === location.hash) ? location.hash.slice(1) : 'menu';
+	const next = TABS.some(t => `#${t.id}` === location.hash) ? location.hash.slice(1) : 'menu';
+	// Don't lose unsaved page text by clicking another tab
+	if (state.tab === 'pages' && next !== 'pages' && pagesDirty() && !confirm('You have unsaved page changes. Leave without saving?')) {
+		history.replaceState(null, '', '#pages');
+		return;
+	}
+	state.tab = next;
 	document.querySelectorAll('.admin-tab').forEach(tab => tab.classList.toggle('is-active', tab.dataset.tab === state.tab));
-	({ menu: renderMenu, orders: renderOrders, settings: renderSettings })[state.tab]();
+	({ menu: renderMenu, ingredients: () => renderIngredients(state), pages: () => renderPages(state), orders: renderOrders, settings: renderSettings })[state.tab]();
 }
 
 /*=============== MENU ===============*/
+/** Saves the shop's bottle price; every juice without its own price follows it. */
+export async function saveBottlePrice(price) {
+	const data = await guarded(() => api('settings', { method: 'PUT', json: { ...state.settings, bottlePrice: price } })).catch(() => null);
+	if (!data) return false;
+	state.settings = data.settings;
+	state.juices = data.juices;
+	toast(`Every bottle is now ${money(data.settings.bottlePrice)}`);
+	return true;
+}
+
+/** Saves the shared ingredient photo library if it changed. Resolves false when saving failed. */
+export async function saveIngredientPhotos(photos) {
+	if (JSON.stringify(photos) === JSON.stringify(state.settings.ingredientPhotos || {})) return true;
+	const data = await guarded(() => api('settings', { method: 'PUT', json: { ...state.settings, ingredientPhotos: photos } })).catch(() => null);
+	if (!data) return false;
+	state.settings = data.settings;
+	state.juices = data.juices;
+	return true;
+}
+
 async function saveJuices(juices, message) {
 	const data = await guarded(() => api('juices', { method: 'PUT', json: juices }));
 	if (!data) return false;
@@ -155,8 +185,16 @@ function renderMenu() {
 				<h1 class="admin-title">Menu</h1>
 				<p class="muted">The order here is the order on the site. Changes go live as soon as you save.</p>
 			</div>
-			<button type="button" class="btn btn--lime" data-new>${icon('plus')} Add a juice</button>
+			<div class="admin-head__actions">
+				<form class="price-chip" data-price-form>
+					<label for="bottle-price">Bottle price</label>
+					<div class="input-prefix"><span>$</span><input id="bottle-price" name="price" type="number" min="0.5" step="0.25" value="${state.settings.bottlePrice}" inputmode="decimal"></div>
+					<button type="submit" class="btn btn--ink btn--sm" hidden>Save</button>
+				</form>
+				<button type="button" class="btn btn--lime" data-new>${icon('plus')} Add a juice</button>
+			</div>
 		</div>
+		<p class="hint price-note">Every juice uses this price unless you give it its own in the editor. It updates the cards, cart, checkout and share images.</p>
 		<ul class="menu-list">
 			${state.juices
 				.map(
@@ -165,7 +203,7 @@ function renderMenu() {
 					<span class="menu-row__img">${bottleImage(j, { small: true })}</span>
 					<div class="menu-row__info">
 						<p class="menu-row__name">${e(j.name)}${j.active ? '' : ' <span class="pill">Hidden</span>'}</p>
-						<p class="menu-row__meta">${[j.price ? money(j.price) : 'No price yet', j.nutrition.calories ? `${j.nutrition.calories} cal` : '', j.ingredients.map(e).join(', ')].filter(Boolean).join(' &middot; ')}</p>
+						<p class="menu-row__meta">${[j.price ? `${money(j.price)}${j.customPrice ? ' <span class="pill">own price</span>' : ''}` : 'No price yet', j.nutrition.calories ? `${j.nutrition.calories} cal` : '', j.ingredients.map(e).join(', ')].filter(Boolean).join(' &middot; ')}</p>
 						<div class="status-switch" role="group" aria-label="${e(j.name)} availability">
 							${Object.entries(JUICE_STATUSES)
 								.map(([value, label]) => `<button type="button" class="status-switch__btn status-switch__btn--${value}" data-status="${i}" data-value="${value}" aria-pressed="${juiceStatus(j) === value}">${label}</button>`)
@@ -184,6 +222,17 @@ function renderMenu() {
 		${state.juices.length === 0 ? '<p class="empty">No juices yet. Add your first one.</p>' : ''}`;
 
 	main.querySelector('[data-new]').addEventListener('click', () => openEditor(null));
+	const priceForm = main.querySelector('[data-price-form]');
+	const priceSave = priceForm.querySelector('button');
+	priceForm.price.addEventListener('input', () => (priceSave.hidden = Number(priceForm.price.value) === state.settings.bottlePrice));
+	priceForm.addEventListener('submit', async event => {
+		event.preventDefault();
+		const price = Math.round(Number(priceForm.price.value) * 100) / 100;
+		if (!(price >= 0.5)) return toast('The bottle price needs to be at least $0.50.', true);
+		priceSave.disabled = true;
+		if (await saveBottlePrice(price)) renderMenu();
+		priceSave.disabled = false;
+	});
 	main.querySelectorAll('[data-edit]').forEach(btn => btn.addEventListener('click', () => openEditor(Number(btn.dataset.edit))));
 	main.querySelectorAll('[data-move]').forEach(btn =>
 		btn.addEventListener('click', () => {
@@ -201,7 +250,7 @@ function renderMenu() {
 			const juice = state.juices[i];
 			if (juiceStatus(juice) === status) return;
 			if (status !== 'coming-soon' && !juice.image) return toast(`Add a bottle photo to ${juice.name} before marking it ${JUICE_STATUSES[status].toLowerCase()}.`, true);
-			if (status !== 'coming-soon' && !(juice.price >= 0.5)) return toast(`Give ${juice.name} a price first.`, true);
+			if (status !== 'coming-soon' && juice.customPrice && !(juice.price >= 0.5)) return toast(`Give ${juice.name} a price first.`, true);
 			const list = state.juices.map((j, k) => (k === i ? { ...j, status, statusNote: '' } : j));
 			const messages = { available: `${juice.name} is available again`, 'sold-out': `${juice.name} marked sold out`, 'coming-soon': `${juice.name} marked coming soon` };
 			saveJuices(list, messages[status]);
@@ -218,7 +267,9 @@ const BLANK = {
 	tagline: '',
 	description: '',
 	ingredients: [],
-	price: 7.5,
+	ingredientImages: {},
+	price: 0,
+	customPrice: false,
 	color: '#b6d43a',
 	splash: 'lime',
 	image: '',
@@ -243,9 +294,41 @@ function vitaminRow(v = { name: '', dv: '' }) {
 	return `<div class="vit-row"><input name="vitName" placeholder="Vitamin C" value="${e(v.name)}" aria-label="Vitamin or mineral"><div class="input-suffix"><input name="vitDv" type="number" min="0" value="${v.dv}" aria-label="Percent daily value"><span>%</span></div><button type="button" class="icon-btn" data-remove-vit aria-label="Remove">${icon('close')}</button></div>`;
 }
 
+const EDITOR_SECTIONS = [
+	['photo', 'Photo'],
+	['basics', 'Basics'],
+	['ingredients', 'Ingredients'],
+	['availability', 'Availability'],
+	['background', 'Background'],
+	['nutrition', 'Nutrition'],
+	['link', 'Link']
+];
+
+/** One ingredient in the editor: its photo (the site's own, Hunter's upload, or an upload slot), name and controls. */
+function ingredientRow(name, i, count, juice) {
+	const custom = juice.ingredientImages?.[ingredientKey(name)];
+	const src = ingredientPhoto(juice, name);
+	return `
+		<li class="ingr" data-ingr="${i}">
+			<label class="ingr__photo${src ? '' : ' is-empty'}" title="${custom ? 'Replace photo' : src ? 'Use your own photo' : 'Add a photo'}">
+				${src ? `<img src="${e(src)}" alt="">` : icon('camera')}
+				<input type="file" accept="image/png,image/webp,image/jpeg" data-ingr-photo="${i}" hidden>
+			</label>
+			<input class="ingr__name" value="${e(name)}" data-ingr-name="${i}" aria-label="Ingredient ${i + 1}" maxlength="40">
+			<div class="ingr__actions">
+				${custom ? `<button type="button" class="icon-btn icon-btn--sm" data-ingr-reset="${i}" title="Go back to the original photo" aria-label="Go back to the original photo">${icon('swap')}</button>` : ''}
+				<button type="button" class="icon-btn icon-btn--sm" data-ingr-move="${i}" data-dir="-1" ${i === 0 ? 'disabled' : ''} aria-label="Move up">${icon('arrowUp')}</button>
+				<button type="button" class="icon-btn icon-btn--sm" data-ingr-move="${i}" data-dir="1" ${i === count - 1 ? 'disabled' : ''} aria-label="Move down">${icon('arrowDown')}</button>
+				<button type="button" class="icon-btn icon-btn--sm" data-ingr-remove="${i}" aria-label="Remove ${e(name)}">${icon('close')}</button>
+			</div>
+		</li>`;
+}
+
 function openEditor(index) {
 	const original = index === null ? null : state.juices[index];
 	const juice = structuredClone(original || BLANK);
+	// Ingredient photos are one shared library (Admin → Ingredients); edits here save to it
+	juice.ingredientImages = { ...(state.settings.ingredientPhotos || {}) };
 	let customBackdrop = juice.backdrop && !BACKDROPS[juice.backdrop] ? juice.backdrop : '';
 	const n = juice.nutrition;
 
@@ -254,13 +337,17 @@ function openEditor(index) {
 		`<dialog class="editor" id="editor">
 			<form method="dialog" class="editor__form" id="editor-form" novalidate>
 				<header class="editor__head">
-					<h2 class="editor__title">${original ? `Edit ${e(original.name)}` : 'New juice'}</h2>
+					<div class="editor__head-main">
+						<h2 class="editor__title">${original ? `Edit ${e(original.name)}` : 'New juice'}</h2>
+						<nav class="editor__nav" aria-label="Jump to">${EDITOR_SECTIONS.map(([id, label]) => `<button type="button" data-jump="${id}">${label}</button>`).join('')}</nav>
+					</div>
+					${original ? `<a href="/juices/${e(original.slug)}" class="btn btn--ghost btn--sm editor__view" target="_blank" rel="noopener">${icon('external')} View page</a>` : ''}
 					<button type="button" class="icon-btn" data-close aria-label="Close">${icon('close')}</button>
 				</header>
 
 				<div class="editor__body">
 					<div class="editor__fields">
-						<section class="editor__section">
+						<section class="editor__section" data-section="photo">
 							<h3>Bottle photo</h3>
 							<div class="photo">
 								<div class="photo__preview" data-photo-preview>${juice.image ? `<img src="${juice.imageSmall || juice.image}" alt="">` : `<span>${icon('upload')}</span>`}</div>
@@ -272,15 +359,22 @@ function openEditor(index) {
 							</div>
 						</section>
 
-						<section class="editor__section">
+						<section class="editor__section" data-section="basics">
 							<h3>Basics</h3>
-							<div class="field-row">
-								<div class="field"><label for="f-name">Name</label><input id="f-name" name="name" value="${e(juice.name)}" required placeholder="Simply Purple"></div>
-								<div class="field"><label for="f-price">Price</label><div class="input-prefix"><span>$</span><input id="f-price" name="price" type="number" min="0" step="0.25" value="${juice.price}"></div></div>
+							<div class="field"><label for="f-name">Name</label><input id="f-name" name="name" value="${e(juice.name)}" required placeholder="Simply Purple"></div>
+							<div class="field">
+								<p class="field-label">Price</p>
+								<div class="price-pick">
+									<div class="segmented" role="radiogroup" aria-label="Price">
+										<label><input type="radio" name="priceMode" value="shop" ${juice.customPrice ? '' : 'checked'}><span>Shop price &middot; ${money(state.settings.bottlePrice)}</span></label>
+										<label><input type="radio" name="priceMode" value="custom" ${juice.customPrice ? 'checked' : ''}><span>Its own price</span></label>
+									</div>
+									<div class="input-prefix price-pick__input" data-custom-price ${juice.customPrice ? '' : 'hidden'}><span>$</span><input id="f-price" name="price" type="number" min="0.5" step="0.25" value="${juice.customPrice ? juice.price : state.settings.bottlePrice}" aria-label="This juice's price"></div>
+								</div>
+								<p class="hint">The shop price is set at the top of the Menu page and changes every bottle at once.</p>
 							</div>
 							<div class="field"><label for="f-tagline">Tagline <span class="optional">short, shows under the name</span></label><input id="f-tagline" name="tagline" maxlength="80" value="${e(juice.tagline)}"></div>
 							<div class="field"><label for="f-description">Description</label><textarea id="f-description" name="description" rows="3" maxlength="600">${e(juice.description)}</textarea></div>
-							<div class="field"><label for="f-ingredients">Ingredients <span class="optional">separate with commas</span></label><input id="f-ingredients" name="ingredients" value="${e(juice.ingredients.join(', '))}" placeholder="Strawberries, Apples, Lemon"></div>
 							<div class="field-row">
 								<div class="field"><label for="f-color">Color</label><div class="color-input"><input id="f-color" name="color" type="color" value="${juice.color}"><span data-color-value>${juice.color}</span></div></div>
 								<div class="field"><label for="f-splash">Splash behind bottle</label>
@@ -292,7 +386,17 @@ function openEditor(index) {
 							</div>
 						</section>
 
-						<section class="editor__section">
+						<section class="editor__section" data-section="ingredients">
+							<h3>Ingredients</h3>
+							<p class="hint hint--top">In label order. Tap a photo to upload your own; it's used for that ingredient on every juice. The first two with photos float around the bottle.</p>
+							<ul class="ingr-list" data-ingredients></ul>
+							<div class="ingr-add">
+								<input data-ingr-new placeholder="Add an ingredient, like Mango" maxlength="40" aria-label="New ingredient">
+								<button type="button" class="btn btn--ghost btn--sm" data-ingr-add>${icon('plus')} Add</button>
+							</div>
+						</section>
+
+						<section class="editor__section" data-section="availability">
 							<h3>Availability</h3>
 							<div class="status-picks">
 								${Object.entries(JUICE_STATUSES)
@@ -305,7 +409,7 @@ function openEditor(index) {
 							<div class="field"><label for="f-note">Badge text <span class="optional">optional, like "Back Monday" or "Drops in March"</span></label><input id="f-note" name="statusNote" maxlength="40" value="${e(juice.statusNote || '')}"></div>
 						</section>
 
-						<section class="editor__section">
+						<section class="editor__section" data-section="background">
 							<h3>Page background</h3>
 							<p class="hint">What sits behind the bottle at the top of this juice's page.</p>
 							<div class="backdrop-picks" style="--c: ${juice.color}">
@@ -320,7 +424,7 @@ function openEditor(index) {
 							<label class="btn btn--ghost btn--sm backdrop-upload">${icon('upload')} Upload a background<input type="file" accept="image/png,image/webp,image/jpeg" data-backdrop-file hidden></label>
 						</section>
 
-						<section class="editor__section">
+						<section class="editor__section" data-section="nutrition">
 							<h3>Nutrition <span class="optional">per bottle</span></h3>
 							<div class="num-grid">
 								${numberField('sizeOz', 'Bottle size', juice.sizeOz, 'fl oz')}
@@ -339,7 +443,7 @@ function openEditor(index) {
 							<button type="button" class="btn btn--ghost btn--sm" data-add-vit>${icon('plus')} Add a vitamin</button>
 						</section>
 
-						<section class="editor__section">
+						<section class="editor__section" data-section="link">
 							<h3>Link</h3>
 							<div class="field"><label for="f-slug">Page address</label><div class="input-prefix"><span>/juices/</span><input id="f-slug" name="slug" value="${e(juice.slug)}" placeholder="made from the name"></div></div>
 						</section>
@@ -364,7 +468,64 @@ function openEditor(index) {
 
 	const dialog = document.getElementById('editor');
 	const form = document.getElementById('editor-form');
+	const ingredients = [...juice.ingredients];
 	let uploading = false;
+
+	function renderIngredients() {
+		const list = form.querySelector('[data-ingredients]');
+		list.innerHTML = ingredients.length ? ingredients.map((name, i) => ingredientRow(name, i, ingredients.length, juice)).join('') : '<li class="ingr-empty">No ingredients yet.</li>';
+	}
+
+	function addIngredient() {
+		const input = form.querySelector('[data-ingr-new]');
+		const names = input.value.split(',').map(s => s.trim()).filter(Boolean);
+		if (!names.length) return;
+		const fresh = names.filter(name => !ingredients.some(item => ingredientKey(item) === ingredientKey(name)));
+		if (ingredients.length + fresh.length > 12) return toast('Twelve ingredients is the most a juice can list.', true);
+		ingredients.push(...fresh);
+		input.value = '';
+		renderIngredients();
+		preview();
+		input.focus();
+	}
+
+	form.querySelector('[data-ingr-new]').addEventListener('keydown', event => {
+		if (event.key !== 'Enter') return;
+		event.preventDefault();
+		addIngredient();
+	});
+
+	form.querySelector('[data-ingredients]').addEventListener('change', async event => {
+		const nameInput = event.target.closest('[data-ingr-name]');
+		if (nameInput) {
+			const i = Number(nameInput.dataset.ingrName);
+			const name = nameInput.value.trim();
+			if (!name) return renderIngredients();
+			ingredients[i] = name;
+			renderIngredients();
+			return preview();
+		}
+		const fileInput = event.target.closest('[data-ingr-photo]');
+		const file = fileInput?.files[0];
+		if (!file) return;
+		const name = ingredients[Number(fileInput.dataset.ingrPhoto)];
+		const slot = fileInput.closest('.ingr__photo');
+		uploading = true;
+		slot.classList.add('is-busy');
+		try {
+			const { blob, preview: localUrl } = await preparePhoto(file, 480);
+			slot.innerHTML = `<img src="${localUrl}" alt="">`;
+			const upload = await guarded(() => api('images', { method: 'POST', blob }));
+			if (upload) juice.ingredientImages[ingredientKey(name)] = upload.url;
+		} catch (err) {
+			toast(err.message, true);
+		} finally {
+			uploading = false;
+			renderIngredients();
+			preview();
+		}
+	});
+
 	let slugTouched = Boolean(original);
 
 	const close = () => {
@@ -384,7 +545,9 @@ function openEditor(index) {
 			slug: slugify(f.slug.value || f.name.value),
 			tagline: f.tagline.value.trim(),
 			description: f.description.value.trim(),
-			ingredients: f.ingredients.value.split(',').map(s => s.trim()).filter(Boolean),
+			ingredients: [...ingredients],
+			ingredientImages: { ...juice.ingredientImages },
+			customPrice: form.querySelector('[name="priceMode"]:checked')?.value === 'custom',
 			price: Number(f.price.value) || 0,
 			color: f.color.value,
 			splash: f.splash.value,
@@ -399,7 +562,7 @@ function openEditor(index) {
 	}
 
 	function preview() {
-		const current = read();
+		const current = priceJuice(read(), state.settings);
 		form.querySelector('[data-color-value]').textContent = current.color;
 		form.querySelector('[data-preview]').innerHTML =
 			current.image || current.status === 'coming-soon'
@@ -409,13 +572,49 @@ function openEditor(index) {
 	}
 
 	form.addEventListener('input', event => {
+		if (event.target.closest('[data-ingr-name], [data-ingr-new]')) return;
 		if (event.target.name === 'slug') slugTouched = true;
 		if (event.target.name === 'name' && !slugTouched) form.elements.slug.value = slugify(event.target.value);
 		preview();
 	});
-	form.addEventListener('change', preview);
+	form.addEventListener('change', event => {
+		if (event.target.name === 'priceMode') {
+			const custom = event.target.value === 'custom';
+			form.querySelector('[data-custom-price]').hidden = !custom;
+			if (custom) form.elements.price.select();
+		}
+		preview();
+	});
 	form.addEventListener('click', event => {
 		if (event.target.closest('[data-close]')) close();
+		const jump = event.target.closest('[data-jump]');
+		if (jump) {
+			// Scroll just the editor's body; scrollIntoView would also shift the dialog itself
+			const body = form.querySelector('.editor__body');
+			const section = form.querySelector(`[data-section="${jump.dataset.jump}"]`);
+			body.scrollTo({ top: section.getBoundingClientRect().top - body.getBoundingClientRect().top + body.scrollTop - 16, behavior: 'smooth' });
+		}
+		if (event.target.closest('[data-ingr-add]')) addIngredient();
+		const move = event.target.closest('[data-ingr-move]');
+		if (move) {
+			const from = Number(move.dataset.ingrMove);
+			const to = from + Number(move.dataset.dir);
+			[ingredients[from], ingredients[to]] = [ingredients[to], ingredients[from]];
+			renderIngredients();
+			preview();
+		}
+		const remove = event.target.closest('[data-ingr-remove]');
+		if (remove) {
+			ingredients.splice(Number(remove.dataset.ingrRemove), 1);
+			renderIngredients();
+			preview();
+		}
+		const reset = event.target.closest('[data-ingr-reset]');
+		if (reset) {
+			delete juice.ingredientImages[ingredientKey(ingredients[Number(reset.dataset.ingrReset)])];
+			renderIngredients();
+			preview();
+		}
 		if (event.target.closest('[data-add-vit]')) {
 			form.querySelector('[data-vits]').insertAdjacentHTML('beforeend', vitaminRow());
 			form.querySelector('[data-vits] .vit-row:last-child input').focus();
@@ -489,10 +688,13 @@ function openEditor(index) {
 		if (!next.name) return toast('Give the juice a name.', true);
 		const teaser = next.status === 'coming-soon';
 		if (!next.image && !teaser) return toast('Upload a bottle photo first, or mark it "Coming soon".', true);
-		if (!(next.price >= 0.5) && !teaser) return toast('Give it a price of at least $0.50.', true);
+		if (next.customPrice && !(next.price >= 0.5) && !teaser) return toast('Give it a price of at least $0.50, or use the shop price.', true);
+		if (form.querySelector('[data-ingr-new]').value.trim()) addIngredient();
+		next.ingredients = [...ingredients];
 		const list = original ? state.juices.map((j, i) => (i === index ? next : j)) : [...state.juices, next];
 		const button = form.querySelector('[data-save]');
 		button.disabled = true;
+		if (!(await saveIngredientPhotos(juice.ingredientImages))) return (button.disabled = false);
 		const ok = await saveJuices(list, original ? `${next.name} saved` : `${next.name} added to the menu`).catch(() => false);
 		button.disabled = false;
 		if (ok) close();
@@ -507,6 +709,7 @@ function openEditor(index) {
 		if (ok) close();
 	});
 
+	renderIngredients();
 	preview();
 	dialog.showModal();
 }
@@ -578,8 +781,14 @@ function renderSettings() {
 	const days = [1, 2, 3, 4, 5, 6, 0];
 	const main = document.getElementById('admin-main');
 	main.innerHTML = `
-		<div class="admin-head"><div><h1 class="admin-title">Ordering &amp; settings</h1><p class="muted">How customers can get their juice.</p></div></div>
+		<div class="admin-head"><div><h1 class="admin-title">Settings</h1><p class="muted">Price, ordering, pickup and delivery.</p></div></div>
 		<form class="settings" id="settings-form" novalidate>
+			<section class="card settings__card">
+				<h2>Price</h2>
+				<div class="num-grid">${numberField('bottlePrice', 'Price per bottle ($)', s.bottlePrice, '', '0.25')}</div>
+				<p class="hint">Every juice uses this unless you give it its own price in the Menu editor.</p>
+			</section>
+
 			<section class="card settings__card">
 				<h2>Online ordering</h2>
 				<label class="toggle toggle--lg"><input type="checkbox" name="orderingEnabled" ${s.orderingEnabled ? 'checked' : ''}><span></span> Accept online orders</label>
@@ -614,20 +823,6 @@ function renderSettings() {
 			</section>
 
 			<section class="card settings__card">
-				<h2>About page photo</h2>
-				<div class="photo">
-					<div class="photo__preview photo__preview--portrait" data-about-preview>${s.aboutPhoto ? `<img src="${e(s.aboutPhoto)}" alt="">` : icon('camera')}</div>
-					<div class="photo__copy">
-						<div class="photo__btns">
-							<label class="btn btn--ghost btn--sm photo__btn">${icon('upload')} ${s.aboutPhoto ? 'Replace photo' : 'Upload a photo of you'}<input type="file" accept="image/png,image/webp,image/jpeg" data-about-file hidden></label>
-							<button type="button" class="btn btn--ghost btn--sm" data-about-remove ${s.aboutPhoto ? '' : 'hidden'}>${icon('trash')} Remove</button>
-						</div>
-						<p class="hint">Goes in the photo frame at the top of the About page. A portrait (taller than wide) looks best. Until there's one, the frame shows your bottles on the river.</p>
-					</div>
-				</div>
-			</section>
-
-			<section class="card settings__card">
 				<h2>Contact</h2>
 				<div class="field-row">
 					<div class="field"><label for="s-email">Email shown on the site</label><input id="s-email" name="contactEmail" type="email" value="${e(s.contactEmail)}"></div>
@@ -638,47 +833,14 @@ function renderSettings() {
 			<div class="settings__save"><button type="submit" class="btn btn--ink btn--lg">Save settings</button></div>
 		</form>`;
 
-	let aboutPhoto = s.aboutPhoto || '';
-	let uploading = false;
-	const aboutPreview = main.querySelector('[data-about-preview]');
-	const aboutRemove = main.querySelector('[data-about-remove]');
-	main.querySelector('[data-about-file]').addEventListener('change', async event => {
-		const file = event.target.files[0];
-		if (!file) return;
-		uploading = true;
-		aboutPreview.classList.add('is-busy');
-		try {
-			const { blob, preview: localUrl } = await preparePhoto(file, 1400);
-			aboutPreview.innerHTML = `<img src="${localUrl}" alt="">`;
-			const upload = await guarded(() => api('images', { method: 'POST', blob }));
-			if (upload) {
-				aboutPhoto = upload.url;
-				aboutRemove.hidden = false;
-				toast('Photo uploaded. Save settings to put it on the site.');
-			}
-		} catch (err) {
-			toast(err.message, true);
-		} finally {
-			uploading = false;
-			aboutPreview.classList.remove('is-busy');
-			event.target.value = '';
-		}
-	});
-	aboutRemove.addEventListener('click', () => {
-		aboutPhoto = '';
-		aboutRemove.hidden = true;
-		aboutPreview.innerHTML = icon('camera');
-		toast('Photo removed. Save settings to update the site.');
-	});
-
 	document.getElementById('settings-form').addEventListener('submit', async event => {
 		event.preventDefault();
-		if (uploading) return toast('Hang on, the photo is still uploading.', true);
 		const f = event.target.elements;
 		const num = name => Number(f[name].value);
+		if (!(num('bottlePrice') >= 0.5)) return toast('The bottle price needs to be at least $0.50.', true);
 		const next = {
 			...s,
-			aboutPhoto,
+			bottlePrice: num('bottlePrice'),
 			orderingEnabled: f.orderingEnabled.checked,
 			announcement: f.announcement.value,
 			contactEmail: f.contactEmail.value,
@@ -709,6 +871,7 @@ function renderSettings() {
 		button.disabled = false;
 		if (!data) return;
 		state.settings = data.settings;
+		state.juices = data.juices;
 		toast('Settings saved');
 		renderSettings();
 	});
@@ -720,11 +883,14 @@ async function boot() {
 	if (!session.signedIn) return renderLogin('', session.configured);
 	const data = await guarded(() => api('data'));
 	if (!data) return;
-	Object.assign(state, { juices: data.juices, settings: data.settings, status: data.status, orders: null });
+	Object.assign(state, { juices: data.juices, settings: data.settings, copy: data.copy || {}, status: data.status, orders: null });
 	renderShell();
 	showTab();
 }
 
+window.addEventListener('beforeunload', event => {
+	if (pagesDirty()) event.preventDefault();
+});
 window.addEventListener('hashchange', () => state.settings && document.getElementById('admin-main') && showTab());
 boot().catch(err => {
 	app.innerHTML = `<p class="admin-loading">Couldn't load the admin: ${e(err.message)}</p>`;

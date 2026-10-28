@@ -1,8 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import { purgeCache } from '@netlify/functions';
 import { adminConfigured, isSignedIn, signIn, signOutCookie } from './lib/auth.js';
-import { getJuices, getSettings, imageStore, listOrders, saveJuices, saveSettings } from './lib/store.js';
-import { cleanJuices, cleanSettings } from './lib/validate.js';
+import { getCopyEdits, getJuices, getSettings, imageStore, listOrders, saveCopy, saveJuices, saveSettings } from './lib/store.js';
+import { cleanCopy, cleanJuices, cleanSettings } from './lib/validate.js';
 import { clientIp, error, json, readJSON } from './lib/http.js';
 import { mailConfigured } from './lib/mail.js';
 import { stripeConfigured } from './lib/stripe.js';
@@ -14,7 +14,7 @@ const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
 // new link previews right away. Only works on Netlify, so a local save just skips it.
 async function refreshSharePreviews() {
 	try {
-		await purgeCache({ tags: ['og'] });
+		await purgeCache({ tags: ['og', 'pages'] });
 	} catch (err) {
 		if (process.env.NETLIFY) console.warn('Could not refresh share previews', err.message);
 	}
@@ -44,8 +44,9 @@ export default async (req, context) => {
 	if (!isSignedIn(req)) return error('Please sign in again.', 401);
 
 	if (action === 'data' && req.method === 'GET') {
-		const [juices, settings] = await Promise.all([getJuices(), getSettings()]);
-		return json({ juices, settings, status: { stripe: stripeConfigured(), email: mailConfigured(), webhook: Boolean(process.env.STRIPE_WEBHOOK_SECRET) } });
+		const settings = await getSettings();
+		const [juices, copy] = await Promise.all([getJuices(settings), getCopyEdits()]);
+		return json({ juices, settings, copy, status: { stripe: stripeConfigured(), email: mailConfigured(), webhook: Boolean(process.env.STRIPE_WEBHOOK_SECRET) } });
 	}
 
 	if (action === 'juices' && req.method === 'PUT') {
@@ -53,7 +54,15 @@ export default async (req, context) => {
 		if (problem) return error(problem);
 		await saveJuices(value);
 		await refreshSharePreviews();
-		return json({ juices: value });
+		return json({ juices: await getJuices() });
+	}
+
+	if (action === 'copy' && req.method === 'PUT') {
+		const { value, error: problem } = cleanCopy(await readJSON(req));
+		if (problem) return error(problem);
+		await saveCopy(value);
+		await refreshSharePreviews();
+		return json({ copy: value });
 	}
 
 	if (action === 'settings' && req.method === 'PUT') {
@@ -61,7 +70,8 @@ export default async (req, context) => {
 		if (problem) return error(problem);
 		await saveSettings(value);
 		await refreshSharePreviews();
-		return json({ settings: value });
+		// A new bottle price changes every juice that uses it
+		return json({ settings: value, juices: await getJuices(value) });
 	}
 
 	if (action === 'images' && req.method === 'POST') {

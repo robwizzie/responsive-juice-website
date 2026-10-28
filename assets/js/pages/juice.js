@@ -1,5 +1,5 @@
-import { ready, initParallax, revealOnScroll } from '../site.js';
-import { BACKDROPS, DEFAULT_BACKDROP, ingredientIcon, juiceStatus } from '../shared/catalog.js';
+import { ready, initParallax, revealOnScroll, t } from '../site.js';
+import { BACKDROPS, DEFAULT_BACKDROP, ingredientPhoto, juiceStatus } from '../shared/catalog.js';
 import { escapeHtml as e } from '../lib/catalog.js';
 import { rail } from '../lib/carousel.js';
 import { bottleArt, juiceCard, money, statusStamp } from '../lib/components.js';
@@ -8,8 +8,8 @@ import { icon } from '../lib/icons.js';
 const slug = location.pathname.replace(/\/$/, '').split('/').pop().replace(/\.html$/, '');
 const root = document.querySelector('[data-juice-page]');
 
-function chip(name) {
-	const src = ingredientIcon(name);
+function chip(juice, name) {
+	const src = ingredientPhoto(juice, name);
 	return `<li class="chip">${src ? `<img src="${src}" alt="" loading="lazy" decoding="async">` : `<span class="chip__dot"></span>`}${e(name)}</li>`;
 }
 
@@ -46,7 +46,7 @@ function nutritionLabel(juice) {
 			${row('Total Carbohydrate', `${n.carbs}g`, `${n.carbsDv}%`)}
 			${row('Natural Sugars', `${n.sugars}g`, '', true)}
 			${row('Protein', `${n.protein}g`, '')}
-			<p class="label__foot">No added sugar. Keep refrigerated, shake well.</p>
+			<p class="label__foot">${e(t('juice.label.foot'))}</p>
 		</div>`;
 }
 
@@ -55,7 +55,7 @@ function vitaminBars(juice) {
 	const top = Math.max(100, ...juice.vitamins.map(v => v.dv));
 	return `
 		<div class="vitamins" data-reveal>
-			<h3 class="section-title--sm">What one bottle gives you</h3>
+			<h3 class="section-title--sm">${e(t('juice.vitamins.title'))}</h3>
 			<ul class="vitamins__list">
 				${juice.vitamins
 					.map(
@@ -67,19 +67,22 @@ function vitaminBars(juice) {
 					)
 					.join('')}
 			</ul>
-			<p class="vitamins__note">Percent of your daily value, from a single bottle.</p>
+			<p class="vitamins__note">${e(t('juice.vitamins.note'))}</p>
 		</div>`;
 }
 
 function buyBlock(juice, settings) {
 	const status = juiceStatus(juice);
 	if (status === 'coming-soon') {
+		// The Instagram handle in the message links to the profile
+		const handle = `@${e(settings.instagram)}`;
+		const message = e(t('juice.comingSoon')).replace(handle, `<a href="https://instagram.com/${e(settings.instagram)}" target="_blank" rel="noopener">${handle}</a>`);
 		return `${statusStamp(juice)}${juice.price ? `<span class="price price--lg">${money(juice.price)}</span>` : ''}
-			<p class="pdp-panel__soon">Not pressed yet. Follow <a href="https://instagram.com/${e(settings.instagram)}" target="_blank" rel="noopener">@${e(settings.instagram)}</a> to hear when it drops.</p>`;
+			<p class="pdp-panel__soon">${message}</p>`;
 	}
 	if (status === 'sold-out') {
 		return `<span class="price price--lg">${money(juice.price)}</span>${statusStamp(juice)}
-			<p class="pdp-panel__soon">This batch is gone. Check back soon, or grab another flavor below.</p>`;
+			<p class="pdp-panel__soon">${e(t('juice.soldOut'))}</p>`;
 	}
 	if (!settings.orderingEnabled) return `<span class="price price--lg">${money(juice.price)}</span><span class="stamp stamp--sold-out">Ordering paused</span>`;
 	return `
@@ -111,12 +114,12 @@ function render(juice, juices, settings) {
 					<h1 class="pdp-panel__name">${e(juice.name)}</h1>
 					${juice.tagline ? `<p class="pdp-panel__tagline">${e(juice.tagline)}</p>` : ''}
 					${juice.description ? `<p class="pdp-panel__desc">${e(juice.description)}</p>` : ''}
-					${juice.ingredients.length ? `<ul class="chips">${juice.ingredients.map(chip).join('')}</ul>` : ''}
+					${juice.ingredients.length ? `<ul class="chips">${juice.ingredients.map(name => chip(juice, name)).join('')}</ul>` : ''}
 					<div class="pdp-panel__buy">${buyBlock(juice, settings)}</div>
 					<ul class="badges">
-						<li>${icon('snow')} Cold pressed</li>
-						<li>${icon('drop')} No added sugar</li>
-						<li>${icon('leaf')} 100% plant based</li>
+						<li>${icon('snow')} ${e(t('juice.badge.1'))}</li>
+						<li>${icon('drop')} ${e(t('juice.badge.2'))}</li>
+						<li>${icon('leaf')} ${e(t('juice.badge.3'))}</li>
 					</ul>
 				</div>
 			</div>
@@ -128,13 +131,13 @@ function render(juice, juices, settings) {
 			<div class="container inside">
 				<div>
 					<div data-reveal>
-						<p class="kicker" style="--kicker-dot: ${juice.color}">Inside the bottle</p>
-						<h2 class="section-title">${juice.ingredients.length} ingredients. That's the whole list.</h2>
+						<p class="kicker" style="--kicker-dot: ${juice.color}">${e(t('juice.inside.kicker'))}</p>
+						<h2 class="section-title">${e(t('juice.inside.title', { count: juice.ingredients.length }))}</h2>
 					</div>
 					<div class="ingredients" data-reveal>
 						${juice.ingredients
 							.map((name, i) => {
-								const src = ingredientIcon(name);
+								const src = ingredientPhoto(juice, name);
 								return `<div class="ingredient" style="--i: ${i}">${src ? `<img src="${src}" alt="" loading="lazy">` : '<span class="chip__dot"></span>'}${e(name)}</div>`;
 							})
 							.join('')}
@@ -153,8 +156,8 @@ function render(juice, juices, settings) {
 			<div class="container rail" data-rail>
 				<div class="section-head" data-reveal>
 					<div>
-						<p class="kicker">Keep sipping</p>
-						<h2 class="section-title">More juices</h2>
+						<p class="kicker">${e(t('juice.more.kicker'))}</p>
+						<h2 class="section-title">${e(t('juice.more.title'))}</h2>
 					</div>
 					<div class="rail__nav">
 						<button type="button" class="icon-btn rail__btn" data-rail-prev aria-label="Scroll back">${icon('arrowLeft')}</button>
