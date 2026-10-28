@@ -17,6 +17,8 @@ ready.then(({ juices, settings }) => {
 		if (lead.splash && lead.splash !== 'none') splash.src = `/assets/img/splash/${lead.splash}-sm.webp`;
 		else splash.remove();
 	}
+	// The header's accent follows that juice's color
+	if (/^#[0-9a-f]{6}$/i.test(lead?.color || '')) document.querySelector('.page-card').style.setProperty('--accent', lead.color);
 
 	const link = document.querySelector('[data-contact-email]');
 	link.href = `mailto:${settings.contactEmail}`;

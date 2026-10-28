@@ -87,9 +87,6 @@ function headline(lines, color, maxWidth, maxSize) {
 	);
 }
 
-const pill = (text, background, color) =>
-	h('div', { alignItems: 'center', height: 58, padding: '0 28px', borderRadius: 999, background, color, fontSize: 26, fontWeight: 700 }, text);
-
 /** Bottles fanned out with their splashes behind, sized to fill a `width × height` box. */
 async function bottleFan(origin, juices, width, height) {
 	const shown = juices.filter(juice => juice.image).slice(0, 3);
@@ -174,7 +171,7 @@ async function pageCard(origin, page, juices, settings) {
 }
 
 async function portrait(origin, settings, height) {
-	const photo = (await optionalPicture(origin, settings.aboutPhoto, 560)) || (await optionalPicture(origin, '/assets/img/hunter-portrait.webp', 560));
+	const photo = (await optionalPicture(origin, settings.aboutPhoto, 560)) || (await optionalPicture(origin, '/assets/img/hunter-portrait-warm.webp', 560));
 	if (!photo) return h('div', {});
 	return h(
 		'div',
@@ -187,14 +184,17 @@ async function portrait(origin, settings, height) {
 	);
 }
 
+// Same dark band as the page cards, so the link bar iMessage tints from the bottom edge
+// contrasts with the juice color instead of blending into it
 async function juiceCard(origin, juice) {
 	const color = /^#[0-9a-f]{6}$/i.test(juice.color || '') ? juice.color : LIME;
 	const fg = onColor(color);
 	const status = juiceStatus(juice);
 	const left = 660;
+	const artH = OG_HEIGHT - BAND;
 	const words = juice.name.toUpperCase().split(/\s+/);
 	const watermark = words[words.length - 1];
-	const badge = STATUS_TEXT[status] || priceText(juice);
+	const badge = STATUS_TEXT[status] || priceText(juice) || 'Cold-pressed in Philly';
 	const size = juice.sizeOz ? `${juice.sizeOz} OZ` : '';
 	return h(
 		'div',
@@ -204,7 +204,7 @@ async function juiceCard(origin, juice) {
 			{
 				position: 'absolute',
 				left: -10,
-				bottom: -40,
+				bottom: BAND - 60,
 				fontFamily: 'Archivo Expanded',
 				fontWeight: 900,
 				fontSize: Math.min(300, Math.round(1250 / (watermark.length * 0.84))),
@@ -216,7 +216,7 @@ async function juiceCard(origin, juice) {
 		),
 		h(
 			'div',
-			{ flexDirection: 'column', justifyContent: 'space-between', width: left, height: OG_HEIGHT, padding: '56px 0 56px 64px' },
+			{ flexDirection: 'column', justifyContent: 'space-between', width: left, height: artH, padding: '52px 0 44px 64px' },
 			img(await wordmark(origin, fg), { width: 280, height: 45 }),
 			h(
 				'div',
@@ -224,15 +224,15 @@ async function juiceCard(origin, juice) {
 				h('div', { fontSize: 24, fontWeight: 700, color: fg, opacity: 0.75, letterSpacing: 3 }, ['COLD-PRESSED', size].filter(Boolean).join(' · ')),
 				headline(words, fg, left - 90, 118),
 				juice.tagline ? h('div', { fontSize: 30, fontWeight: 500, color: fg, maxWidth: 540, lineHeight: 1.25 }, juice.tagline) : null
-			),
-			h(
-				'div',
-				{ gap: 14 },
-				badge ? pill(badge, fg, color) : null,
-				status === 'available' ? pill(`Order at ${SITE}`, 'rgba(255,255,255,0.28)', fg) : null
 			)
 		),
-		h('div', { position: 'absolute', right: 30, bottom: 0 }, await bottleFan(origin, [juice], OG_WIDTH - left - 30, OG_HEIGHT - 30))
+		h('div', { position: 'absolute', right: 30, bottom: BAND }, await bottleFan(origin, [juice], OG_WIDTH - left - 30, artH - 20)),
+		h(
+			'div',
+			{ position: 'absolute', left: 0, bottom: 0, width: OG_WIDTH, height: BAND, background: NIGHT, color: PAPER, alignItems: 'center', justifyContent: 'space-between', padding: '0 64px' },
+			h('div', { fontFamily: 'Archivo Expanded', fontWeight: 900, fontSize: 26, letterSpacing: 1, color }, badge.toUpperCase()),
+			h('div', { fontSize: 28, fontWeight: 700 }, SITE)
+		)
 	);
 }
 
