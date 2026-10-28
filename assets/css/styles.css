@@ -2466,7 +2466,7 @@ html:not(.js) .cta-band__bottles img {
 	position: relative;
 	isolation: isolate;
 	overflow: hidden;
-	padding-block: clamp(1.5rem, 4vw, 3rem);
+	padding-block: clamp(1.5rem, 4vw, 3rem) clamp(3rem, 6vw, 5rem);
 	min-height: min(calc(100svh - var(--header-h)), 700px);
 	display: flex;
 	align-items: center;
@@ -2493,17 +2493,12 @@ html:not(.js) .cta-band__bottles img {
 		var(--paper);
 }
 
-/* The Philly photo is lined up so the spot where the real bottle stood sits behind ours */
-.pdp-hero[data-backdrop='riverfront'] .pdp-hero__bg {
-	background-image: var(--photo);
-	background-size: 150% auto;
-	background-position: 87% 47%;
-}
-
+/* Photo backdrops get a soft tint around the framed photo */
+.pdp-hero[data-backdrop='riverfront'] .pdp-hero__bg,
 .pdp-hero[data-backdrop='photo'] .pdp-hero__bg {
-	background-image: linear-gradient(to top, rgba(0, 0, 0, 0.25), transparent 40%), var(--photo);
-	background-size: cover;
-	background-position: center;
+	background:
+		radial-gradient(50% 70% at 25% 50%, color-mix(in srgb, var(--c) 18%, transparent) 0%, transparent 70%),
+		var(--paper);
 }
 
 .pdp-hero__inner {
@@ -2515,9 +2510,37 @@ html:not(.js) .cta-band__bottles img {
 }
 
 .pdp-hero__art {
-	max-width: clamp(320px, 34vw, 460px);
+	position: relative;
+	max-width: clamp(360px, 40vw, 560px);
 	width: 100%;
 	justify-self: center;
+}
+
+/* The photo frame; the riverfront is lined up so the spot where the real bottle stood is behind ours */
+.pdp-hero__art--photo {
+	display: grid;
+	align-items: end;
+	aspect-ratio: 4 / 5;
+	max-width: min(520px, calc((100svh - var(--header-h) - 3rem) * 0.8));
+	border-radius: var(--radius-xl);
+	overflow: hidden;
+	box-shadow: var(--shadow-lg);
+	animation: rise 1s var(--ease) both;
+}
+
+.pdp-hero__photo {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	object-position: 49% 56%;
+}
+
+.pdp-hero__art--photo .bottle-art {
+	width: 112%;
+	margin: 0 -6% -2%;
+	animation: none;
 }
 
 .pdp-hero__art .bottle-art {
@@ -2679,24 +2702,18 @@ html:not(.js) .cta-band__bottles img {
 	}
 
 	.pdp-hero__art {
-		max-width: min(290px, 74vw);
+		max-width: min(400px, 88vw);
 	}
 
-	.pdp-hero[data-backdrop='riverfront'] .pdp-hero__bg {
-		background-size: cover;
-		background-position: 49% 58%;
-		inset: 0 0 auto;
-		height: min(86vw, 440px);
+	.pdp-hero__art--photo {
+		aspect-ratio: 1 / 1.05;
+		max-width: 560px;
+		border-radius: var(--radius-lg);
 	}
 
-	.pdp-hero[data-backdrop='riverfront'],
-	.pdp-hero[data-backdrop='photo'] {
-		background: var(--paper);
-	}
-
-	.pdp-hero[data-backdrop='photo'] .pdp-hero__bg {
-		inset: 0 0 auto;
-		height: min(86vw, 440px);
+	.pdp-hero__art--photo .bottle-art {
+		width: 96%;
+		margin: 0 auto -1%;
 	}
 
 	.ingredients {
@@ -2710,7 +2727,11 @@ html:not(.js) .cta-band__bottles img {
 	}
 
 	.pdp-panel {
-		margin-top: -1rem;
+		margin-top: -1.5rem;
+	}
+
+	.pdp-hero__art--photo + .pdp-panel {
+		margin-top: 1rem;
 	}
 }
 

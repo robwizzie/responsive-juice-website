@@ -13,16 +13,22 @@ function chip(name) {
 	return `<li class="chip">${src ? `<img src="${src}" alt="" loading="lazy" decoding="async">` : `<span class="chip__dot"></span>`}${e(name)}</li>`;
 }
 
-/** The hero background Hunter picked: a preset, or a photo he uploaded. */
+/**
+ * The hero background Hunter picked. A color preset fills the whole hero; a photo (the riverfront
+ * or one he uploaded) sits in a rounded frame behind the bottle, so it's never stretched past its
+ * real resolution.
+ */
 function backdrop(juice) {
 	const choice = juice.backdrop || DEFAULT_BACKDROP;
 	const preset = BACKDROPS[choice];
 	if (preset?.image) {
-		const src = window.innerWidth < 700 ? preset.imageSmall : preset.image;
-		return { kind: choice, style: `--photo: url('${src}')` };
+		return {
+			kind: choice,
+			photo: `<img src="${preset.image}" srcset="${preset.imageSmall} 645w, ${preset.image} 1290w" sizes="(max-width: 900px) 92vw, 560px" alt="" class="pdp-hero__photo" fetchpriority="high">`
+		};
 	}
-	if (preset) return { kind: choice, style: '' };
-	return { kind: 'photo', style: `--photo: url('${encodeURI(choice)}')` };
+	if (preset) return { kind: choice, photo: '' };
+	return { kind: 'photo', photo: `<img src="${encodeURI(choice)}" alt="" class="pdp-hero__photo" fetchpriority="high">` };
 }
 
 function nutritionLabel(juice) {
@@ -95,10 +101,10 @@ function render(juice, juices, settings) {
 	const bg = backdrop(juice);
 
 	root.innerHTML = `
-		<section class="pdp-hero is-${status}" data-backdrop="${bg.kind}" style="--c: ${juice.color}; ${bg.style}">
+		<section class="pdp-hero is-${status}" data-backdrop="${bg.kind}" style="--c: ${juice.color}">
 			<div class="pdp-hero__bg" aria-hidden="true"></div>
 			<div class="container pdp-hero__inner">
-				<div class="pdp-hero__art">${bottleArt(juice, { size: 'xl', eager: true })}</div>
+				<div class="pdp-hero__art${bg.photo ? ' pdp-hero__art--photo' : ''}">${bg.photo}${bottleArt(juice, { size: 'xl', eager: true })}</div>
 				<div class="pdp-panel">
 					<a href="/juices" class="pdp-panel__back">${icon('arrowLeft')} All juices</a>
 					<p class="pdp-panel__meta">Cold pressed &middot; ${juice.sizeOz} fl oz${juice.nutrition?.calories ? ` &middot; ${juice.nutrition.calories} cal` : ''}</p>
