@@ -4,7 +4,7 @@
  * assets/js/shared/catalog.js are used.
  */
 import { getStore } from '@netlify/blobs';
-import { DEFAULT_JUICES, DEFAULT_SETTINGS, priceJuices } from '../../../assets/js/shared/catalog.js';
+import { DEFAULT_JUICES, DEFAULT_SETTINGS, prepareJuices } from '../../../assets/js/shared/catalog.js';
 import { DEFAULT_COPY } from '../../../assets/js/shared/content.js';
 
 const shop = () => getStore({ name: 'shop', consistency: 'strong' });
@@ -28,7 +28,7 @@ export function mergeDeep(base, override) {
 // everything downstream (checkout, emails, share images) just reads juice.price.
 export async function getJuices(settings) {
 	const [saved, shopSettings] = await Promise.all([shop().get('juices', { type: 'json' }), settings || getSettings()]);
-	return priceJuices(Array.isArray(saved) ? saved : DEFAULT_JUICES, shopSettings);
+	return prepareJuices(Array.isArray(saved) ? saved : DEFAULT_JUICES, shopSettings);
 }
 
 export const saveJuices = juices => shop().setJSON('juices', juices);

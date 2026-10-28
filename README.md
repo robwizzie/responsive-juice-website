@@ -53,6 +53,10 @@ npm test
 
 `npm run dev` serves the site, applies `_redirects`, runs the functions and keeps Blobs data in `.netlify/dev-blobs`. `netlify dev` works too.
 
+## Ingredient photos
+
+**Admin → Ingredients** lists every ingredient (the ones on juices first) with its photo. Upload to replace a photo the site ships with, or to add one for a new ingredient; **Original** puts the site's photo back. There's one photo per ingredient (stored in settings as `ingredientPhotos`, keyed so "Oranges" and "orange" match) and it's used on every juice, card and page that shows that ingredient. Uploading a photo from an ingredient row in the juice editor saves to the same place.
+
 ## Editing page text
 
 Sign in at `/admin` → **Pages**. Every heading, paragraph, button label and badge on the site is listed by page (or search for the words you see). Edited fields turn green and have an **Original** button to undo. Nothing changes on the site until **Save & publish**. Text can include fill-ins like `{price}` or `{deliveryDay}` that update themselves from the settings.
@@ -61,7 +65,7 @@ To make a new spot editable: add a field to `assets/js/shared/content.js`, then 
 
 ## Adding a juice
 
-Sign in at `/admin` → **Menu** → **Add a juice**. Upload a bottle photo (a PNG with the background removed looks best; remove.bg works well), add the ingredients one by one (tap an ingredient's photo to upload your own when the site doesn't have one), fill in the nutrition, and save. The site, cart and checkout pick it up immediately. Use **Mark sold out** to pause a flavor without hiding it, or untick **Show on the site** to hide it.
+Sign in at `/admin` → **Menu** → **Add a juice**. Upload a bottle photo (a PNG with the background removed looks best; remove.bg works well), add the ingredients one by one (tap an ingredient's photo to upload your own), fill in the nutrition, and save. The site, cart and checkout pick it up immediately. Use **Mark sold out** to pause a flavor without hiding it, or untick **Show on the site** to hide it.
 
 ## Link previews
 

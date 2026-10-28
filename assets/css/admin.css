@@ -1787,3 +1787,138 @@ code {
 		flex-wrap: wrap;
 	}
 }
+
+/*=============== INGREDIENTS ===============*/
+.ingr-new {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 260px) auto;
+	align-items: center;
+	gap: 1rem;
+	margin-bottom: 2rem;
+	padding: 1.25rem 1.5rem;
+}
+
+.ingr-new h2 {
+	font-size: 1.05rem;
+	font-weight: 750;
+}
+
+.ingr-new .hint {
+	margin-top: 0.25rem;
+}
+
+.ingr-new input[name='name'] {
+	width: 100%;
+	min-height: 48px;
+	padding: 0.6rem 0.95rem;
+	border: 1.5px solid var(--line-strong);
+	border-radius: var(--radius-sm);
+	background: var(--card);
+}
+
+.ingr-new input[name='name']:focus {
+	outline: none;
+	border-color: var(--ink);
+	box-shadow: 0 0 0 4px color-mix(in srgb, var(--lime) 55%, transparent);
+}
+
+.ingr-new .btn {
+	cursor: pointer;
+}
+
+.ingr-group {
+	margin: 0 0 0.85rem;
+	font-size: 0.8rem;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--muted);
+}
+
+.ingr-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+	gap: 0.75rem;
+	margin-bottom: 2rem;
+}
+
+.ingr-card {
+	display: grid;
+	grid-template-columns: 72px minmax(0, 1fr);
+	gap: 0.6rem 1rem;
+	align-items: center;
+	padding: 0.85rem;
+	border: 1px solid var(--line);
+	border-radius: var(--radius);
+	background: var(--card);
+}
+
+.ingr-card.is-custom {
+	border-color: color-mix(in srgb, var(--lime-deep) 55%, var(--line));
+}
+
+.ingr-card__photo {
+	position: relative;
+	display: grid;
+	place-items: center;
+	align-content: center;
+	gap: 0.15rem;
+	width: 72px;
+	height: 72px;
+	border-radius: var(--radius-sm);
+	background: var(--paper);
+	color: var(--muted);
+	font-size: 0.7rem;
+	cursor: pointer;
+	overflow: hidden;
+}
+
+.ingr-card__photo.is-empty {
+	border: 1.5px dashed var(--line-strong);
+}
+
+.ingr-card__photo img {
+	width: 60px;
+	height: 60px;
+	object-fit: contain;
+}
+
+.ingr-card__photo .icon {
+	width: 22px;
+	height: 22px;
+}
+
+.ingr-card__photo.is-busy {
+	opacity: 0.45;
+}
+
+.ingr-card__body h3 {
+	font-size: 1.05rem;
+	font-weight: 750;
+}
+
+.ingr-card__used {
+	margin: 0.1rem 0 0.35rem;
+	font-size: 0.8rem;
+	color: var(--muted);
+}
+
+.ingr-card__source {
+	margin: 0;
+}
+
+.ingr-card__actions {
+	grid-column: 1 / -1;
+	display: flex;
+	gap: 0.4rem;
+}
+
+.ingr-card__actions .btn {
+	cursor: pointer;
+}
+
+@media (max-width: 720px) {
+	.ingr-new {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}

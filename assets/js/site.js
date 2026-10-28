@@ -5,7 +5,7 @@
 import { loadCatalog, escapeHtml as e } from './lib/catalog.js';
 import { addToCart, cartCount, cartLines, getCart, setQty } from './lib/cart.js';
 import { bottleImage, flashAdded, money, moneyShort } from './lib/components.js';
-import { juiceStatus } from './shared/catalog.js';
+import { ingredientIcon, juiceStatus } from './shared/catalog.js';
 import { DEFAULT_COPY, copyText } from './shared/content.js';
 import { weekdayName } from './shared/order-rules.js';
 import { wordmark } from './lib/brand.js';
@@ -112,6 +112,14 @@ function renderFooter(settings) {
 			</div>
 		</footer>`
 	);
+}
+
+/** Decorative fruit baked into the pages switches to Hunter's own photo when he's replaced one. */
+function applyIngredientPhotos(root = document) {
+	for (const [key, url] of Object.entries(settings?.ingredientPhotos || {})) {
+		const bundled = ingredientIcon(key);
+		if (bundled) root.querySelectorAll(`img[src="${bundled}"]`).forEach(img => (img.src = url));
+	}
 }
 
 /*=============== ANNOUNCEMENT ===============*/
@@ -379,6 +387,7 @@ export const ready = loadCatalog().then(catalog => {
 	settings = catalog.settings;
 	copy = catalog.copy || DEFAULT_COPY;
 	applyCopy();
+	applyIngredientPhotos();
 	renderAnnouncement(settings);
 	renderFooter(settings);
 	renderDrawer();
@@ -391,6 +400,7 @@ export const ready = loadCatalog().then(catalog => {
 ready.then(() =>
 	requestAnimationFrame(() => {
 		fillIcons();
+		applyIngredientPhotos();
 		revealOnScroll();
 		initParallax();
 		document.documentElement.classList.add('is-ready');

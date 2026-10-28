@@ -10,6 +10,7 @@ import { BACKDROPS, DEFAULT_BACKDROP, JUICE_STATUSES, SPLASH_STYLES, ingredientK
 import { formatDate, formatMoney, todayISO, weekdayName } from '../shared/order-rules.js';
 import { prepareBottle, preparePhoto } from './image.js';
 import { renderPages, pagesDirty } from './pages.js';
+import { renderIngredients } from './ingredients.js';
 
 const app = document.getElementById('admin');
 const state = { juices: [], settings: null, copy: {}, status: {}, orders: null, tab: 'menu' };
@@ -93,6 +94,7 @@ function renderLogin(message = '', configured = true) {
 /*=============== SHELL ===============*/
 const TABS = [
 	{ id: 'menu', label: 'Menu', icon: 'leaf' },
+	{ id: 'ingredients', label: 'Ingredients', icon: 'orange' },
 	{ id: 'pages', label: 'Pages', icon: 'edit' },
 	{ id: 'orders', label: 'Orders', icon: 'bag' },
 	{ id: 'settings', label: 'Settings', icon: 'calendar' }
@@ -142,7 +144,7 @@ function showTab() {
 	}
 	state.tab = next;
 	document.querySelectorAll('.admin-tab').forEach(tab => tab.classList.toggle('is-active', tab.dataset.tab === state.tab));
-	({ menu: renderMenu, pages: () => renderPages(state), orders: renderOrders, settings: renderSettings })[state.tab]();
+	({ menu: renderMenu, ingredients: () => renderIngredients(state), pages: () => renderPages(state), orders: renderOrders, settings: renderSettings })[state.tab]();
 }
 
 /*=============== MENU ===============*/
@@ -153,6 +155,16 @@ export async function saveBottlePrice(price) {
 	state.settings = data.settings;
 	state.juices = data.juices;
 	toast(`Every bottle is now ${money(data.settings.bottlePrice)}`);
+	return true;
+}
+
+/** Saves the shared ingredient photo library if it changed. Resolves false when saving failed. */
+export async function saveIngredientPhotos(photos) {
+	if (JSON.stringify(photos) === JSON.stringify(state.settings.ingredientPhotos || {})) return true;
+	const data = await guarded(() => api('settings', { method: 'PUT', json: { ...state.settings, ingredientPhotos: photos } })).catch(() => null);
+	if (!data) return false;
+	state.settings = data.settings;
+	state.juices = data.juices;
 	return true;
 }
 
@@ -315,7 +327,8 @@ function ingredientRow(name, i, count, juice) {
 function openEditor(index) {
 	const original = index === null ? null : state.juices[index];
 	const juice = structuredClone(original || BLANK);
-	juice.ingredientImages ||= {};
+	// Ingredient photos are one shared library (Admin → Ingredients); edits here save to it
+	juice.ingredientImages = { ...(state.settings.ingredientPhotos || {}) };
 	let customBackdrop = juice.backdrop && !BACKDROPS[juice.backdrop] ? juice.backdrop : '';
 	const n = juice.nutrition;
 
@@ -375,7 +388,7 @@ function openEditor(index) {
 
 						<section class="editor__section" data-section="ingredients">
 							<h3>Ingredients</h3>
-							<p class="hint hint--top">In label order. Tap a photo to use your own; the first two with photos float around the bottle.</p>
+							<p class="hint hint--top">In label order. Tap a photo to upload your own; it's used for that ingredient on every juice. The first two with photos float around the bottle.</p>
 							<ul class="ingr-list" data-ingredients></ul>
 							<div class="ingr-add">
 								<input data-ingr-new placeholder="Add an ingredient, like Mango" maxlength="40" aria-label="New ingredient">
@@ -488,10 +501,6 @@ function openEditor(index) {
 			const i = Number(nameInput.dataset.ingrName);
 			const name = nameInput.value.trim();
 			if (!name) return renderIngredients();
-			// A photo Hunter uploaded follows the ingredient when he renames it
-			const photo = juice.ingredientImages[ingredientKey(ingredients[i])];
-			delete juice.ingredientImages[ingredientKey(ingredients[i])];
-			if (photo) juice.ingredientImages[ingredientKey(name)] = photo;
 			ingredients[i] = name;
 			renderIngredients();
 			return preview();
@@ -596,8 +605,7 @@ function openEditor(index) {
 		}
 		const remove = event.target.closest('[data-ingr-remove]');
 		if (remove) {
-			const [gone] = ingredients.splice(Number(remove.dataset.ingrRemove), 1);
-			delete juice.ingredientImages[ingredientKey(gone)];
+			ingredients.splice(Number(remove.dataset.ingrRemove), 1);
 			renderIngredients();
 			preview();
 		}
@@ -686,6 +694,7 @@ function openEditor(index) {
 		const list = original ? state.juices.map((j, i) => (i === index ? next : j)) : [...state.juices, next];
 		const button = form.querySelector('[data-save]');
 		button.disabled = true;
+		if (!(await saveIngredientPhotos(juice.ingredientImages))) return (button.disabled = false);
 		const ok = await saveJuices(list, original ? `${next.name} saved` : `${next.name} added to the menu`).catch(() => false);
 		button.disabled = false;
 		if (ok) close();

@@ -38,12 +38,6 @@ export function cleanJuice(input) {
 		.map(item => text(item, 40))
 		.filter(Boolean)
 		.slice(0, 12);
-	// Photos Hunter uploaded for ingredients the site has no picture of, kept only for ones still listed
-	const ingredientImages = {};
-	for (const item of ingredients) {
-		const photo = imagePath(input.ingredientImages?.[ingredientKey(item)]);
-		if (photo) ingredientImages[ingredientKey(item)] = photo;
-	}
 	return {
 		value: {
 			slug,
@@ -51,7 +45,6 @@ export function cleanJuice(input) {
 			tagline: text(input.tagline, 80),
 			description: text(input.description, 600),
 			ingredients,
-			ingredientImages,
 			price: Math.round(price * 100) / 100,
 			customPrice,
 			color: color(input.color),
@@ -97,6 +90,17 @@ export function cleanJuices(list) {
 	return { value: juices };
 }
 
+// Hunter's ingredient photo library: { ingredientKey: uploaded image path }
+function cleanIngredientPhotos(input) {
+	const out = {};
+	for (const [name, path] of Object.entries(input && typeof input === 'object' ? input : {}).slice(0, 120)) {
+		const key = ingredientKey(text(name, 40));
+		const photo = imagePath(path);
+		if (key && photo) out[key] = photo;
+	}
+	return out;
+}
+
 const days = list => [...new Set((Array.isArray(list) ? list : []).map(Number).filter(d => Number.isInteger(d) && d >= 0 && d <= 6))].sort();
 
 export function cleanSettings(input, current) {
@@ -132,6 +136,7 @@ export function cleanSettings(input, current) {
 				cutoffDays: number(d.cutoffDays, { min: 0, max: 6, fallback: current.delivery.cutoffDays }),
 				areaLabel: text(d.areaLabel, 60) || current.delivery.areaLabel
 			},
+			ingredientPhotos: input.ingredientPhotos === undefined ? current.ingredientPhotos || {} : cleanIngredientPhotos(input.ingredientPhotos),
 			aboutPhoto: input.aboutPhoto === '' ? '' : imagePath(input.aboutPhoto) || current.aboutPhoto || '',
 			maxBottlesPerOrder: number(input.maxBottlesPerOrder, { min: 1, max: 500, fallback: current.maxBottlesPerOrder })
 		}

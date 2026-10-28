@@ -87,6 +87,11 @@ test('one bottle price reprices the whole menu, and page text edits reach the pu
 	assert.equal(menu.copy['home.hero.line1'], 'Sip on');
 	assert.equal(menu.copy['home.hero.line2'], 'the sip');
 	assert.deepEqual((await call('data', 'GET')).copy, { 'home.hero.line1': 'Sip on' });
+
+	// A replaced ingredient photo reaches every juice in the public menu
+	await call('settings', 'PUT', { ...saved.settings, ingredientPhotos: { orange: '/api/images/orange.webp' } });
+	menu = await (await fns.catalog(req('/api/catalog'))).json();
+	assert.ok(menu.juices.every(j => j.ingredientImages.orange === '/api/images/orange.webp'));
 });
 
 test('paid Stripe session turns a pending order into a saved order, once', async () => {
