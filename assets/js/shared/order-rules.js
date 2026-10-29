@@ -131,5 +131,8 @@ export function milesBetween(a, b) {
 /** Distance in miles from a point to the delivery centre, which is the pickup spot. */
 export const milesFromCenter = (point, settings) => milesBetween(point, settings.delivery.center);
 
+/** How far past the delivery radius an address is, in whole miles (at least 1), for "about 5 miles outside". */
+export const milesOutside = (miles, settings) => Math.max(1, Math.round(miles - settings.delivery.radiusMiles));
+
 /** Delivery addresses can be in any state the radius reaches from Philly. */
 export const DELIVERY_STATES = ['PA', 'NJ', 'DE'];

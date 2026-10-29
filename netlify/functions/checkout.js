@@ -3,7 +3,7 @@ import { getJuices, getSettings, savePending } from './lib/store.js';
 import { checkDeliveryAddress, formatAddress } from './lib/geo.js';
 import { error, json, readJSON, requestOrigin } from './lib/http.js';
 import { stripe, stripeConfigured } from './lib/stripe.js';
-import { DELIVERY_STATES, formatDate, pickupAddress, priceOrder } from '../../assets/js/shared/order-rules.js';
+import { DELIVERY_STATES, formatDate, milesOutside, pickupAddress, priceOrder } from '../../assets/js/shared/order-rules.js';
 
 const clean = (value, max = 120) => String(value ?? '').trim().slice(0, max);
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -33,7 +33,8 @@ export default async req => {
 		if (!address.line1 || !address.city || !/^\d{5}$/.test(address.zip)) return error('Please enter your full delivery address.');
 		zoneCheck = await checkDeliveryAddress(address, settings);
 		if (zoneCheck.status === 'out') {
-			return error(`That address is about ${Math.round(zoneCheck.miles)} miles out. Delivery covers ${settings.delivery.radiusMiles} miles from our pickup spot in ${settings.pickup.area.split(',')[0]}.`);
+			const over = milesOutside(zoneCheck.miles, settings);
+			return error(`That address is about ${over} mile${over === 1 ? '' : 's'} outside our delivery area. Pickup is always an option.`);
 		}
 		if (zoneCheck.status === 'unknown') return error('We could not find that address. Please double-check the street and ZIP.');
 	}

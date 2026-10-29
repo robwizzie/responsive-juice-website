@@ -22,7 +22,8 @@ export const TOKENS = {
 	minBottles: { label: 'Delivery minimum', value: settings => String(settings.delivery.minBottles) },
 	pickupMinBottles: { label: 'Pickup minimum', value: settings => String(settings.pickup.minBottles || 0) },
 	deliveryRadius: { label: 'Delivery radius', value: settings => `${settings.delivery.radiusMiles} miles` },
-	deliveryFrom: { label: 'Delivery measured from', value: settings => `our ${settings.pickup.area.split(',')[0]} pickup spot` },
+	// Customers only see the city, so delivery doesn't read like they have to come to the pickup spot
+	deliveryFrom: { label: 'Delivery city', value: settings => settings.pickup.area.split(',')[0] },
 	email: { label: 'Email', value: settings => settings.contactEmail },
 	instagram: { label: 'Instagram', value: settings => `@${settings.instagram}` }
 };
@@ -207,7 +208,7 @@ export const PAGES = [
 					long(
 						'about.story.p2',
 						'Paragraph 2',
-						"Friends kept asking for bottles, then their friends did, and SiponPressed was born. Now I'm based in Philly, bringing fresh bottles to yoga studios, small cafes and anyone who wants to feel a little better. Every {deliveryDay} I also deliver to doors within {deliveryRadius} of my pickup spot."
+						"Friends kept asking for bottles, then their friends did, and SiponPressed was born. Now I'm based in Philly, bringing fresh bottles to yoga studios, small cafes and anyone who wants to feel a little better. Every {deliveryDay} I also deliver to doors within {deliveryRadius} of Philly."
 					),
 					long(
 						'about.story.p3',
