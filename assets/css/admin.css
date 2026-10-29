@@ -1676,6 +1676,11 @@ code {
 	}
 }
 
+/* Admin messages have no button, so the padding is even on both sides */
+.page-admin .toast {
+	padding: 0.7rem 1.2rem;
+}
+
 .toast--error .icon {
 	color: #ffb4a8;
 }

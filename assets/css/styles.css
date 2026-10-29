@@ -5422,21 +5422,26 @@ a.contact-card:hover {
 }
 
 .toast {
+	/* Pinned to both edges with auto margins so it centers at its own width. With left: 50% it
+	   could only grow to half the screen, so longer messages wrapped off-center on phones. */
 	position: fixed;
-	left: 50%;
+	left: 0;
+	right: 0;
 	bottom: 1.5rem;
 	z-index: 90;
 	display: flex;
 	align-items: center;
 	gap: 0.6rem;
+	width: fit-content;
 	max-width: calc(100% - 2rem);
+	margin-inline: auto;
 	padding: 0.65rem 0.65rem 0.65rem 1.1rem;
 	border-radius: 99px;
 	background: var(--ink);
 	color: var(--on-ink);
 	box-shadow: var(--shadow-lg);
 	font-weight: 600;
-	transform: translate(-50%, 30px) scale(0.92);
+	transform: translateY(30px) scale(0.92);
 	opacity: 0;
 	transition:
 		transform 0.55s var(--spring),
@@ -5444,7 +5449,7 @@ a.contact-card:hover {
 }
 
 .toast.is-visible {
-	transform: translate(-50%, 0);
+	transform: none;
 	opacity: 1;
 }
 
