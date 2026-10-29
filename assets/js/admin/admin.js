@@ -5,7 +5,7 @@
 import { icon } from '../lib/icons.js';
 import { wordmark } from '../lib/brand.js';
 import { escapeHtml as e } from '../lib/catalog.js';
-import { bottleImage, juiceCard, money } from '../lib/components.js';
+import { bottleImage, juiceCard, juiceLoader, money } from '../lib/components.js';
 import { BACKDROPS, DEFAULT_BACKDROP, JUICE_STATUSES, SPLASH_STYLES, ingredientKey, ingredientPhoto, juiceStatus, priceJuice, slugify } from '../shared/catalog.js';
 import { formatDate, formatMoney, todayISO, weekdayName } from '../shared/order-rules.js';
 import { prepareBottle, preparePhoto } from './image.js';
@@ -855,7 +855,7 @@ function openEditor(index) {
 /*=============== ORDERS ===============*/
 async function renderOrders() {
 	const main = document.getElementById('admin-main');
-	main.innerHTML = `<div class="admin-head"><div><h1 class="admin-title">Orders</h1><p class="muted">Paid orders, grouped by pickup or delivery day.</p></div><button type="button" class="btn btn--ghost" data-refresh>Refresh</button></div><div data-orders><p class="muted">Loading&hellip;</p></div>`;
+	main.innerHTML = `<div class="admin-head"><div><h1 class="admin-title">Orders</h1><p class="muted">Paid orders, grouped by pickup or delivery day.</p></div><button type="button" class="btn btn--ghost" data-refresh>Refresh</button></div><div data-orders><div class="admin-loading admin-loading--inline">${juiceLoader('Getting your orders&hellip;')}</div></div>`;
 	main.querySelector('[data-refresh]').addEventListener('click', () => {
 		state.orders = null;
 		renderOrders();
@@ -1072,6 +1072,8 @@ function renderSettings() {
 async function boot() {
 	const session = await api('session');
 	if (!session.signedIn) return renderLogin('', session.configured);
+	// Right after signing in the form is still up, so swap it for the loader while the shop loads
+	if (!app.querySelector('.juice-loader')) app.innerHTML = `<div class="admin-loading">${juiceLoader('Opening your shop&hellip;')}</div>`;
 	const data = await guarded(() => api('data'));
 	if (!data) return;
 	Object.assign(state, { juices: data.juices, settings: data.settings, copy: data.copy || {}, status: data.status, orders: null });
