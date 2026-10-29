@@ -235,7 +235,7 @@ export const DEFAULT_SETTINGS = {
 		// Street address of the pickup spot, shown on every page next to the area
 		address: '1903 Jackson Street',
 		// Town and state, shown publicly on the site
-		area: 'Philadelphia, PA',
+		area: 'Philadelphia, PA 19145',
 		// Optional pickup times shown on the site, e.g. "4pm to 7pm". Empty means Hunter texts a time.
 		hours: '',
 		// Only sent in the order confirmation email
@@ -250,7 +250,7 @@ export const DEFAULT_SETTINGS = {
 	delivery: {
 		enabled: true,
 		day: 1, // Monday
-		minBottles: 6,
+		minBottles: 7,
 		fee: 7,
 		freeOver: 50,
 		radiusMiles: 30,
