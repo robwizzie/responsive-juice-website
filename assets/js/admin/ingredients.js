@@ -14,7 +14,8 @@ let query = '';
 const pretty = file => file.replace(/-/g, ' ').replace(/^./, ch => ch.toUpperCase());
 
 /** Every ingredient the site knows: on a juice, bundled with the site, or uploaded by Hunter. */
-function allIngredients() {
+export function allIngredients(adminState = state) {
+	const state = adminState;
 	const byKey = new Map();
 	const add = (key, name) => byKey.get(key) || byKey.set(key, { key, name, juices: [] }).get(key);
 	state.juices.forEach(juice => juice.ingredients.forEach(name => add(ingredientKey(name), name).juices.push(juice.name)));

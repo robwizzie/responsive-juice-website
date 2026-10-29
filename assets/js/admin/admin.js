@@ -10,7 +10,7 @@ import { BACKDROPS, DEFAULT_BACKDROP, JUICE_STATUSES, SPLASH_STYLES, ingredientK
 import { formatDate, formatMoney, todayISO, weekdayName } from '../shared/order-rules.js';
 import { prepareBottle, preparePhoto } from './image.js';
 import { leavePages, renderPages, pagesDirty } from './pages.js';
-import { renderIngredients } from './ingredients.js';
+import { allIngredients, renderIngredients } from './ingredients.js';
 import { mountPreview, previewMarkup } from './preview.js';
 
 const app = document.getElementById('admin');
@@ -421,10 +421,12 @@ function openEditor(index) {
 							<h3>Ingredients</h3>
 							<p class="hint hint--top">In label order. Tap a photo to upload your own; it's used for that ingredient on every juice. The first two with photos float around the bottle.</p>
 							<ul class="ingr-list" data-ingredients></ul>
+							<p class="field-label ingr-pick__label">Add ingredients <span class="optional">tap one from your list, or type a new one</span></p>
 							<div class="ingr-add">
-								<input data-ingr-new placeholder="Add an ingredient, like Mango" maxlength="40" aria-label="New ingredient">
+								<input data-ingr-new placeholder="Search, or add a new one" maxlength="40" aria-label="Find or add an ingredient" autocomplete="off">
 								<button type="button" class="btn btn--ghost btn--sm" data-ingr-add>${icon('plus')} Add</button>
 							</div>
+							<div class="ingr-pick" data-ingr-options></div>
 						</section>
 
 						<section class="editor__section" data-section="availability">
@@ -512,19 +514,46 @@ function openEditor(index) {
 
 	function renderIngredients() {
 		const list = form.querySelector('[data-ingredients]');
-		list.innerHTML = ingredients.length ? ingredients.map((name, i) => ingredientRow(name, i, ingredients.length, juice)).join('') : '<li class="ingr-empty">No ingredients yet.</li>';
+		list.innerHTML = ingredients.length ? ingredients.map((name, i) => ingredientRow(name, i, ingredients.length, juice)).join('') : '<li class="ingr-empty">No ingredients yet. Pick some below.</li>';
+		renderPicker();
+	}
+
+	// The shared ingredient list (every juice's ingredients, the site's photos and Hunter's own),
+	// so he picks instead of retyping. Anything new he adds here joins the list once the juice is saved.
+	const library = allIngredients(state);
+	const libraryName = name => library.find(item => item.key === ingredientKey(name))?.name || name;
+
+	function renderPicker() {
+		const input = form.querySelector('[data-ingr-new]');
+		const q = input.value.trim().toLowerCase();
+		const taken = new Set(ingredients.map(ingredientKey));
+		const matches = library.filter(item => !taken.has(item.key) && (!q || item.name.toLowerCase().includes(q)));
+		const exact = q && (taken.has(ingredientKey(q)) || library.some(item => item.key === ingredientKey(q)));
+		const chip = item => {
+			const src = ingredientPhoto(juice, item.name);
+			return `<button type="button" class="ingr-chip" data-ingr-pick="${e(item.name)}">${src ? `<img src="${e(src)}" alt="" loading="lazy">` : `<span class="ingr-chip__dot">${icon('plus')}</span>`}<span>${e(item.name)}</span></button>`;
+		};
+		const fresh = q && !exact ? `<button type="button" class="ingr-chip ingr-chip--new" data-ingr-pick="${e(input.value.trim())}">${icon('plus')}<span>Add &ldquo;${e(input.value.trim())}&rdquo; as a new ingredient</span></button>` : '';
+		form.querySelector('[data-ingr-options]').innerHTML =
+			fresh + matches.map(chip).join('') || `<p class="hint">${q ? 'Already on this juice.' : 'Every ingredient in your list is on this juice.'}</p>`;
+	}
+
+	function addNames(names) {
+		const fresh = names.map(libraryName).filter((name, i, all) => !ingredients.some(item => ingredientKey(item) === ingredientKey(name)) && all.findIndex(other => ingredientKey(other) === ingredientKey(name)) === i);
+		if (!fresh.length) return;
+		if (ingredients.length + fresh.length > 12) return toast('Twelve ingredients is the most a juice can list.', true);
+		ingredients.push(...fresh);
+		renderIngredients();
+		preview();
 	}
 
 	function addIngredient() {
 		const input = form.querySelector('[data-ingr-new]');
 		const names = input.value.split(',').map(s => s.trim()).filter(Boolean);
 		if (!names.length) return;
-		const fresh = names.filter(name => !ingredients.some(item => ingredientKey(item) === ingredientKey(name)));
-		if (ingredients.length + fresh.length > 12) return toast('Twelve ingredients is the most a juice can list.', true);
-		ingredients.push(...fresh);
+		addNames(names);
 		input.value = '';
-		renderIngredients();
-		preview();
+		renderPicker();
 		input.focus();
 	}
 
@@ -532,6 +561,14 @@ function openEditor(index) {
 		if (event.key !== 'Enter') return;
 		event.preventDefault();
 		addIngredient();
+	});
+	form.querySelector('[data-ingr-new]').addEventListener('input', renderPicker);
+	form.querySelector('[data-ingr-options]').addEventListener('click', event => {
+		const pick = event.target.closest('[data-ingr-pick]');
+		if (!pick) return;
+		addNames([pick.dataset.ingrPick]);
+		form.querySelector('[data-ingr-new]').value = '';
+		renderPicker();
 	});
 
 	form.querySelector('[data-ingredients]').addEventListener('change', async event => {

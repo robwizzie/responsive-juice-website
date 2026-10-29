@@ -385,6 +385,8 @@ code {
 	width: min(1320px, calc(100% - 2rem));
 	max-height: calc(100vh - 2rem);
 	padding: 0;
+	/* Only the body scrolls; if the dialog itself could, focusing a field would slide everything away */
+	overflow: hidden;
 	border: 0;
 	border-radius: var(--radius-lg);
 	background: var(--card);
@@ -430,6 +432,7 @@ code {
 
 .editor__body {
 	display: grid;
+	min-height: 0;
 	grid-template-columns: minmax(0, 1fr) 400px;
 	gap: 2rem;
 	overflow-y: auto;
@@ -1028,6 +1031,15 @@ code {
 	margin-bottom: 1rem;
 }
 
+/* Hidden radios and checkboxes stay inside their label, so focusing one never scrolls the page or dialog */
+.toggle,
+.day-pick,
+.status-pick,
+.backdrop-pick,
+.segmented label {
+	position: relative;
+}
+
 .status-pick input,
 .backdrop-pick input {
 	position: absolute;
@@ -1462,9 +1474,74 @@ code {
 	font-size: 0.9rem;
 }
 
+.ingr-pick__label {
+	margin-top: 1rem;
+}
+
 .ingr-add {
 	display: flex;
 	gap: 0.5rem;
+}
+
+/* The shared ingredient list, as tappable chips under the search box */
+.ingr-pick {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.4rem;
+	max-height: 220px;
+	margin-top: 0.75rem;
+	padding: 2px;
+	overflow-y: auto;
+}
+
+.ingr-chip {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4rem;
+	padding: 0.3rem 0.75rem 0.3rem 0.3rem;
+	border: 1.5px solid var(--line);
+	border-radius: 99px;
+	background: var(--card);
+	font: inherit;
+	font-size: 0.86rem;
+	font-weight: 600;
+	color: var(--ink);
+	cursor: pointer;
+	transition: border-color 0.2s, background-color 0.2s;
+}
+
+.ingr-chip:hover {
+	border-color: var(--ink);
+	background: color-mix(in srgb, var(--lime) 14%, white);
+}
+
+.ingr-chip img,
+.ingr-chip__dot {
+	display: grid;
+	place-items: center;
+	width: 28px;
+	height: 28px;
+	border-radius: 50%;
+	background: var(--paper-2);
+	object-fit: contain;
+}
+
+.ingr-chip__dot .icon {
+	width: 14px;
+	height: 14px;
+	color: var(--muted);
+}
+
+.ingr-chip--new {
+	padding-left: 0.7rem;
+	border-style: dashed;
+	border-color: var(--lime-deep);
+	background: color-mix(in srgb, var(--lime) 18%, white);
+}
+
+.ingr-chip--new .icon {
+	width: 16px;
+	height: 16px;
 }
 
 .ingr-add input {
