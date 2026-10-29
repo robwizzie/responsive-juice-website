@@ -635,6 +635,24 @@ code {
 	font-size: 1.5rem;
 }
 
+.settings--password {
+	margin-top: 2.5rem;
+}
+
+.settings--password .settings__card {
+	display: grid;
+	gap: 1rem;
+}
+
+.settings--password .field-row {
+	gap: 1rem;
+}
+
+.settings--password .settings__card h2,
+.settings--password .field {
+	margin-bottom: 0;
+}
+
 .settings__save {
 	position: sticky;
 	bottom: 1rem;

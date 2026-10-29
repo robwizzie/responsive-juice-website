@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { purgeCache } from '@netlify/functions';
-import { adminConfigured, isSignedIn, signIn, signOutCookie } from './lib/auth.js';
+import { adminConfigured, changePassword, isSignedIn, signIn, signOutCookie } from './lib/auth.js';
 import { getCopyEdits, getJuices, getSettings, imageStore, listOrders, saveCopy, saveJuices, saveSettings } from './lib/store.js';
 import { cleanCopy, cleanJuices, cleanSettings } from './lib/validate.js';
 import { clientIp, error, json, readJSON } from './lib/http.js';
@@ -28,7 +28,7 @@ export default async (req, context) => {
 	if (mutating && req.headers.get('x-admin-request') !== '1') return error('Bad request', 400);
 
 	if (action === 'session' && req.method === 'GET') {
-		return json({ configured: adminConfigured(), signedIn: isSignedIn(req) });
+		return json({ configured: adminConfigured(), signedIn: await isSignedIn(req) });
 	}
 
 	if (action === 'login' && req.method === 'POST') {
@@ -41,7 +41,13 @@ export default async (req, context) => {
 		return json({ ok: true }, 200, { 'Set-Cookie': signOutCookie(req) });
 	}
 
-	if (!isSignedIn(req)) return error('Please sign in again.', 401);
+	if (!(await isSignedIn(req))) return error('Please sign in again.', 401);
+
+	if (action === 'password' && req.method === 'PUT') {
+		const body = await readJSON(req);
+		const result = await changePassword(req, body?.current, body?.next, clientIp(req, context));
+		return result.ok ? json({ ok: true }, 200, { 'Set-Cookie': result.cookie }) : error(result.error, 400);
+	}
 
 	if (action === 'data' && req.method === 'GET') {
 		const settings = await getSettings();

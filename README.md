@@ -30,7 +30,7 @@ Add these under **Site configuration → Environment variables**, then redeploy:
 
 | Variable | Needed for | Notes |
 | --- | --- | --- |
-| `ADMIN_PASSWORD` | Admin sign in | Pick a long password and give it to Hunter. Changing it signs everyone out. |
+| `ADMIN_PASSWORD` | Admin sign in | Pick a long password and give it to Hunter. He can set his own in **Admin → Settings → Admin password** (saved as a salted hash); this one keeps working as a backup. Changing either signs everyone out. |
 | `STRIPE_SECRET_KEY` | Payments | Live secret key (`sk_live_...`) from Stripe → Developers → API keys. |
 | `STRIPE_WEBHOOK_SECRET` | Order confirmations | See below. |
 | `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_USER`, `EMAIL_PASS` | Order + contact emails | For Yahoo: `smtp.mail.yahoo.com`, `465`, `siponpressed@yahoo.com`, and a Yahoo **app password** (Account security → Generate app password), not the normal password. |
