@@ -108,7 +108,7 @@ export function waysToOrder(settings, copy = DEFAULT_COPY) {
 			<article class="way" data-reveal>
 				<span class="way__icon">${icon('store')}</span>
 				<h3 class="way__title">Pickup in ${e(pickup.area.split(',')[0])}</h3>
-				<p class="way__text">${t('ways.pickup')}</p>
+				<p class="way__text" data-edit="ways.pickup">${t('ways.pickup')}</p>
 				<ul class="way__list">
 					<li>${icon('calendar')} Pickup ${dayList(pickup.days)}</li>
 					<li>${icon('clock')} Order ${pickup.leadDays > 0 ? `${pickup.leadDays} day${pickup.leadDays === 1 ? '' : 's'} ahead` : 'same day'}, pressed to order</li>
@@ -122,7 +122,7 @@ export function waysToOrder(settings, copy = DEFAULT_COPY) {
 			<article class="way way--feature" data-reveal>
 				<span class="way__icon">${icon('truck')}</span>
 				<h3 class="way__title">${weekday[delivery.day]} delivery in ${e(delivery.areaLabel)}</h3>
-				<p class="way__text">${t('ways.delivery')}</p>
+				<p class="way__text" data-edit="ways.delivery">${t('ways.delivery')}</p>
 				<ul class="way__list">
 					<li>${icon('bag')} ${delivery.minBottles} bottle minimum</li>
 					<li>${icon('truck')} ${moneyShort(delivery.fee)} delivery${delivery.freeOver > 0 ? `, free over ${moneyShort(delivery.freeOver)}` : ''}</li>

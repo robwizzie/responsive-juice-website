@@ -1,12 +1,15 @@
 /**
- * Admin → Pages: the words and photos on every page of the site. The fields come from
- * shared/content.js; only what Hunter changes is saved, and the pages pick it up right away.
+ * Admin → Pages: the words and photos on every page of the site, edited on a live preview of
+ * the real page. Tapping a spot on the preview opens it in the side panel (a sheet on phones);
+ * typing updates the preview right away. The fields come from shared/content.js; only what
+ * Hunter changes is saved, and nothing goes live until Save & publish.
  */
 import { icon } from '../lib/icons.js';
 import { escapeHtml as e } from '../lib/catalog.js';
 import { DEFAULT_COPY, PAGES, TOKENS, copyField, fillTokens } from '../shared/content.js';
 import { api, guarded, toast } from './admin.js';
 import { preparePhoto } from './image.js';
+import { mountPreview, previewMarkup } from './preview.js';
 
 // Hunter's portrait lives in the shop settings (the share card reads it there), but he finds
 // it with the rest of the About page
@@ -19,6 +22,13 @@ let pageId = 'home';
 let query = '';
 let uploads = 0;
 let lastFocused = null;
+let preview = null;
+let selectedKey = null;
+let pendingSelect = null;
+
+// Text that can't simply be swapped in place on the preview, so the page reloads to show it
+const RELOAD_KEYS = new Set(['juice.inside.title', 'juice.comingSoon']);
+const narrow = () => matchMedia('(max-width: 1000px)').matches;
 
 const savedValue = key => (key === ABOUT_PHOTO ? state.settings.aboutPhoto || '' : (state.copy[key] ?? DEFAULT_COPY[key] ?? ''));
 const value = key => (key in draft ? draft[key] : savedValue(key));
@@ -45,7 +55,7 @@ function textField(field) {
 		? `<textarea id="${id}" data-key="${field.key}" rows="3" maxlength="${max}" placeholder="${e(field.default)}">${e(current)}</textarea>`
 		: `<input id="${id}" data-key="${field.key}" maxlength="${max}" value="${e(current)}" placeholder="${e(field.default)}">`;
 	return `
-		<div class="cfield${editedOnSite(field.key) ? ' is-edited' : ''}${field.key in draft && draft[field.key] !== savedValue(field.key) ? ' is-dirty' : ''}" data-field="${field.key}">
+		<div class="cfield${editedOnSite(field.key) ? ' is-edited' : ''}${field.key in draft && draft[field.key] !== savedValue(field.key) ? ' is-dirty' : ''}${field.key === selectedKey ? ' is-selected' : ''}" data-field="${field.key}">
 			<div class="cfield__top">
 				<label for="${id}">${e(field.label)}</label>
 				<span class="cfield__dot" title="Not saved yet"></span>
@@ -60,7 +70,7 @@ function textField(field) {
 function imageField(field) {
 	const current = value(field.key);
 	return `
-		<div class="cfield cfield--photo${current ? ' is-edited' : ''}${field.key in draft && draft[field.key] !== savedValue(field.key) ? ' is-dirty' : ''}" data-field="${field.key}">
+		<div class="cfield cfield--photo${current ? ' is-edited' : ''}${field.key in draft && draft[field.key] !== savedValue(field.key) ? ' is-dirty' : ''}${field.key === selectedKey ? ' is-selected' : ''}" data-field="${field.key}">
 			<div class="cfield__top"><span class="cfield__label">${e(field.label)}</span><span class="cfield__dot" title="Not saved yet"></span></div>
 			<div class="photo">
 				<div class="photo__preview ${field.portrait ? 'photo__preview--portrait' : 'photo__preview--wide'}" data-photo-box="${field.key}">${current ? `<img src="${e(current)}" alt="">` : `<span class="photo__default">${icon('image')}<small>Original photo</small></span>`}</div>
@@ -91,44 +101,36 @@ function tokenBar() {
 		</details>`;
 }
 
-function pageBody(page) {
-	return `
-		<header class="pages__head">
-			<div>
-				<h2>${e(page.label)}</h2>
-				${page.hint ? `<p class="muted">${e(page.hint)}</p>` : ''}
-			</div>
-			<a href="${page.id === 'juice' && state.juices[0] ? `/juices/${e(state.juices[0].slug)}` : page.path}" class="btn btn--ghost btn--sm" target="_blank" rel="noopener">${icon('external')} View page</a>
-		</header>
-		${tokenBar()}
-		${sectionsOf(page)
-			.map(
-				section => `
-			<section class="card pages__section">
-				<h3>${e(section.title)}</h3>
-				${section.hint ? `<p class="hint hint--top">${e(section.hint)}</p>` : ''}
-				<div class="pages__fields">${section.fields.map(field).join('')}</div>
-			</section>`
-			)
-			.join('')}`;
-}
+const currentPage = () => PAGES.find(p => p.id === pageId) || PAGES[0];
+const pageOf = key => PAGES.find(page => fieldsOf(page).some(f => f.key === key));
+const previewPath = page => (page.id === 'juice' && state.juices[0] ? `/juices/${state.juices[0].slug}` : page.path);
 
-function searchBody() {
-	const q = query.toLowerCase();
-	const groups = PAGES.map(page => ({
-		page,
-		fields: fieldsOf(page).filter(f => [f.label, f.default, value(f.key)].some(text => String(text || '').toLowerCase().includes(q)))
-	})).filter(group => group.fields.length);
-	if (!groups.length) return `<p class="empty">Nothing on the site says &ldquo;${e(query)}&rdquo;. Juice names, descriptions and ingredients are in Menu.</p>`;
+function sectionsBody(groups) {
 	return groups
 		.map(
-			({ page, fields }) => `
-		<section class="card pages__section">
-			<h3>${e(page.label)}</h3>
+			({ title, hint, fields }) => `
+		<section class="pages__section">
+			<h3>${e(title)}</h3>
+			${hint ? `<p class="hint hint--top">${e(hint)}</p>` : ''}
 			<div class="pages__fields">${fields.map(field).join('')}</div>
 		</section>`
 		)
 		.join('');
+}
+
+function panelBody() {
+	if (query) {
+		const q = query.toLowerCase();
+		const groups = PAGES.map(page => ({
+			title: page.label,
+			fields: fieldsOf(page).filter(f => [f.label, f.default, value(f.key)].some(text => String(text || '').toLowerCase().includes(q)))
+		})).filter(group => group.fields.length);
+		return groups.length
+			? sectionsBody(groups)
+			: `<p class="empty">Nothing on the site says &ldquo;${e(query)}&rdquo;. Juice names, descriptions and ingredients are in Menu.</p>`;
+	}
+	const page = currentPage();
+	return `${page.hint ? `<p class="pages__hint">${icon('info')} ${e(page.hint)}</p>` : ''}${sectionsBody(sectionsOf(page))}`;
 }
 
 const editedCount = page => fieldsOf(page).filter(f => editedOnSite(f.key)).length;
@@ -136,17 +138,17 @@ const editedCount = page => fieldsOf(page).filter(f => editedOnSite(f.key)).leng
 function renderNav() {
 	return PAGES.map(page => {
 		const edited = editedCount(page);
-		return `<button type="button" class="pages__tab${page.id === pageId && !query ? ' is-active' : ''}" data-page="${page.id}">${e(page.label)}${edited ? `<span class="pages__count" title="${edited} changed from the original">${edited}</span>` : ''}</button>`;
+		return `<button type="button" class="pages__tab${page.id === pageId ? ' is-active' : ''}" data-page="${page.id}">${e(page.label)}${edited ? `<span class="pages__count" title="${edited} changed from the original">${edited}</span>` : ''}</button>`;
 	}).join('');
 }
 
-function renderBody() {
+function renderPanel() {
 	const main = document.getElementById('admin-main');
-	const page = PAGES.find(p => p.id === pageId) || PAGES[0];
 	main.querySelector('[data-pages-nav]').innerHTML = renderNav();
 	const open = main.querySelector('details.tokens')?.open;
-	main.querySelector('[data-pages-body]').innerHTML = query ? `${tokenBar()}${searchBody()}` : pageBody(page);
+	main.querySelector('[data-pages-list]').innerHTML = `${panelBody()}${tokenBar()}`;
 	if (open) main.querySelector('details.tokens').open = true;
+	main.querySelector('[data-panel-title]').textContent = query ? `Results for “${query}”` : currentPage().label;
 	main.querySelectorAll('.cfield textarea').forEach(grow);
 	renderSaveBar();
 }
@@ -156,7 +158,7 @@ function renderSaveBar() {
 	if (!bar) return;
 	const count = changedKeys().length;
 	bar.hidden = count === 0;
-	bar.querySelector('[data-savebar-count]').textContent = `${count} unsaved change${count === 1 ? '' : 's'}`;
+	bar.querySelector('[data-savebar-count]').textContent = matchMedia('(max-width: 480px)').matches ? `${count} not saved` : `${count} unsaved change${count === 1 ? '' : 's'}`;
 	document.querySelectorAll('.pages__tab').forEach(tab => {
 		const page = PAGES.find(p => p.id === tab.dataset.page);
 		tab.classList.toggle('has-dirty', fieldsOf(page).some(f => changedKeys().includes(f.key)));
@@ -168,9 +170,66 @@ function grow(textarea) {
 	textarea.style.height = `${textarea.scrollHeight + 2}px`;
 }
 
+/*=============== PREVIEW ===============*/
+// What the previewed page shows: the saved text with Hunter's unsaved edits on top
+function previewDraft() {
+	const copy = {};
+	for (const key of Object.keys(draft)) if (key !== ABOUT_PHOTO) copy[key] = draft[key];
+	return { copy, settings: ABOUT_PHOTO in draft ? { aboutPhoto: draft[ABOUT_PHOTO] } : {} };
+}
+
+function showOnPreview(key) {
+	const isPhoto = key === ABOUT_PHOTO || copyField(key)?.type === 'image';
+	const text = fillTokens(value(key) || defaultOf(key), state.settings);
+	if (isPhoto || RELOAD_KEYS.has(key) || !preview.setText(key, text)) preview.reload();
+}
+
+function setStatus(message) {
+	const status = document.querySelector('[data-preview-status]');
+	if (status) status.textContent = message;
+}
+
+/** Selects a field: highlights it on the preview and opens it in the panel. */
+function select(key, { fromPreview = false, focus = fromPreview } = {}) {
+	const owner = pageOf(key);
+	if (owner && owner.id !== pageId && !query) {
+		pageId = owner.id;
+		pendingSelect = key;
+		preview.navigate(previewPath(owner));
+	}
+	selectedKey = key;
+	const root = document.querySelector('[data-pages-root]');
+	root.querySelectorAll('.cfield.is-selected').forEach(el => el.classList.remove('is-selected'));
+	if (fromPreview && query) {
+		query = '';
+		root.querySelector('[data-search]').value = '';
+	}
+	if (fromPreview || !root.querySelector(`[data-field="${CSS.escape(key)}"]`)) renderPanel();
+	const box = root.querySelector(`[data-field="${CSS.escape(key)}"]`);
+	box?.classList.add('is-selected');
+	if (fromPreview) root.classList.add('is-sheet-open', 'is-single');
+	const shown = owner?.id === pageId ? preview.select(key) : false;
+	setStatus(shown || pendingSelect ? '' : "This one isn't showing on the page right now.");
+	if (box && fromPreview) {
+		const list = root.querySelector('[data-pages-list]');
+		if (!narrow()) list.scrollTo({ top: box.offsetTop - list.offsetTop - 16, behavior: 'smooth' });
+		if (focus) {
+			const input = box.querySelector('[data-key]');
+			// On phones, focusing would pop the keyboard over the sheet before Hunter sees it
+			if (input && !narrow()) input.focus({ preventScroll: true });
+		}
+	}
+}
+
+function closeSheet() {
+	const root = document.querySelector('[data-pages-root]');
+	root.classList.remove('is-sheet-open', 'is-single');
+}
+
 function setDraft(key, next) {
 	draft[key] = next;
 	const box = document.querySelector(`[data-field="${CSS.escape(key)}"]`);
+	showOnPreview(key);
 	if (!box) return renderSaveBar();
 	box.classList.toggle('is-dirty', next !== savedValue(key));
 	box.classList.toggle('is-edited', next !== defaultOf(key));
@@ -205,7 +264,8 @@ async function save(button) {
 			state.juices = data.juices;
 		}
 		draft = {};
-		renderBody();
+		renderPanel();
+		closeSheet();
 		toast("Saved. It's live on the site.");
 	} catch {
 		/* guarded() already showed the error */
@@ -217,20 +277,34 @@ async function save(button) {
 /*=============== TAB ===============*/
 export function renderPages(adminState) {
 	state = adminState;
+	preview?.destroy();
+	selectedKey = null;
 	const main = document.getElementById('admin-main');
 	main.innerHTML = `
-		<div data-pages-root>
+		<div class="pages-root" data-pages-root>
 		<div class="admin-head">
 			<div>
 				<h1 class="admin-title">Pages</h1>
-				<p class="muted">The words and photos on every page. Each juice's own details are in Menu.</p>
+				<p class="muted">${narrow() ? 'Tap' : 'Click'} any words or photo on the page to change them. Nothing goes live until you press <strong>Save &amp; publish</strong>.</p>
 			</div>
 			<label class="search">${icon('search')}<input type="search" placeholder="Find any text on the site" value="${e(query)}" data-search aria-label="Find text"></label>
 		</div>
+		<nav class="pages__nav" data-pages-nav aria-label="Pages"></nav>
 		<div class="pages">
-			<nav class="pages__nav" data-pages-nav aria-label="Pages"></nav>
-			<div class="pages__body" data-pages-body></div>
+			<div class="pages__preview">${previewMarkup(narrow() ? 'phone' : 'computer')}</div>
+			<aside class="pages__panel" aria-label="Text on this page">
+				<div class="pages__panel-head">
+					<div>
+						<p class="pages__panel-kicker">Editing</p>
+						<h2 data-panel-title></h2>
+					</div>
+					<button type="button" class="btn btn--ghost btn--sm pages__all" data-show-all>${icon('edit')} Show all</button>
+					<button type="button" class="icon-btn pages__close" data-close-sheet aria-label="Close">${icon('close')}</button>
+				</div>
+				<div class="pages__list" data-pages-list></div>
+			</aside>
 		</div>
+		<button type="button" class="btn btn--ink pages__open" data-open-list>${icon('edit')} All text on this page</button>
 		<div class="savebar" data-savebar hidden>
 			<div class="savebar__inner">
 				<span class="savebar__count"><span class="cfield__dot"></span><span data-savebar-count></span></span>
@@ -242,12 +316,27 @@ export function renderPages(adminState) {
 		</div>
 		</div>`;
 	const root = main.querySelector('[data-pages-root]');
-	renderBody();
+	renderPanel();
+
+	preview = mountPreview(root.querySelector('.pages__preview'), {
+		path: previewPath(currentPage()),
+		draft: previewDraft,
+		onSelect: key => select(key, { fromPreview: true }),
+		onReady: () => {
+			const key = pendingSelect || selectedKey;
+			pendingSelect = null;
+			if (key) {
+				const shown = preview.select(key);
+				setStatus(shown ? '' : "This one isn't showing on the page right now.");
+			}
+		}
+	});
 
 	const search = main.querySelector('[data-search]');
 	search.addEventListener('input', () => {
 		query = search.value.trim();
-		renderBody();
+		renderPanel();
+		if (query && narrow()) root.classList.add('is-sheet-open');
 	});
 
 	root.addEventListener('click', event => {
@@ -256,10 +345,22 @@ export function renderPages(adminState) {
 			pageId = tab.dataset.page;
 			query = '';
 			search.value = '';
-			renderBody();
-			main.querySelector('.pages__body').scrollIntoView({ block: 'start', behavior: 'smooth' });
+			selectedKey = null;
+			setStatus('');
+			renderPanel();
+			preview.navigate(previewPath(currentPage()));
 			return;
 		}
+		if (event.target.closest('[data-open-list]')) {
+			root.classList.add('is-sheet-open');
+			root.classList.remove('is-single');
+			return;
+		}
+		if (event.target.closest('[data-show-all]')) {
+			root.classList.remove('is-single');
+			return;
+		}
+		if (event.target.closest('[data-close-sheet]')) return closeSheet();
 		const reset = event.target.closest('[data-reset]');
 		if (reset) {
 			const key = reset.dataset.reset;
@@ -268,7 +369,7 @@ export function renderPages(adminState) {
 			if (input) {
 				input.value = defaultOf(key);
 				if (input.tagName === 'TEXTAREA') grow(input);
-			} else renderBody();
+			} else renderPanel();
 			return;
 		}
 		const token = event.target.closest('[data-token]');
@@ -284,16 +385,22 @@ export function renderPages(adminState) {
 		}
 		if (event.target.closest('[data-discard]')) {
 			draft = {};
-			renderBody();
+			renderPanel();
+			preview.reload(0);
 			toast('Changes discarded');
 			return;
 		}
 		const saveButton = event.target.closest('[data-save]');
-		if (saveButton) save(saveButton);
+		if (saveButton) return save(saveButton);
+		// Clicking a field's box in the list shows where it is on the page
+		const box = event.target.closest('[data-field]');
+		if (box && box.dataset.field !== selectedKey) select(box.dataset.field);
 	});
 
 	root.addEventListener('focusin', event => {
-		if (event.target.matches('[data-key]')) lastFocused = event.target;
+		if (!event.target.matches('[data-key]')) return;
+		lastFocused = event.target;
+		if (event.target.dataset.key !== selectedKey) select(event.target.dataset.key);
 	});
 
 	root.addEventListener('input', event => {
@@ -313,18 +420,24 @@ export function renderPages(adminState) {
 		box.classList.add('is-busy');
 		try {
 			const field = key === ABOUT_PHOTO ? ABOUT_PHOTO_FIELD : copyField(key);
-			const { blob, preview } = await preparePhoto(file, field.portrait ? 1400 : 2000);
-			box.innerHTML = `<img src="${preview}" alt="">`;
+			const { blob, preview: local } = await preparePhoto(file, field.portrait ? 1400 : 2000);
+			box.innerHTML = `<img src="${local}" alt="">`;
 			const upload = await guarded(() => api('images', { method: 'POST', blob }));
 			if (upload) {
-				draft[key] = upload.url;
+				setDraft(key, upload.url);
 				toast('Photo ready. Save & publish to put it on the site.');
 			}
 		} catch (err) {
 			toast(err.message, true);
 		} finally {
 			uploads--;
-			renderBody();
+			renderPanel();
 		}
 	});
+}
+
+/** Called when leaving the tab, so the preview stops borrowing this tab's edits. */
+export function leavePages() {
+	preview?.destroy();
+	preview = null;
 }

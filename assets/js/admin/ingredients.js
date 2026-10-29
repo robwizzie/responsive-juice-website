@@ -36,7 +36,7 @@ function card(item) {
 			<div class="ingr-card__body">
 				<h3>${e(item.name)}</h3>
 				<p class="ingr-card__used">${item.juices.length ? `In ${item.juices.map(e).join(', ')}` : 'Not in a juice yet'}</p>
-				<p class="ingr-card__source">${custom ? '<span class="pill pill--ok">Your photo</span>' : bundled ? '<span class="pill">Site photo</span>' : '<span class="pill pill--warn">No photo</span>'}</p>
+				<p class="ingr-card__source">${custom ? '<span class="pill pill--ok">Your photo</span>' : bundled ? '<span class="pill">Original photo</span>' : '<span class="pill pill--warn">No photo</span>'}</p>
 			</div>
 			<div class="ingr-card__actions">
 				<label class="btn btn--ghost btn--sm">${icon('upload')} ${src ? 'Replace' : 'Upload'}<input type="file" accept="image/png,image/webp,image/jpeg" data-ingr-upload="${e(item.key)}" data-name="${e(item.name)}" hidden></label>

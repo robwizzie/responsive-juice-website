@@ -1,6 +1,6 @@
 import { ready, initParallax, revealOnScroll, t } from '../site.js';
 import { BACKDROPS, DEFAULT_BACKDROP, ingredientPhoto, juiceStatus } from '../shared/catalog.js';
-import { escapeHtml as e } from '../lib/catalog.js';
+import { escapeHtml as e, previewHost } from '../lib/catalog.js';
 import { rail } from '../lib/carousel.js';
 import { bottleArt, juiceCard, money, statusStamp } from '../lib/components.js';
 import { icon } from '../lib/icons.js';
@@ -46,7 +46,7 @@ function nutritionLabel(juice) {
 			${row('Total Carbohydrate', `${n.carbs}g`, `${n.carbsDv}%`)}
 			${row('Natural Sugars', `${n.sugars}g`, '', true)}
 			${row('Protein', `${n.protein}g`, '')}
-			<p class="label__foot">${e(t('juice.label.foot'))}</p>
+			<p class="label__foot" data-edit="juice.label.foot">${e(t('juice.label.foot'))}</p>
 		</div>`;
 }
 
@@ -55,7 +55,7 @@ function vitaminBars(juice) {
 	const top = Math.max(100, ...juice.vitamins.map(v => v.dv));
 	return `
 		<div class="vitamins" data-reveal>
-			<h3 class="section-title--sm">${e(t('juice.vitamins.title'))}</h3>
+			<h3 class="section-title--sm" data-edit="juice.vitamins.title">${e(t('juice.vitamins.title'))}</h3>
 			<ul class="vitamins__list">
 				${juice.vitamins
 					.map(
@@ -67,7 +67,7 @@ function vitaminBars(juice) {
 					)
 					.join('')}
 			</ul>
-			<p class="vitamins__note">${e(t('juice.vitamins.note'))}</p>
+			<p class="vitamins__note" data-edit="juice.vitamins.note">${e(t('juice.vitamins.note'))}</p>
 		</div>`;
 }
 
@@ -78,11 +78,11 @@ function buyBlock(juice, settings) {
 		const handle = `@${e(settings.instagram)}`;
 		const message = e(t('juice.comingSoon')).replace(handle, `<a href="https://instagram.com/${e(settings.instagram)}" target="_blank" rel="noopener">${handle}</a>`);
 		return `${statusStamp(juice)}${juice.price ? `<span class="price price--lg">${money(juice.price)}</span>` : ''}
-			<p class="pdp-panel__soon">${message}</p>`;
+			<p class="pdp-panel__soon" data-edit="juice.comingSoon">${message}</p>`;
 	}
 	if (status === 'sold-out') {
 		return `<span class="price price--lg">${money(juice.price)}</span>${statusStamp(juice)}
-			<p class="pdp-panel__soon">${e(t('juice.soldOut'))}</p>`;
+			<p class="pdp-panel__soon" data-edit="juice.soldOut">${e(t('juice.soldOut'))}</p>`;
 	}
 	if (!settings.orderingEnabled) return `<span class="price price--lg">${money(juice.price)}</span><span class="stamp stamp--sold-out">Ordering paused</span>`;
 	return `
@@ -117,9 +117,9 @@ function render(juice, juices, settings) {
 					${juice.ingredients.length ? `<ul class="chips">${juice.ingredients.map(name => chip(juice, name)).join('')}</ul>` : ''}
 					<div class="pdp-panel__buy">${buyBlock(juice, settings)}</div>
 					<ul class="badges">
-						<li>${icon('snow')} ${e(t('juice.badge.1'))}</li>
-						<li>${icon('drop')} ${e(t('juice.badge.2'))}</li>
-						<li>${icon('leaf')} ${e(t('juice.badge.3'))}</li>
+						<li>${icon('snow')} <span data-edit="juice.badge.1">${e(t('juice.badge.1'))}</span></li>
+						<li>${icon('drop')} <span data-edit="juice.badge.2">${e(t('juice.badge.2'))}</span></li>
+						<li>${icon('leaf')} <span data-edit="juice.badge.3">${e(t('juice.badge.3'))}</span></li>
 					</ul>
 				</div>
 			</div>
@@ -131,8 +131,8 @@ function render(juice, juices, settings) {
 			<div class="container inside">
 				<div>
 					<div data-reveal>
-						<p class="kicker" style="--kicker-dot: ${juice.color}">${e(t('juice.inside.kicker'))}</p>
-						<h2 class="section-title">${e(t('juice.inside.title', { count: juice.ingredients.length }))}</h2>
+						<p class="kicker" style="--kicker-dot: ${juice.color}" data-edit="juice.inside.kicker">${e(t('juice.inside.kicker'))}</p>
+						<h2 class="section-title" data-edit="juice.inside.title">${e(t('juice.inside.title', { count: juice.ingredients.length }))}</h2>
 					</div>
 					<div class="ingredients" data-reveal>
 						${juice.ingredients
@@ -156,8 +156,8 @@ function render(juice, juices, settings) {
 			<div class="container rail" data-rail>
 				<div class="section-head" data-reveal>
 					<div>
-						<p class="kicker">${e(t('juice.more.kicker'))}</p>
-						<h2 class="section-title">${e(t('juice.more.title'))}</h2>
+						<p class="kicker" data-edit="juice.more.kicker">${e(t('juice.more.kicker'))}</p>
+						<h2 class="section-title" data-edit="juice.more.title">${e(t('juice.more.title'))}</h2>
 					</div>
 					<div class="rail__nav">
 						<button type="button" class="icon-btn rail__btn" data-rail-prev aria-label="Scroll back">${icon('arrowLeft')}</button>
@@ -187,10 +187,13 @@ function render(juice, juices, settings) {
 }
 
 ready.then(({ juices, settings }) => {
-	const juice = juices.find(j => j.slug === slug);
+	// In the admin's juice editor the page shows the juice being edited, and redraws as it changes
+	const draft = previewHost?.draft()?.juice;
+	const juice = draft || juices.find(j => j.slug === slug);
 	if (!juice) {
 		location.replace('/juices');
 		return;
 	}
 	render(juice, juices, settings);
+	if (previewHost) window.sipRenderJuice = next => render(next, juices.map(j => (j.slug === juice.slug ? next : j)), settings);
 });

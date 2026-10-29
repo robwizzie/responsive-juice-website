@@ -9,8 +9,9 @@ import { bottleImage, juiceCard, money } from '../lib/components.js';
 import { BACKDROPS, DEFAULT_BACKDROP, JUICE_STATUSES, SPLASH_STYLES, ingredientKey, ingredientPhoto, juiceStatus, priceJuice, slugify } from '../shared/catalog.js';
 import { formatDate, formatMoney, todayISO, weekdayName } from '../shared/order-rules.js';
 import { prepareBottle, preparePhoto } from './image.js';
-import { renderPages, pagesDirty } from './pages.js';
+import { leavePages, renderPages, pagesDirty } from './pages.js';
 import { renderIngredients } from './ingredients.js';
+import { mountPreview, previewMarkup } from './preview.js';
 
 const app = document.getElementById('admin');
 const state = { juices: [], settings: null, copy: {}, status: {}, orders: null, tab: 'menu' };
@@ -97,7 +98,7 @@ const TABS = [
 	{ id: 'ingredients', label: 'Ingredients', icon: 'orange' },
 	{ id: 'pages', label: 'Pages', icon: 'edit' },
 	{ id: 'orders', label: 'Orders', icon: 'bag' },
-	{ id: 'settings', label: 'Settings', icon: 'calendar' }
+	{ id: 'settings', label: 'Settings', icon: 'gear' }
 ];
 
 function renderShell() {
@@ -127,22 +128,51 @@ function renderShell() {
 
 function renderStatus() {
 	const missing = [];
-	if (!state.status.stripe) missing.push('Stripe is not connected, so customers can\'t pay yet (add <code>STRIPE_SECRET_KEY</code>).');
-	if (!state.status.webhook) missing.push('Order confirmations need <code>STRIPE_WEBHOOK_SECRET</code>.');
-	if (!state.status.email) missing.push('Emails are off until the <code>EMAIL_*</code> settings are added.');
-	document.querySelector('[data-status]').innerHTML = missing.length
-		? `<div class="admin-status__inner">${icon('info')}<div>${missing.map(m => `<p>${m}</p>`).join('')}<p class="muted">See the README for setup steps.</p></div></div>`
+	if (!state.status.stripe) missing.push(['Card payments are off, so customers can\'t check out yet.', 'STRIPE_SECRET_KEY']);
+	if (!state.status.webhook) missing.push(['Paid orders won\'t show up in Orders yet.', 'STRIPE_WEBHOOK_SECRET']);
+	if (!state.status.email) missing.push(['Order and contact emails are off.', 'EMAIL_HOST, EMAIL_USER, EMAIL_PASS']);
+	// Hunter can tuck the notice away once he's read it; it comes back if the list changes
+	const signature = missing.map(([, vars]) => vars).join('|');
+	let hidden = false;
+	try {
+		hidden = localStorage.getItem('sp-admin-status') === signature;
+	} catch {
+		/* private mode */
+	}
+	const box = document.querySelector('[data-status]');
+	box.onclick = event => {
+		if (!event.target.closest('[data-status-hide]')) return;
+		try {
+			localStorage.setItem('sp-admin-status', signature);
+		} catch {
+			/* private mode */
+		}
+		box.innerHTML = '';
+	};
+	box.innerHTML = missing.length && !hidden
+		? `<div class="admin-status__inner">${icon('info')}<div class="admin-status__text">
+			<p><strong>A few things still need setting up</strong> (the site works, but these are switched off):</p>
+			<ul>${missing.map(([text]) => `<li>${text}</li>`).join('')}</ul>
+			<details class="admin-status__tech"><summary>Details for whoever set up the site</summary><p>Add these in Netlify → Site configuration → Environment variables, then redeploy: ${missing.map(([, vars]) => `<code>${vars}</code>`).join(', ')}. The README has the steps.</p></details>
+		</div><button type="button" class="btn btn--ghost btn--sm admin-status__hide" data-status-hide>Got it</button></div>`
 		: '';
 }
 
 function showTab() {
 	const next = TABS.some(t => `#${t.id}` === location.hash) ? location.hash.slice(1) : 'menu';
-	// Don't lose unsaved page text by clicking another tab
+	// Don't lose unsaved page text or settings by clicking another tab
 	if (state.tab === 'pages' && next !== 'pages' && pagesDirty() && !confirm('You have unsaved page changes. Leave without saving?')) {
 		history.replaceState(null, '', '#pages');
 		return;
 	}
+	if (state.tab === 'settings' && next !== 'settings' && settingsDirty && !confirm('You have unsaved settings. Leave without saving?')) {
+		history.replaceState(null, '', '#settings');
+		return;
+	}
+	settingsDirty = false;
+	if (state.tab === 'pages' && next !== 'pages') leavePages();
 	state.tab = next;
+	document.body.dataset.tab = next;
 	document.querySelectorAll('.admin-tab').forEach(tab => tab.classList.toggle('is-active', tab.dataset.tab === state.tab));
 	({ menu: renderMenu, ingredients: () => renderIngredients(state), pages: () => renderPages(state), orders: renderOrders, settings: renderSettings })[state.tab]();
 }
@@ -183,7 +213,7 @@ function renderMenu() {
 		<div class="admin-head">
 			<div>
 				<h1 class="admin-title">Menu</h1>
-				<p class="muted">The order here is the order on the site. Changes go live as soon as you save.</p>
+				<p class="muted">Your juices, in the order they show on the site. Tap <strong>Edit</strong> to change a juice and see its page as you go.</p>
 			</div>
 			<div class="admin-head__actions">
 				<form class="price-chip" data-price-form>
@@ -206,13 +236,13 @@ function renderMenu() {
 						<p class="menu-row__meta">${[j.price ? `${money(j.price)}${j.customPrice ? ' <span class="pill">own price</span>' : ''}` : 'No price yet', j.nutrition.calories ? `${j.nutrition.calories} cal` : '', j.ingredients.map(e).join(', ')].filter(Boolean).join(' &middot; ')}</p>
 						<div class="status-switch" role="group" aria-label="${e(j.name)} availability">
 							${Object.entries(JUICE_STATUSES)
-								.map(([value, label]) => `<button type="button" class="status-switch__btn status-switch__btn--${value}" data-status="${i}" data-value="${value}" aria-pressed="${juiceStatus(j) === value}">${label}</button>`)
+								.map(([value, label]) => `<button type="button" class="status-switch__btn status-switch__btn--${value}" data-status="${i}" data-value="${value}" aria-pressed="${juiceStatus(j) === value}" title="${STATUS_HINTS[value]}">${label}</button>`)
 								.join('')}
 						</div>
 					</div>
 					<div class="menu-row__actions">
-						<button type="button" class="icon-btn" data-move="${i}" data-dir="-1" ${i === 0 ? 'disabled' : ''} aria-label="Move up">${icon('arrowUp')}</button>
-						<button type="button" class="icon-btn" data-move="${i}" data-dir="1" ${i === state.juices.length - 1 ? 'disabled' : ''} aria-label="Move down">${icon('arrowDown')}</button>
+						<button type="button" class="icon-btn" data-move="${i}" data-dir="-1" ${i === 0 ? 'disabled' : ''} aria-label="Move up" title="Move up on the site">${icon('arrowUp')}</button>
+						<button type="button" class="icon-btn" data-move="${i}" data-dir="1" ${i === state.juices.length - 1 ? 'disabled' : ''} aria-label="Move down" title="Move down on the site">${icon('arrowDown')}</button>
 						<button type="button" class="btn btn--ink btn--sm" data-edit="${i}">${icon('edit')} Edit</button>
 					</div>
 				</li>`
@@ -317,8 +347,8 @@ function ingredientRow(name, i, count, juice) {
 			<input class="ingr__name" value="${e(name)}" data-ingr-name="${i}" aria-label="Ingredient ${i + 1}" maxlength="40">
 			<div class="ingr__actions">
 				${custom ? `<button type="button" class="icon-btn icon-btn--sm" data-ingr-reset="${i}" title="Go back to the original photo" aria-label="Go back to the original photo">${icon('swap')}</button>` : ''}
-				<button type="button" class="icon-btn icon-btn--sm" data-ingr-move="${i}" data-dir="-1" ${i === 0 ? 'disabled' : ''} aria-label="Move up">${icon('arrowUp')}</button>
-				<button type="button" class="icon-btn icon-btn--sm" data-ingr-move="${i}" data-dir="1" ${i === count - 1 ? 'disabled' : ''} aria-label="Move down">${icon('arrowDown')}</button>
+				<button type="button" class="icon-btn icon-btn--sm" data-ingr-move="${i}" data-dir="-1" ${i === 0 ? 'disabled' : ''} aria-label="Move up" title="Move up on the site">${icon('arrowUp')}</button>
+				<button type="button" class="icon-btn icon-btn--sm" data-ingr-move="${i}" data-dir="1" ${i === count - 1 ? 'disabled' : ''} aria-label="Move down" title="Move down on the site">${icon('arrowDown')}</button>
 				<button type="button" class="icon-btn icon-btn--sm" data-ingr-remove="${i}" aria-label="Remove ${e(name)}">${icon('close')}</button>
 			</div>
 		</li>`;
@@ -341,7 +371,8 @@ function openEditor(index) {
 						<h2 class="editor__title">${original ? `Edit ${e(original.name)}` : 'New juice'}</h2>
 						<nav class="editor__nav" aria-label="Jump to">${EDITOR_SECTIONS.map(([id, label]) => `<button type="button" data-jump="${id}">${label}</button>`).join('')}</nav>
 					</div>
-					${original ? `<a href="/juices/${e(original.slug)}" class="btn btn--ghost btn--sm editor__view" target="_blank" rel="noopener">${icon('external')} View page</a>` : ''}
+					<button type="button" class="btn btn--lime btn--sm editor__preview-btn" data-preview-open>${icon('eye')} Preview</button>
+					${original ? `<a href="/juices/${e(original.slug)}" class="btn btn--ghost btn--sm editor__view" target="_blank" rel="noopener">${icon('external')} Live page</a>` : ''}
 					<button type="button" class="icon-btn" data-close aria-label="Close">${icon('close')}</button>
 				</header>
 
@@ -450,13 +481,21 @@ function openEditor(index) {
 					</div>
 
 					<aside class="editor__preview">
-						<p class="field-label">Preview</p>
-						<div data-preview></div>
+						<div class="editor__preview-head">
+							<div class="segmented segmented--sm" role="radiogroup" aria-label="Preview">
+								<label><input type="radio" name="previewView" value="page" checked><span>Juice page</span></label>
+								<label><input type="radio" name="previewView" value="card"><span>Menu card</span></label>
+							</div>
+							<button type="button" class="btn btn--ink btn--sm editor__back" data-preview-close>${icon('arrowLeft')} Back</button>
+						</div>
+						<div class="editor__page" data-preview-page>${previewMarkup('phone')}</div>
+						<div class="editor__card" data-preview hidden></div>
+						<p class="hint editor__preview-hint">This is how it will look, before you save. Tap the name, photo, description or ingredients to jump to them.</p>
 					</aside>
 				</div>
 
 				<footer class="editor__foot">
-					${original ? `<button type="button" class="btn btn--danger btn--sm" data-delete>${icon('trash')} Delete</button>` : '<span></span>'}
+					${original ? `<button type="button" class="btn btn--danger btn--sm" data-delete aria-label="Delete this juice">${icon('trash')} <span class="editor__delete-label">Delete</span></button>` : '<span></span>'}
 					<div class="editor__foot-actions">
 						<button type="button" class="btn btn--ghost" data-close>Cancel</button>
 						<button type="submit" class="btn btn--ink" data-save>${original ? 'Save changes' : 'Add to menu'}</button>
@@ -529,9 +568,62 @@ function openEditor(index) {
 	let slugTouched = Boolean(original);
 
 	const close = () => {
+		pagePreview.destroy();
 		dialog.close();
 		dialog.remove();
 	};
+
+	// Scroll just the editor's body; scrollIntoView would also shift the dialog itself
+	function scrollEditorTo(el) {
+		const body = form.querySelector('.editor__body');
+		body.scrollTo({ top: el.getBoundingClientRect().top - body.getBoundingClientRect().top + body.scrollTop - 16, behavior: 'smooth' });
+	}
+
+	const showPreview = on => form.classList.toggle('is-previewing', on);
+
+	// Tapping something on the juice page preview jumps to where it's edited
+	const PAGE_SPOTS = [
+		['.pdp-panel__name', 'name'],
+		['.pdp-panel__tagline', 'tagline'],
+		['.pdp-panel__desc', 'description'],
+		['.pdp-panel__buy .price', 'price'],
+		['.pdp-panel__soon, .pdp-panel__buy .stamp', '@availability'],
+		['.chips, .ingredients, [data-edit="juice.inside.title"]', '@ingredients'],
+		['.bottle-art', '@photo'],
+		['.label, .vitamins__list', '@nutrition'],
+		['.pdp-hero', '@background']
+	];
+	function jumpFromPreview(target) {
+		const spot = PAGE_SPOTS.find(([selector]) => target.closest(selector));
+		if (!spot) {
+			if (target.closest('[data-copy], [data-edit]')) toast('That line is the same on every juice page. Change it in Pages → Each juice page.');
+			return;
+		}
+		showPreview(false);
+		const [, to] = spot;
+		if (to.startsWith('@')) return scrollEditorTo(form.querySelector(`[data-section="${to.slice(1)}"]`));
+		if (to === 'price' && form.querySelector('[name="priceMode"]:checked').value === 'shop') return scrollEditorTo(form.querySelector('.price-pick'));
+		const input = form.elements[to];
+		scrollEditorTo(input.closest('.field') || input);
+		input.focus({ preventScroll: true });
+	}
+
+	const previewJuice = () => {
+		const current = priceJuice(read(), state.settings);
+		return { ...current, name: current.name || 'Juice name', imageSmall: current.imageSmall || current.image };
+	};
+	let pageReady = false;
+	let pageTimer;
+	const pagePreview = mountPreview(form.querySelector('[data-preview-page]'), {
+		path: `/juices/${original?.slug || state.juices.find(j => j.active)?.slug || state.juices[0]?.slug || 'simply-orange'}`,
+		draft: () => ({ juice: previewJuice(), replaces: original?.slug }),
+		spots: `${PAGE_SPOTS.slice(0, -1).map(([selector]) => selector).join(', ')}, [data-copy], [data-edit]`,
+		onTap: jumpFromPreview,
+		onReady: () => {
+			pageReady = true;
+			pagePreview.render(previewJuice());
+		}
+	});
 
 	function read() {
 		const f = form.elements;
@@ -563,6 +655,8 @@ function openEditor(index) {
 
 	function preview() {
 		const current = priceJuice(read(), state.settings);
+		clearTimeout(pageTimer);
+		if (pageReady) pageTimer = setTimeout(() => pagePreview.render(previewJuice()) || pagePreview.reload(0), 120);
 		form.querySelector('[data-color-value]').textContent = current.color;
 		form.querySelector('[data-preview]').innerHTML =
 			current.image || current.status === 'coming-soon'
@@ -578,6 +672,13 @@ function openEditor(index) {
 		preview();
 	});
 	form.addEventListener('change', event => {
+		if (event.target.name === 'previewView') {
+			const card = event.target.value === 'card';
+			form.querySelector('[data-preview]').hidden = !card;
+			form.querySelector('[data-preview-page]').hidden = card;
+			return;
+		}
+		if (event.target.name === 'preview-device') return;
 		if (event.target.name === 'priceMode') {
 			const custom = event.target.value === 'custom';
 			form.querySelector('[data-custom-price]').hidden = !custom;
@@ -587,12 +688,12 @@ function openEditor(index) {
 	});
 	form.addEventListener('click', event => {
 		if (event.target.closest('[data-close]')) close();
+		if (event.target.closest('[data-preview-open]')) showPreview(true);
+		if (event.target.closest('[data-preview-close]')) showPreview(false);
 		const jump = event.target.closest('[data-jump]');
 		if (jump) {
-			// Scroll just the editor's body; scrollIntoView would also shift the dialog itself
-			const body = form.querySelector('.editor__body');
-			const section = form.querySelector(`[data-section="${jump.dataset.jump}"]`);
-			body.scrollTo({ top: section.getBoundingClientRect().top - body.getBoundingClientRect().top + body.scrollTop - 16, behavior: 'smooth' });
+			showPreview(false);
+			scrollEditorTo(form.querySelector(`[data-section="${jump.dataset.jump}"]`));
 		}
 		if (event.target.closest('[data-ingr-add]')) addIngredient();
 		const move = event.target.closest('[data-ingr-move]');
@@ -776,12 +877,14 @@ async function renderOrders() {
 }
 
 /*=============== SETTINGS ===============*/
+let settingsDirty = false;
+
 function renderSettings() {
 	const s = state.settings;
 	const days = [1, 2, 3, 4, 5, 6, 0];
 	const main = document.getElementById('admin-main');
 	main.innerHTML = `
-		<div class="admin-head"><div><h1 class="admin-title">Settings</h1><p class="muted">Price, ordering, pickup and delivery.</p></div></div>
+		<div class="admin-head"><div><h1 class="admin-title">Settings</h1><p class="muted">Price, ordering, pickup and delivery. Change anything, then press <strong>Save settings</strong> at the bottom of the screen.</p></div></div>
 		<form class="settings" id="settings-form" novalidate>
 			<section class="card settings__card">
 				<h2>Price</h2>
@@ -830,7 +933,15 @@ function renderSettings() {
 				</div>
 			</section>
 
-			<div class="settings__save"><button type="submit" class="btn btn--ink btn--lg">Save settings</button></div>
+			<div class="savebar" data-settings-bar hidden>
+				<div class="savebar__inner">
+					<span class="savebar__count"><span class="cfield__dot"></span>Unsaved changes</span>
+					<div class="savebar__actions">
+						<button type="button" class="btn btn--ghost btn--sm" data-settings-discard>Discard</button>
+						<button type="submit" class="btn btn--lime">Save settings</button>
+					</div>
+				</div>
+			</div>
 		</form>
 
 		<form class="settings settings--password" id="password-form">
@@ -847,7 +958,21 @@ function renderSettings() {
 			</section>
 		</form>`;
 
-	document.getElementById('settings-form').addEventListener('submit', async event => {
+	const settingsForm = document.getElementById('settings-form');
+	const settingsBar = settingsForm.querySelector('[data-settings-bar]');
+	const markDirty = () => {
+		settingsBar.hidden = false;
+		settingsDirty = true;
+	};
+	settingsForm.addEventListener('input', markDirty);
+	settingsForm.addEventListener('change', markDirty);
+	settingsForm.querySelector('[data-settings-discard]').addEventListener('click', () => {
+		settingsDirty = false;
+		renderSettings();
+		toast('Changes discarded');
+	});
+
+	settingsForm.addEventListener('submit', async event => {
 		event.preventDefault();
 		const f = event.target.elements;
 		const num = name => Number(f[name].value);
@@ -886,7 +1011,8 @@ function renderSettings() {
 		if (!data) return;
 		state.settings = data.settings;
 		state.juices = data.juices;
-		toast('Settings saved');
+		settingsDirty = false;
+		toast("Settings saved. They're live on the site.");
 		renderSettings();
 	});
 
@@ -917,7 +1043,7 @@ async function boot() {
 }
 
 window.addEventListener('beforeunload', event => {
-	if (pagesDirty()) event.preventDefault();
+	if (pagesDirty() || settingsDirty) event.preventDefault();
 });
 window.addEventListener('hashchange', () => state.settings && document.getElementById('admin-main') && showTab());
 boot().catch(err => {
