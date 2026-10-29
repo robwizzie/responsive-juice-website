@@ -1,7 +1,7 @@
 import { ready } from '../site.js';
 import { escapeHtml as e } from '../lib/catalog.js';
 import { addToCart, cartLines, getCart, setQty } from '../lib/cart.js';
-import { money, moneyShort } from '../lib/components.js';
+import { juiceLoader, money, moneyShort } from '../lib/components.js';
 import { icon } from '../lib/icons.js';
 import { isOrderable } from '../shared/catalog.js';
 import { availableDates, formatDate, formatMoney, priceOrder, weekdayName } from '../shared/order-rules.js';
@@ -40,7 +40,15 @@ function renderLayout() {
 	if (!pickup.enabled && delivery.enabled) state.type = 'delivery';
 
 	root.innerHTML = `
-		${canceled ? `<p class="notice">${icon('info')} Checkout was canceled, so you weren't charged. Your cart is saved below.</p>` : ''}
+		${
+			canceled
+				? `<div class="checkout-note" role="status" data-checkout-note>
+					<span class="checkout-note__icon">${icon('info')}</span>
+					<div><strong>Checkout canceled. No charge was made.</strong><p>Your cart and details are saved below, so you can finish whenever you're ready.</p></div>
+					<button type="button" class="icon-btn checkout-note__close" data-dismiss-note aria-label="Dismiss">${icon('close')}</button>
+				</div>`
+				: ''
+		}
 		<div class="order">
 			<form class="order__main" id="order-form" novalidate>
 				<fieldset class="card order-step">
@@ -286,7 +294,7 @@ function renderSummary() {
 		</dl>
 		${state.date ? `<p class="summary__when">${icon('calendar')} ${state.type === 'delivery' ? 'Delivered' : 'Pickup'} ${formatDate(state.date)}</p>` : ''}
 		${blockers.length && lines.length ? `<p class="summary__error">${e(blockers[0])}</p>` : ''}
-		${state.error ? `<p class="summary__error">${e(state.error)}</p>` : ''}
+		${state.error ? `<p class="summary__error" role="alert">${icon('info')} ${e(state.error)}</p>` : ''}
 		<button type="button" class="btn btn--lime btn--lg btn--block" data-pay ${priced.ok && !state.submitting ? '' : 'disabled'}>
 			${state.submitting ? 'Opening secure checkout…' : `Pay ${priced.total ? formatMoney(priced.total) : ''} ${icon('arrowRight')}`}
 		</button>
@@ -325,6 +333,7 @@ async function pay() {
 
 	state.submitting = true;
 	renderSummary();
+	showCover();
 	const data = Object.fromEntries(new FormData(form));
 	try {
 		const res = await fetch('/api/checkout', {
@@ -343,11 +352,37 @@ async function pay() {
 		if (!res.ok || !body.url) throw new Error(body.error || 'We could not start checkout. Please try again.');
 		location.href = body.url;
 	} catch (err) {
+		hideCover();
 		state.submitting = false;
 		state.error = err.message;
 		renderSummary();
+		document.querySelector('.summary__error')?.scrollIntoView({ block: 'center', behavior: 'smooth' });
 	}
 }
+
+/** Covers the page with the bottle loader while Stripe Checkout opens */
+function showCover() {
+	hideCover();
+	document.body.insertAdjacentHTML(
+		'beforeend',
+		`<div class="checkout-cover" data-checkout-cover>
+			<div class="checkout-cover__inner">
+				${juiceLoader('Opening secure checkout&hellip;')}
+				<p class="checkout-cover__secure">${icon('lock')} Payments are handled by Stripe</p>
+			</div>
+		</div>`
+	);
+}
+
+const hideCover = () => document.querySelector('[data-checkout-cover]')?.remove();
+
+// Coming back from Stripe with the back button restores this page from cache, cover and all
+window.addEventListener('pageshow', event => {
+	if (!event.persisted || !state.submitting) return;
+	hideCover();
+	state.submitting = false;
+	renderSummary();
+});
 
 function update() {
 	renderTypeHint();
@@ -370,5 +405,11 @@ ready.then(catalog => {
 
 	renderLayout();
 	update();
+	// Show the canceled note once, without it coming back on a refresh
+	if (new URLSearchParams(location.search).has('canceled')) {
+		history.replaceState(null, '', location.pathname);
+		requestAnimationFrame(() => root.querySelector('[data-checkout-note]')?.scrollIntoView({ block: 'center' }));
+	}
+	root.querySelector('[data-dismiss-note]')?.addEventListener('click', () => root.querySelector('[data-checkout-note]').remove());
 	window.addEventListener('cart:change', renderSummary);
 });
