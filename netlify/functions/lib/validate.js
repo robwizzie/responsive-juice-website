@@ -120,7 +120,9 @@ export function cleanSettings(input, current) {
 			pickup: {
 				...current.pickup,
 				enabled: p.enabled !== false,
+				address: p.address === undefined ? current.pickup.address : text(p.address, 120),
 				area: text(p.area, 80) || current.pickup.area,
+				hours: p.hours === undefined ? current.pickup.hours || '' : text(p.hours, 80),
 				details: text(p.details, 400),
 				days: pickupDays,
 				leadDays: number(p.leadDays, { min: 0, max: 14, fallback: current.pickup.leadDays })

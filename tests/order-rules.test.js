@@ -1,7 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { DEFAULT_JUICES, DEFAULT_SETTINGS, priceJuices } from '../assets/js/shared/catalog.js';
-import { availableDates, priceOrder, todayISO } from '../assets/js/shared/order-rules.js';
+import { availableDates, cutoffDay, pickupAddress, pickupMapUrl, priceOrder, todayISO } from '../assets/js/shared/order-rules.js';
+import { DEFAULT_COPY, copyText } from '../assets/js/shared/content.js';
 
 // Wednesday Oct 28 2026, noon in Philadelphia
 const WED = new Date('2026-10-28T16:00:00Z');
@@ -68,4 +69,16 @@ test('every bottle uses the shop price unless it has its own', () => {
 	);
 	const order = priceOrder({ items: [{ slug: 'simply-orange', qty: 1 }, { slug: 'simply-red', qty: 1 }], type: 'pickup' }, juices, DEFAULT_SETTINGS, WED);
 	assert.equal(order.total, 1900);
+});
+
+test('pickup address and the Thursday cutoff show up in the page text', () => {
+	assert.equal(cutoffDay(DEFAULT_SETTINGS.delivery), 4);
+	assert.equal(pickupAddress(DEFAULT_SETTINGS.pickup), '1903 Jackson Street, Philadelphia, PA');
+	assert.equal(pickupAddress({ address: '  ', area: 'Philadelphia, PA' }), 'Philadelphia, PA');
+	assert.match(pickupMapUrl(DEFAULT_SETTINGS.pickup), /query=1903%20Jackson%20Street%2C%20Philadelphia%2C%20PA$/);
+	assert.equal(
+		copyText(DEFAULT_COPY, 'faq.2.a', DEFAULT_SETTINGS),
+		'Every Monday, right to your door, anywhere within 30 miles of Blackwood and Woodbury. Get your order in by the end of Thursday for that Monday.'
+	);
+	assert.match(copyText(DEFAULT_COPY, 'faq.1.a', DEFAULT_SETTINGS), /^At 1903 Jackson Street, Philadelphia, PA\./);
 });

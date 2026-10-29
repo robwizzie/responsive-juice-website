@@ -232,10 +232,14 @@ export const DEFAULT_SETTINGS = {
 	instagram: 'siponpressed',
 	pickup: {
 		enabled: true,
-		// Shown publicly on the site
+		// Street address of the pickup spot, shown on every page next to the area
+		address: '1903 Jackson Street',
+		// Town and state, shown publicly on the site
 		area: 'Philadelphia, PA',
+		// Optional pickup times shown on the site, e.g. "4pm to 7pm". Empty means Hunter texts a time.
+		hours: '',
 		// Only sent in the order confirmation email
-		details: 'Hunter will text you the pickup spot and time once your order is ready.',
+		details: 'Hunter will text you when your order is ready to grab.',
 		// 0 = Sunday … 6 = Saturday
 		days: [1, 2, 3, 4, 5, 6],
 		// Juice is pressed to order, so pickups need a little notice

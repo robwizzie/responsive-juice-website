@@ -11,6 +11,15 @@ const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Frida
 
 export const weekdayName = day => WEEKDAYS[day];
 
+/** The last weekday orders are taken for a delivery day (Thursday for Monday with the default 4-day cutoff). */
+export const cutoffDay = delivery => (delivery.day - delivery.cutoffDays + 7) % 7;
+
+/** The pickup spot as one line, e.g. "1903 Jackson Street, Philadelphia, PA". Just the area when no address is set. */
+export const pickupAddress = pickup => [pickup?.address, pickup?.area].map(part => String(part || '').trim()).filter(Boolean).join(', ');
+
+/** A maps link for the pickup spot that opens the right app on phones. */
+export const pickupMapUrl = pickup => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(pickupAddress(pickup))}`;
+
 /** Today's date in Philadelphia, as YYYY-MM-DD. */
 export function todayISO(now = new Date()) {
 	return new Intl.DateTimeFormat('en-CA', { timeZone: TIME_ZONE, year: 'numeric', month: '2-digit', day: '2-digit' }).format(now);

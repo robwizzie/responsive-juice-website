@@ -1,7 +1,7 @@
 import { ready } from '../site.js';
 import { juiceStatus } from '../shared/catalog.js';
 import { escapeHtml as e } from '../lib/catalog.js';
-import { bottleImage, juiceCard, waysToOrder } from '../lib/components.js';
+import { bottleImage, juiceCard, shippingNote, waysToOrder } from '../lib/components.js';
 
 const METERS = [
 	['Natural sugars', 'sugars', 'g'],
@@ -61,5 +61,7 @@ ready.then(({ juices, settings, copy }) => {
 	const table = document.querySelector('[data-compare]');
 	table.style.setProperty('--n', Math.min(juices.length, 4));
 	table.innerHTML = compare(juices);
-	document.querySelector('[data-ways]').innerHTML = waysToOrder(settings, copy);
+	const ways = document.querySelector('[data-ways]');
+	ways.innerHTML = waysToOrder(settings, copy);
+	ways.insertAdjacentHTML('afterend', shippingNote(settings, copy));
 });
