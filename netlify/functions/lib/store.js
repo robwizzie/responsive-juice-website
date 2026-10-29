@@ -71,6 +71,9 @@ const security = () => getStore({ name: 'security', consistency: 'strong' });
 export const getCounter = async key => (await security().get(key, { type: 'json' })) || { count: 0, since: Date.now() };
 export const setCounter = (key, value) => security().setJSON(key, value);
 export const clearCounter = key => security().delete(key);
+// Hunter's own admin password, as { salt, hash, changedAt }; null means only ADMIN_PASSWORD works
+export const getSavedPassword = () => security().get('admin-password', { type: 'json' });
+export const savePassword = value => security().setJSON('admin-password', value);
 
 /* Order details are saved before payment and promoted to a real order once Stripe confirms it */
 const pendingStore = () => getStore({ name: 'pending-orders', consistency: 'strong' });

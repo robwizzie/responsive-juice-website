@@ -831,6 +831,20 @@ function renderSettings() {
 			</section>
 
 			<div class="settings__save"><button type="submit" class="btn btn--ink btn--lg">Save settings</button></div>
+		</form>
+
+		<form class="settings settings--password" id="password-form">
+			<section class="card settings__card">
+				<h2>Admin password</h2>
+				<input type="text" name="username" value="admin" autocomplete="username" hidden>
+				<div class="field"><label for="p-current">Current password</label><input id="p-current" name="current" type="password" autocomplete="current-password" required></div>
+				<div class="field-row">
+					<div class="field"><label for="p-next">New password <span class="optional">at least 8 characters</span></label><input id="p-next" name="next" type="password" autocomplete="new-password" minlength="8" required></div>
+					<div class="field"><label for="p-confirm">Type it again</label><input id="p-confirm" name="confirm" type="password" autocomplete="new-password" minlength="8" required></div>
+				</div>
+				<p class="hint">Changing it signs out the admin on every other phone and computer. The original password set up in Netlify keeps working too, as a backup if this one is ever forgotten.</p>
+				<div><button type="submit" class="btn btn--ink">Change password</button></div>
+			</section>
 		</form>`;
 
 	document.getElementById('settings-form').addEventListener('submit', async event => {
@@ -874,6 +888,20 @@ function renderSettings() {
 		state.juices = data.juices;
 		toast('Settings saved');
 		renderSettings();
+	});
+
+	document.getElementById('password-form').addEventListener('submit', async event => {
+		event.preventDefault();
+		const f = event.target.elements;
+		if (f.next.value.length < 8) return toast('Use at least 8 characters for the new password.', true);
+		if (f.next.value !== f.confirm.value) return toast("The two new passwords don't match.", true);
+		const button = event.target.querySelector('[type="submit"]');
+		button.disabled = true;
+		const data = await guarded(() => api('password', { method: 'PUT', json: { current: f.current.value, next: f.next.value } })).catch(() => null);
+		button.disabled = false;
+		if (!data) return;
+		event.target.reset();
+		toast('Password changed');
 	});
 }
 
