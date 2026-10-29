@@ -22,10 +22,13 @@ export const TOKENS = {
 	minBottles: { label: 'Delivery minimum', value: settings => String(settings.delivery.minBottles) },
 	pickupMinBottles: { label: 'Pickup minimum', value: settings => String(settings.pickup.minBottles || 0) },
 	deliveryRadius: { label: 'Delivery radius', value: settings => `${settings.delivery.radiusMiles} miles` },
-	deliveryTowns: { label: 'Delivery towns', value: settings => settings.delivery.zones.map(zone => zone.label.split(',')[0]).join(' and ') },
+	deliveryFrom: { label: 'Delivery measured from', value: settings => `our ${settings.pickup.area.split(',')[0]} pickup spot` },
 	email: { label: 'Email', value: settings => settings.contactEmail },
 	instagram: { label: 'Instagram', value: settings => `@${settings.instagram}` }
 };
+
+// Old names still filled in, in case saved page text uses them. {deliveryTowns} was "Blackwood and Woodbury".
+const LEGACY_TOKENS = { deliveryTowns: TOKENS.deliveryFrom };
 
 const text = (key, label, value, extra = {}) => ({ key, label, default: value, ...extra });
 const long = (key, label, value, extra = {}) => text(key, label, value, { long: true, ...extra });
@@ -204,7 +207,7 @@ export const PAGES = [
 					long(
 						'about.story.p2',
 						'Paragraph 2',
-						"Friends kept asking for bottles, then their friends did, and SiponPressed was born. Now I'm based in Philly, bringing fresh bottles to yoga studios, small cafes and anyone who wants to feel a little better. I still do a {deliveryDay} delivery run to {deliveryArea}."
+						"Friends kept asking for bottles, then their friends did, and SiponPressed was born. Now I'm based in Philly, bringing fresh bottles to yoga studios, small cafes and anyone who wants to feel a little better. Every {deliveryDay} I also deliver to doors within {deliveryRadius} of my pickup spot."
 					),
 					long(
 						'about.story.p3',
@@ -317,7 +320,7 @@ export const PAGES = [
 				hint: 'On the Home and Juices pages. The address, days, minimums and fees fill in from Settings.',
 				fields: [
 					long('ways.pickup', 'Pickup text', "Order online, then grab your bottles fresh at {pickupAddress}. Hunter texts you when they're ready."),
-					long('ways.delivery', 'Delivery text', 'Hunter drives a fresh batch to your door every {deliveryDay}, within {deliveryRadius} of {deliveryTowns}.'),
+					long('ways.delivery', 'Delivery text', 'Hunter drives a fresh batch to your door every {deliveryDay}, within {deliveryRadius} of {deliveryFrom}.'),
 					long('ways.shipping', 'Shipping note', "Shipping is coming soon. Hunter is working out the best and cheapest way to get bottles to you.")
 				]
 			},
@@ -329,7 +332,7 @@ export const PAGES = [
 					text('faq.1.q', 'Question 1', 'Where do I pick up?'),
 					long('faq.1.a', 'Answer 1', 'At {pickupAddress}. Order at least 48 hours ahead, since every bottle is pressed for you. Choose a pickup day when you order, and Hunter will text you when your bottles are ready to grab.'),
 					text('faq.2.q', 'Question 2', 'When does delivery come?'),
-					long('faq.2.a', 'Answer 2', 'Every {deliveryDay}, right to your door, anywhere within {deliveryRadius} of {deliveryTowns}. Get your order in by the end of {cutoffDay} for that {deliveryDay}.'),
+					long('faq.2.a', 'Answer 2', 'Every {deliveryDay}, right to your door, anywhere within {deliveryRadius} of {deliveryFrom}. Get your order in by the end of {cutoffDay} for that {deliveryDay}.'),
 					text('faq.3.q', 'Question 3', 'Is there a minimum?'),
 					long('faq.3.a', 'Answer 3', 'Pickup orders need at least {pickupMinBottles} bottles and delivery needs at least {minBottles}. Mix any flavors you like.'),
 					text('faq.4.q', 'Question 4', 'Do you ship?'),
@@ -355,9 +358,10 @@ export const copyField = key => FIELD_BY_KEY.get(key);
 export function fillTokens(value, settings, extra = {}) {
 	return String(value ?? '').replace(/\{(\w+)\}/g, (match, name) => {
 		if (name in extra) return String(extra[name]);
-		if (TOKENS[name] && settings) {
+		const token = TOKENS[name] || LEGACY_TOKENS[name];
+		if (token && settings) {
 			try {
-				return TOKENS[name].value(settings);
+				return token.value(settings);
 			} catch {
 				return match;
 			}

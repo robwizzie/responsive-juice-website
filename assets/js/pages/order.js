@@ -4,7 +4,7 @@ import { addToCart, cartLines, getCart, setQty } from '../lib/cart.js';
 import { juiceLoader, money, moneyShort, pickupFaq, pickupSpot, shippingNote } from '../lib/components.js';
 import { icon } from '../lib/icons.js';
 import { isOrderable } from '../shared/catalog.js';
-import { availableDates, cutoffDay, formatDate, formatMoney, priceOrder, weekdayName } from '../shared/order-rules.js';
+import { DELIVERY_STATES, availableDates, cutoffDay, formatDate, formatMoney, priceOrder, weekdayName } from '../shared/order-rules.js';
 
 const root = document.querySelector('[data-order]');
 const DETAILS_KEY = 'siponpressed-details';
@@ -23,9 +23,9 @@ function savedDetails() {
 }
 
 function rememberDetails(form) {
-	const { name, email, phone, line1, line2, city, zip } = Object.fromEntries(new FormData(form));
+	const { name, email, phone, line1, line2, city, state, zip } = Object.fromEntries(new FormData(form));
 	try {
-		localStorage.setItem(DETAILS_KEY, JSON.stringify({ name, email, phone, line1, line2, city, zip }));
+		localStorage.setItem(DETAILS_KEY, JSON.stringify({ name, email, phone, line1, line2, city, state, zip }));
 	} catch {
 		/* not essential */
 	}
@@ -122,7 +122,7 @@ function renderLayout() {
 							</div>
 							<div class="field field--state">
 								<label for="state">State</label>
-								<input id="state" value="NJ" disabled>
+								<select id="state" name="state" autocomplete="address-level1">${DELIVERY_STATES.map(code => `<option ${code === (d.state || 'PA') ? 'selected' : ''}>${code}</option>`).join('')}</select>
 							</div>
 							<div class="field">
 								<label for="zip">ZIP</label>
@@ -163,7 +163,7 @@ function renderLayout() {
 	});
 	form.addEventListener('input', event => {
 		rememberDetails(form);
-		if (['line1', 'city', 'zip'].includes(event.target.name)) {
+		if (['line1', 'city', 'state', 'zip'].includes(event.target.name)) {
 			state.zone = null;
 			renderZone();
 		}
@@ -198,7 +198,7 @@ function renderTypeHint() {
 	const { delivery, pickup } = settings;
 	if (state.type === 'delivery') {
 		const day = weekdayName(delivery.day);
-		hint.innerHTML = `<p>${icon('info')}<span>Delivered to your door every ${day}, within ${delivery.radiusMiles} miles of ${delivery.zones.map(z => e(z.label)).join(' or ')}. <strong>Order by the end of ${weekdayName(cutoffDay(delivery))}</strong> for that ${day}. ${
+		hint.innerHTML = `<p>${icon('info')}<span>Delivered to your door every ${day}, within ${delivery.radiusMiles} miles of our pickup spot in ${e(pickup.area.split(',')[0])}. <strong>Order by the end of ${weekdayName(cutoffDay(delivery))}</strong> for that ${day}. ${
 			delivery.freeOver > 0 ? `${moneyShort(delivery.fee)} delivery, free on orders over ${moneyShort(delivery.freeOver)}.` : `${moneyShort(delivery.fee)} delivery.`
 		}</span></p>`;
 	} else {
@@ -213,7 +213,7 @@ function renderTypeHint() {
 /*=============== DELIVERY ZONE ===============*/
 async function checkZone() {
 	const form = document.getElementById('order-form');
-	const address = { line1: form.line1.value, line2: form.line2.value, city: form.city.value, state: 'NJ', zip: form.zip.value };
+	const address = { line1: form.line1.value, line2: form.line2.value, city: form.city.value, state: form.state.value, zip: form.zip.value };
 	if (!address.line1 || !/^\d{5}$/.test(address.zip)) {
 		state.zone = { status: 'incomplete' };
 		return renderZone();
@@ -237,7 +237,7 @@ function renderZone() {
 		checking: ['', 'Checking…'],
 		incomplete: ['is-warn', 'Add your street and 5-digit ZIP.'],
 		in: ['is-ok', `${icon('check')} You're in the delivery area${zone?.miles != null ? ` (${zone.miles} mi from ${e(zone.zone)})` : ''}.`],
-		out: ['is-bad', `Sorry, that's about ${Math.round(zone?.miles || 0)} miles out. Delivery covers ${settings.delivery.radiusMiles} miles. Pickup is always an option.`],
+		out: ['is-bad', `Sorry, that's about ${Math.round(zone?.miles || 0)} miles out. Delivery covers ${settings.delivery.radiusMiles} miles from our pickup spot. Pickup is always an option.`],
 		unknown: ['is-warn', "We couldn't find that address. Double-check the street and ZIP."],
 		unverified: ['is-warn', "We couldn't check right now, but you can still order. Hunter will confirm."]
 	};
@@ -352,7 +352,7 @@ async function pay() {
 				type: state.type,
 				date: state.date,
 				customer: { name: data.name, email: data.email, phone: data.phone },
-				address: state.type === 'delivery' ? { line1: data.line1, line2: data.line2, city: data.city, zip: data.zip } : null,
+				address: state.type === 'delivery' ? { line1: data.line1, line2: data.line2, city: data.city, state: data.state, zip: data.zip } : null,
 				notes: data.notes
 			})
 		});

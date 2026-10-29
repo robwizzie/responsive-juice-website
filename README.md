@@ -20,7 +20,7 @@ Menu edits, settings, uploaded photos, orders and contact messages are stored in
 
 - **$8 a bottle.** One shop-wide price (Menu page, or Settings → Price) that every juice uses, unless a juice is given its own price in its editor. Changing it reprices the cards, cart, checkout, emails and share images at once.
 - **Pickup** in Philadelphia, Monday to Saturday, with 2 days notice. No minimum. The exact spot is sent in the confirmation email ("Pickup instructions").
-- **Monday delivery** within 30 miles of Blackwood or Woodbury, NJ (the same area as before). 6 bottle minimum, $7 fee, free over $50, orders close at the end of Thursday.
+- **Monday delivery** within 25 miles of the pickup spot (1903 Jackson Street). The radius follows the pickup address set in Admin → Settings, so moving pickup moves delivery too. Addresses in PA, NJ and DE are accepted. 7 bottle minimum, $7 fee, free over $50, orders close at the end of Thursday.
 - Prices are always recalculated on the server from the saved menu; the browser can't change them.
 - Delivery addresses are checked with the free US Census geocoder. If it's down the order still goes through and the email flags the address for Hunter to check.
 

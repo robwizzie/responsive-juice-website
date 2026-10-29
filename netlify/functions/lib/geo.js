@@ -1,8 +1,8 @@
 /**
- * Turns a delivery address into coordinates so we can check the delivery radius.
- * Uses the free US Census geocoder (no key needed).
+ * Turns a delivery address into coordinates so we can check the delivery radius, which is
+ * measured from the pickup spot. Uses the free US Census geocoder (no key needed).
  */
-import { nearestZone } from '../../../assets/js/shared/order-rules.js';
+import { milesFromCenter, pickupAddress } from '../../../assets/js/shared/order-rules.js';
 
 const TIMEOUT_MS = 6000;
 
@@ -20,7 +20,26 @@ async function census(address) {
 	return match ? { lat: match.coordinates.y, lng: match.coordinates.x, matched: match.matchedAddress } : null;
 }
 
-export const formatAddress = ({ line1, line2, city, state, zip }) => [line1, line2, city, `${state || 'NJ'} ${zip || ''}`.trim()].filter(Boolean).join(', ');
+export const formatAddress = ({ line1, line2, city, state, zip }) => [line1, line2, city, `${state || 'PA'} ${zip || ''}`.trim()].filter(Boolean).join(', ');
+
+/**
+ * The delivery centre for a pickup spot. Reuses `current` when the pickup address hasn't changed;
+ * otherwise looks the new one up. Returns { center } or { center: current, warning } if the lookup fails.
+ */
+export async function deliveryCenterFor(pickup, current) {
+	const address = pickupAddress(pickup);
+	if (current && current.address === address) return { center: current };
+	let point = null;
+	try {
+		point = await census(address);
+	} catch (err) {
+		console.error('Geocoding the pickup address failed:', err.message);
+	}
+	if (!point) {
+		return { center: current, warning: `We couldn't find "${address}" on the map, so the delivery radius is still measured from ${current?.address || 'the old pickup spot'}. Check the address and save again.` };
+	}
+	return { center: { address, lat: Math.round(point.lat * 1e6) / 1e6, lng: Math.round(point.lng * 1e6) / 1e6 } };
+}
 
 /**
  * Returns { status: 'in' | 'out' | 'unknown' | 'unverified', miles?, matched?, zone? }.
@@ -40,11 +59,12 @@ export async function checkDeliveryAddress(address, settings) {
 
 	if (!point) return { status: serviceFailed ? 'unverified' : 'unknown' };
 
-	const { zone, miles } = nearestZone(point, settings);
+	const miles = milesFromCenter(point, settings);
 	return {
 		status: miles <= settings.delivery.radiusMiles ? 'in' : 'out',
 		miles: Math.round(miles * 10) / 10,
 		matched: point.matched,
-		zone: zone.label
+		// What the distance is measured from, shown as "4.2 mi from the pickup spot"
+		zone: 'the pickup spot'
 	};
 }

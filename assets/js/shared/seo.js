@@ -32,7 +32,7 @@ const BUSINESS = {
 	priceRange: '$',
 	servesCuisine: 'Cold-pressed juice',
 	address: { '@type': 'PostalAddress', addressLocality: 'Philadelphia', addressRegion: 'PA', addressCountry: 'US' },
-	areaServed: ['Philadelphia, PA', 'South Jersey'],
+	areaServed: ['Philadelphia, PA'],
 	founder: { '@type': 'Person', name: 'Hunter' },
 	sameAs: [INSTAGRAM_URL]
 };
@@ -43,7 +43,7 @@ export const PAGE_META = {
 		title: 'SiponPressed | Cold-Pressed Juice in Philadelphia',
 		shareTitle: 'SiponPressed | Embrace the sip',
 		description:
-			'Small-batch cold-pressed juice made by Hunter in Philadelphia from whole fruit and greens. Order for pickup in Philly or Monday delivery in South Jersey.',
+			'Small-batch cold-pressed juice made by Hunter in Philadelphia from whole fruit and greens. Order for pickup in Philly or Monday delivery around Philly and nearby towns.',
 		og: 'home',
 		imageAlt: 'SiponPressed cold-pressed juice bottles on a lime background',
 		video: true,
@@ -61,7 +61,7 @@ export const PAGE_META = {
 	'/order': {
 		title: 'Order | SiponPressed',
 		shareTitle: 'Order fresh juice | SiponPressed',
-		description: 'Order SiponPressed cold-pressed juice for pickup in Philadelphia or Monday delivery in South Jersey.',
+		description: 'Order SiponPressed cold-pressed juice for pickup in Philadelphia or Monday delivery around Philly and nearby towns.',
 		og: 'order',
 		imageAlt: 'Order SiponPressed cold-pressed juice',
 		video: true
