@@ -5631,6 +5631,12 @@ a.contact-card:hover {
 	height: 15px;
 }
 
+@media (prefers-color-scheme: dark) {
+	.receipt__status {
+		color: #9fd67a;
+	}
+}
+
 .receipt__status--pending {
 	background: color-mix(in srgb, var(--warn) 16%, transparent);
 	color: var(--warn);
@@ -5732,11 +5738,12 @@ a.contact-card:hover {
 	list-style: none;
 }
 
-.next-steps__list::before {
+/* Dashed connector from each step down to the next */
+.next-steps__item:not(:last-child)::before {
 	content: '';
 	position: absolute;
-	top: 20px;
-	bottom: 20px;
+	top: 44px;
+	bottom: calc(-1.25rem + 4px);
 	left: 19px;
 	border-left: 2px dashed var(--line-strong);
 }
