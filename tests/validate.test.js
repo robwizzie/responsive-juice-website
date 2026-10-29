@@ -52,6 +52,7 @@ test('pickup address and times save, and older saves keep the default address', 
 	const { value } = cleanSettings({ ...DEFAULT_SETTINGS, pickup: { ...DEFAULT_SETTINGS.pickup, address: ' 12 Market St ', hours: '4pm to 7pm' } }, DEFAULT_SETTINGS);
 	assert.equal(value.pickup.address, '12 Market St');
 	assert.equal(value.pickup.hours, '4pm to 7pm');
+	assert.equal(cleanSettings({ ...DEFAULT_SETTINGS, pickup: { ...DEFAULT_SETTINGS.pickup, minBottles: 10 } }, DEFAULT_SETTINGS).value.pickup.minBottles, 10);
 	const { address, hours, ...older } = DEFAULT_SETTINGS.pickup;
 	assert.equal(cleanSettings({ ...DEFAULT_SETTINGS, pickup: older }, DEFAULT_SETTINGS).value.pickup.address, '1903 Jackson Street');
 });

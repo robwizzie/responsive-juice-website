@@ -206,9 +206,20 @@ function renderDrawer() {
 
 	foot.innerHTML = `
 		${deliveryNote}
-		${settings?.pickup?.enabled ? `<p class="drawer__hint drawer__hint--plain">${icon('pin')} Or pick up at ${e(settings.pickup.address || settings.pickup.area)}, no minimum.</p>` : ''}
+		${pickupNote(settings, bottles)}
 		<div class="drawer__total"><span>Subtotal &middot; ${bottles} bottle${bottles === 1 ? '' : 's'}</span><strong>${money(subtotal)}</strong></div>
 		<a href="/order" class="btn btn--lime btn--block">Checkout ${icon('arrowRight')}</a>`;
+}
+
+/** The pickup line in the cart: where it is, and how many more bottles it needs */
+function pickupNote(settings, bottles) {
+	const pickup = settings?.pickup;
+	if (!pickup?.enabled) return '';
+	const place = e(pickup.address || pickup.area);
+	const short = (pickup.minBottles || 0) - bottles;
+	return `<p class="drawer__hint drawer__hint--plain">${icon('pin')} ${
+		short > 0 ? `Pickup at ${place} needs ${pickup.minBottles} bottles, add ${short} more.` : `Or pick up at ${place}.`
+	}</p>`;
 }
 
 export function stepper(slug, qty) {

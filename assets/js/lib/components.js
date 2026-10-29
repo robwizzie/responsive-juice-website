@@ -98,6 +98,9 @@ const dayList = days => {
 	return names.length === 7 ? 'every day' : names.join(', ');
 };
 
+/** How far ahead a pickup has to be ordered, e.g. "Order 48 hours ahead". */
+export const noticeText = days => (days > 0 ? `Order ${days * 24} hours ahead, pressed to order` : 'Same-day pickup');
+
 /** Where pickup is, as a tappable address that opens maps. */
 export const pickupSpot = (pickup, className = 'pickup-spot') => `
 	<a class="${className}" href="${e(pickupMapUrl(pickup))}" target="_blank" rel="noopener">
@@ -118,8 +121,8 @@ export function waysToOrder(settings, copy = DEFAULT_COPY) {
 				${pickupSpot(pickup)}
 				<ul class="way__list">
 					<li>${icon('calendar')} Pickup ${dayList(pickup.days)}${pickup.hours ? `, ${e(pickup.hours)}` : ''}</li>
-					<li>${icon('clock')} Order ${pickup.leadDays > 0 ? `${pickup.leadDays} day${pickup.leadDays === 1 ? '' : 's'} ahead` : 'same day'}, pressed to order</li>
-					<li>${icon('check')} No minimum</li>
+					<li>${icon('clock')} ${noticeText(pickup.leadDays)}</li>
+					<li>${icon('bag')} ${pickup.minBottles > 0 ? `${pickup.minBottles} bottle minimum` : 'No minimum'}</li>
 				</ul>
 			</article>`);
 	}

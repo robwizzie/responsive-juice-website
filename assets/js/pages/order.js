@@ -57,12 +57,12 @@ function renderLayout() {
 					<div class="choice-grid">
 						${
 							pickup.enabled
-								? `<label class="choice">
+								? `<label class="choice" data-pickup-choice>
 							<input type="radio" name="type" value="pickup" ${state.type === 'pickup' ? 'checked' : ''}>
 							<span class="choice__body">
 								<span class="choice__icon">${icon('store')}</span>
 								<span class="choice__title">Pickup</span>
-								<span class="choice__text">${e(pickup.address || pickup.area)} &middot; no minimum</span>
+								<span class="choice__text">${e(pickup.address || pickup.area)}</span>
 							</span>
 						</label>`
 								: ''
@@ -203,7 +203,9 @@ function renderTypeHint() {
 		}</span></p>`;
 	} else {
 		const when = pickup.hours ? `Pickup times are ${e(pickup.hours)}, and Hunter texts you when it's ready.` : "Hunter texts you when it's ready to grab.";
-		hint.innerHTML = `${pickupSpot(pickup)}<p>${icon('info')}<span>Pressed to order, so pickups open ${pickup.leadDays} day${pickup.leadDays === 1 ? '' : 's'} out. ${when}</span></p>`;
+		const min = pickup.minBottles > 0 ? `<strong>${pickup.minBottles} bottle minimum.</strong> ` : '';
+		const notice = pickup.leadDays > 0 ? `<strong>Order at least ${pickup.leadDays * 24} hours ahead</strong>, since every bottle is pressed for you. ` : '';
+		hint.innerHTML = `${pickupSpot(pickup)}<p>${icon('info')}<span>${min}${notice}${when}</span></p>`;
 	}
 	document.querySelector('[data-address]').hidden = state.type !== 'delivery';
 }
@@ -307,15 +309,17 @@ function renderSummary() {
 	summary.querySelector('[data-pay]').addEventListener('click', pay);
 	summary.querySelectorAll('[data-quick-add]').forEach(btn => btn.addEventListener('click', () => addToCart(btn.dataset.quickAdd)));
 
-	// Grey out delivery when the cart is under the minimum
-	const deliveryChoice = document.querySelector('[data-delivery-choice]');
-	if (deliveryChoice) {
-		const short = settings.delivery.minBottles - priced.bottles;
-		deliveryChoice.querySelector('.choice__text').innerHTML =
-			short > 0 && priced.bottles > 0
-				? `${e(settings.delivery.areaLabel)} &middot; add ${short} more bottle${short === 1 ? '' : 's'}`
-				: `${e(settings.delivery.areaLabel)} &middot; ${settings.delivery.minBottles}+ bottles`;
-	}
+	// Each option shows its minimum, or how many more bottles it needs
+	const bottles = cartLines(juices).reduce((sum, line) => sum + line.qty, 0);
+	const minimumText = (place, min) => {
+		const short = min - bottles;
+		if (!(min > 0)) return place;
+		return short > 0 && bottles > 0 ? `${place} &middot; add ${short} more bottle${short === 1 ? '' : 's'}` : `${place} &middot; ${min}+ bottles`;
+	};
+	const pickupChoice = document.querySelector('[data-pickup-choice] .choice__text');
+	if (pickupChoice) pickupChoice.innerHTML = minimumText(e(settings.pickup.address || settings.pickup.area), settings.pickup.minBottles);
+	const deliveryChoice = document.querySelector('[data-delivery-choice] .choice__text');
+	if (deliveryChoice) deliveryChoice.innerHTML = minimumText(e(settings.delivery.areaLabel), settings.delivery.minBottles);
 }
 
 /*=============== CHECKOUT ===============*/

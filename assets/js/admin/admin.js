@@ -946,7 +946,11 @@ function renderSettings() {
 				<div class="field"><label for="s-details">Pickup instructions <span class="optional">only sent in the confirmation email</span></label><textarea id="s-details" name="pickupDetails" rows="2">${e(s.pickup.details)}</textarea></div>
 				<p class="field-label">Pickup days</p>
 				<div class="day-picks">${days.map(d => `<label class="day-pick"><input type="checkbox" name="pickupDays" value="${d}" ${s.pickup.days.includes(d) ? 'checked' : ''}><span>${weekdayName(d).slice(0, 3)}</span></label>`).join('')}</div>
-				<div class="num-grid">${numberField('pickupLeadDays', 'Days of notice needed', s.pickup.leadDays, 'days')}</div>
+				<div class="num-grid">
+					${numberField('pickupMinBottles', 'Minimum bottles', s.pickup.minBottles ?? 0)}
+					${numberField('pickupLeadDays', 'Days of notice needed', s.pickup.leadDays, 'days')}
+				</div>
+				<p class="hint">2 days of notice means an order placed Wednesday can be picked up Friday or later (48 hours). Set the minimum to 0 for no minimum.</p>
 			</section>
 
 			<section class="card settings__card">
@@ -1040,7 +1044,8 @@ function renderSettings() {
 				hours: f.pickupHours.value,
 				details: f.pickupDetails.value,
 				days: [...event.target.querySelectorAll('[name="pickupDays"]:checked')].map(i => Number(i.value)),
-				leadDays: num('pickupLeadDays')
+				leadDays: num('pickupLeadDays'),
+				minBottles: num('pickupMinBottles')
 			},
 			delivery: {
 				...s.delivery,

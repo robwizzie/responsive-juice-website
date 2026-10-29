@@ -82,3 +82,16 @@ test('pickup address and the Thursday cutoff show up in the page text', () => {
 	);
 	assert.match(copyText(DEFAULT_COPY, 'faq.1.a', DEFAULT_SETTINGS), /^At 1903 Jackson Street, Philadelphia, PA\./);
 });
+
+test('pickup needs 7 bottles and 48 hours, delivery needs 6 and closes Thursday', () => {
+	const items = qty => [{ slug: 'simply-orange', qty }];
+	const [firstPickup] = availableDates(DEFAULT_SETTINGS, 'pickup', WED);
+	assert.equal(firstPickup, '2026-10-30', 'ordered Wednesday, picked up Friday at the earliest');
+	assert.ok(priceOrder({ items: items(6), type: 'pickup', date: firstPickup }, DEFAULT_JUICES, DEFAULT_SETTINGS, WED).errors.includes('Pickup needs at least 7 bottles.'));
+	assert.ok(priceOrder({ items: items(7), type: 'pickup', date: firstPickup }, DEFAULT_JUICES, DEFAULT_SETTINGS, WED).ok);
+	assert.ok(!priceOrder({ items: items(7), type: 'pickup', date: '2026-10-29' }, DEFAULT_JUICES, DEFAULT_SETTINGS, WED).ok, 'tomorrow is too soon');
+	assert.ok(priceOrder({ items: items(6), type: 'delivery', date: '2026-11-02' }, DEFAULT_JUICES, DEFAULT_SETTINGS, WED).ok);
+	assert.ok(!priceOrder({ items: items(6), type: 'delivery', date: '2026-11-02' }, DEFAULT_JUICES, DEFAULT_SETTINGS, FRI).ok, 'Friday is past the Thursday cutoff');
+	const noMinimum = { ...DEFAULT_SETTINGS, pickup: { ...DEFAULT_SETTINGS.pickup, minBottles: 0 } };
+	assert.ok(priceOrder({ items: items(1), type: 'pickup', date: firstPickup }, DEFAULT_JUICES, noMinimum, WED).ok);
+});

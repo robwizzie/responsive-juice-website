@@ -107,6 +107,7 @@ export function priceOrder({ items = [], type = 'pickup', date = null }, juices,
 		deliveryFee = deliveryFeeFor(subtotal, settings);
 	} else if (type === 'pickup') {
 		if (!settings.pickup.enabled) errors.push('Pickup is not available right now.');
+		if (bottles < (settings.pickup.minBottles || 0)) errors.push(`Pickup needs at least ${settings.pickup.minBottles} bottles.`);
 	} else {
 		errors.push('Choose pickup or delivery.');
 	}

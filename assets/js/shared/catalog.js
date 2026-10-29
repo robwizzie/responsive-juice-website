@@ -242,8 +242,10 @@ export const DEFAULT_SETTINGS = {
 		details: 'Hunter will text you when your order is ready to grab.',
 		// 0 = Sunday … 6 = Saturday
 		days: [1, 2, 3, 4, 5, 6],
-		// Juice is pressed to order, so pickups need a little notice
-		leadDays: 2
+		// Juice is pressed to order, so pickups need 48 hours' notice (the earliest pickup is two days out)
+		leadDays: 2,
+		// Fewest bottles a pickup order can have. 0 means no minimum.
+		minBottles: 7
 	},
 	delivery: {
 		enabled: true,
