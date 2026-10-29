@@ -3155,7 +3155,10 @@ html:not(.js) .cta-band .cta-band__scene {
 }
 
 .page-card__splash {
+	/* Splash art comes in different shapes, so it sits in a fixed square: the card keeps its height as the juices change */
 	width: min(100%, 380px);
+	aspect-ratio: 1;
+	object-fit: contain;
 	opacity: 0.9;
 	animation: page-card-spin 24s linear infinite;
 }

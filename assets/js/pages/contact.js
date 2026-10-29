@@ -20,7 +20,8 @@ ready.then(({ juices, settings, copy }) => {
 		bottle.src = juice.imageSmall || juice.image;
 		const hasSplash = juice.splash && juice.splash !== 'none';
 		if (hasSplash) splash.src = `/assets/img/splash/${juice.splash}-sm.webp`;
-		splash.hidden = !hasSplash;
+		// Hide it without dropping it from the layout, so a juice with no splash doesn't shrink the card
+		splash.style.visibility = hasSplash ? '' : 'hidden';
 		if (/^#[0-9a-f]{6}$/i.test(juice.color || '')) card.style.setProperty('--accent', juice.color);
 	};
 	if (bottle && lineup.length) {
