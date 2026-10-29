@@ -20,6 +20,7 @@ before(async () => {
 		admin: (await import('../netlify/functions/admin.js')).default,
 		catalog: (await import('../netlify/functions/catalog.js')).default,
 		webhook: (await import('../netlify/functions/stripe-webhook.js')).default,
+		contact: (await import('../netlify/functions/contact.js')).default,
 		store: await import('../netlify/functions/lib/store.js')
 	};
 });
@@ -133,7 +134,57 @@ test('paid Stripe session turns a pending order into a saved order, once', async
 	const orders = await fns.store.listOrders();
 	assert.equal(orders.length, 1);
 	assert.equal(orders[0].status, 'paid');
+	assert.equal(orders[0].stage, 'new');
+	assert.equal(orders[0].test, true, 'a test-mode event is marked as a test order');
+	assert.deepEqual(orders[0].emails, { owner: 'off', customer: 'off' }, 'email outcome is recorded');
 
 	const forged = await fns.webhook(new Request('https://siponpressed.test/webhook/stripe', { method: 'POST', body: payload, headers: { 'stripe-signature': 't=1,v1=bad' } }));
 	assert.equal(forged.status, 400);
+});
+
+test('Hunter moves an order along, and only test orders can be deleted', async () => {
+	const ctx = { ip: '7.7.7.7' };
+	const login = await fns.admin(req('/api/admin/login', { method: 'POST', body: { password: 'secret' }, headers: { 'x-admin-request': '1' } }), ctx);
+	const headers = { cookie: login.headers.get('set-cookie').split(';')[0], 'x-admin-request': '1' };
+	const call = (path, method, body) => fns.admin(req(`/api/admin/${path}`, { method, body, headers }), ctx);
+
+	const base = { type: 'pickup', date: '2026-11-06', customer: { name: 'Sam Lee', email: 'sam@example.com', phone: '2155550111' }, lines: [{ slug: 'simply-red', name: 'Simply Red', qty: 3, unit: 800, amount: 2400 }], total: 2400, status: 'paid' };
+	await fns.store.saveOrder({ ...base, id: 'real-1', stripeSessionId: 'cs_live_1' });
+	await fns.store.saveOrder({ ...base, id: 'test-1', stripeSessionId: 'cs_test_9' });
+
+	const moved = await call('orders', 'PUT', { key: '2026-11-06/real-1', stage: 'making' });
+	assert.equal(moved.status, 200);
+	const { order } = await moved.json();
+	assert.equal(order.stage, 'making');
+	assert.equal(order.history.length, 1);
+	assert.equal((await call('orders', 'PUT', { key: '2026-11-06/real-1', stage: 'shipped' })).status, 400);
+	assert.equal((await call('orders', 'PUT', { key: '../x', stage: 'ready' })).status, 400);
+	assert.equal((await call('orders', 'PUT', { key: '2026-11-06/nope', stage: 'ready' })).status, 404);
+
+	assert.equal((await call('orders', 'DELETE', { key: '2026-11-06/real-1' })).status, 400, 'real orders are kept');
+	assert.equal((await call('orders', 'DELETE', { key: '2026-11-06/test-1' })).status, 200, 'old test orders are spotted by their session id');
+	const left = (await (await call('orders', 'GET')).json()).orders.map(o => o.id);
+	assert.ok(left.includes('real-1') && !left.includes('test-1'));
+});
+
+test('contact messages are saved for the admin even without email set up', async () => {
+	const ctx = { ip: '8.8.8.8' };
+	const send = body => fns.contact(req('/api/contact', { method: 'POST', body }), ctx);
+	assert.equal((await send({ name: 'Ana', email: 'nope', message: 'Hi' })).status, 400);
+	assert.equal((await send({ name: 'Ana', email: 'ana@example.com', message: 'Do you cater?', topic: 'Event or catering' })).status, 200);
+	assert.equal((await send({ name: 'Bot', email: 'bot@example.com', message: 'spam', website: 'x' })).status, 200);
+
+	const login = await fns.admin(req('/api/admin/login', { method: 'POST', body: { password: 'secret' }, headers: { 'x-admin-request': '1' } }), ctx);
+	const headers = { cookie: login.headers.get('set-cookie').split(';')[0], 'x-admin-request': '1' };
+	const call = (method, body) => fns.admin(req('/api/admin/messages', { method, body, headers }), ctx);
+
+	const { messages } = await (await call('GET')).json();
+	assert.equal(messages.length, 1, 'the bot message is dropped');
+	assert.equal(messages[0].read, false);
+	const key = `${messages[0].createdAt}/${messages[0].id}`;
+	const updated = await (await call('PUT', { key, read: true, archived: true })).json();
+	assert.equal(updated.message.read, true);
+	assert.equal(updated.message.archived, true);
+	assert.equal((await call('DELETE', { key })).status, 200);
+	assert.equal((await (await call('GET')).json()).messages.length, 0);
 });

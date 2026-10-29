@@ -59,11 +59,27 @@ export const getOrder = key => orderStore().get(key, { type: 'json' });
 
 export const saveOrder = order => orderStore().setJSON(orderKey(order), order);
 
+export const deleteOrder = key => orderStore().delete(key);
+
 export async function listOrders() {
 	const { blobs } = await orderStore().list();
 	const keys = blobs.map(blob => blob.key).sort().reverse().slice(0, 200);
 	const orders = await Promise.all(keys.map(key => getOrder(key)));
 	return orders.filter(Boolean);
+}
+
+/* Contact form messages, keyed by when they arrived so the newest list first */
+const messageStore = () => getStore({ name: 'messages', consistency: 'strong' });
+export const messageKey = message => `${message.createdAt}/${message.id}`;
+export const getMessage = key => messageStore().get(key, { type: 'json' });
+export const saveMessage = message => messageStore().setJSON(messageKey(message), message);
+export const deleteMessage = key => messageStore().delete(key);
+
+export async function listMessages() {
+	const { blobs } = await messageStore().list();
+	const keys = blobs.map(blob => blob.key).sort().reverse().slice(0, 200);
+	const messages = await Promise.all(keys.map(key => getMessage(key)));
+	return messages.filter(Boolean);
 }
 
 /* Lightweight per-key counters, used to slow down password guessing */
