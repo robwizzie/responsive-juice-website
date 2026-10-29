@@ -3,7 +3,7 @@ import { getJuices, getSettings, savePending } from './lib/store.js';
 import { checkDeliveryAddress, formatAddress } from './lib/geo.js';
 import { error, json, readJSON, requestOrigin } from './lib/http.js';
 import { stripe, stripeConfigured } from './lib/stripe.js';
-import { formatDate, priceOrder } from '../../assets/js/shared/order-rules.js';
+import { formatDate, pickupAddress, priceOrder } from '../../assets/js/shared/order-rules.js';
 
 const clean = (value, max = 120) => String(value ?? '').trim().slice(0, max);
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -89,7 +89,7 @@ export default async req => {
 			metadata: { order_id: order.id, order_type: type, date: order.date, customer_name: customer.name, customer_phone: customer.phone, address: address ? formatAddress(address) : '' },
 			payment_intent_data: { description: `SiponPressed ${type} order for ${when}`, metadata: { order_id: order.id } },
 			custom_text: {
-				submit: { message: type === 'delivery' ? `Delivered ${when} to ${formatAddress(address)}.` : `Ready for pickup ${when} in ${settings.pickup.area}.` }
+				submit: { message: type === 'delivery' ? `Delivered ${when} to ${formatAddress(address)}.` : `Ready for pickup ${when} at ${pickupAddress(settings.pickup)}. Hunter will text you when it's ready.` }
 			},
 			success_url: `${origin}/success?session_id={CHECKOUT_SESSION_ID}`,
 			cancel_url: `${origin}/order?canceled=1`

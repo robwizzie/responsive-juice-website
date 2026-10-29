@@ -916,11 +916,19 @@ function renderSettings() {
 			<section class="card settings__card">
 				<h2>Pickup</h2>
 				<label class="toggle"><input type="checkbox" name="pickupEnabled" ${s.pickup.enabled ? 'checked' : ''}><span></span> Offer pickup</label>
-				<div class="field"><label for="s-area">Pickup area <span class="optional">shown on the site</span></label><input id="s-area" name="pickupArea" value="${e(s.pickup.area)}"></div>
+				<div class="field-row">
+					<div class="field"><label for="s-address">Pickup address <span class="optional">shown on every page</span></label><input id="s-address" name="pickupAddress" maxlength="120" value="${e(s.pickup.address || '')}" placeholder="1903 Jackson Street" autocomplete="off"></div>
+					<div class="field"><label for="s-area">Town and state</label><input id="s-area" name="pickupArea" value="${e(s.pickup.area)}"></div>
+				</div>
+				<div class="field"><label for="s-hours">Pickup times <span class="optional">optional, leave empty and you text each customer a time</span></label><input id="s-hours" name="pickupHours" maxlength="80" value="${e(s.pickup.hours || '')}" placeholder="4pm to 7pm"></div>
 				<div class="field"><label for="s-details">Pickup instructions <span class="optional">only sent in the confirmation email</span></label><textarea id="s-details" name="pickupDetails" rows="2">${e(s.pickup.details)}</textarea></div>
 				<p class="field-label">Pickup days</p>
 				<div class="day-picks">${days.map(d => `<label class="day-pick"><input type="checkbox" name="pickupDays" value="${d}" ${s.pickup.days.includes(d) ? 'checked' : ''}><span>${weekdayName(d).slice(0, 3)}</span></label>`).join('')}</div>
-				<div class="num-grid">${numberField('pickupLeadDays', 'Days of notice needed', s.pickup.leadDays, 'days')}</div>
+				<div class="num-grid">
+					${numberField('pickupMinBottles', 'Minimum bottles', s.pickup.minBottles ?? 0)}
+					${numberField('pickupLeadDays', 'Days of notice needed', s.pickup.leadDays, 'days')}
+				</div>
+				<p class="hint">2 days of notice means an order placed Wednesday can be picked up Friday or later (48 hours). Set the minimum to 0 for no minimum.</p>
 			</section>
 
 			<section class="card settings__card">
@@ -935,8 +943,10 @@ function renderSettings() {
 					${numberField('fee', 'Delivery fee ($)', s.delivery.fee, '', '0.5')}
 					${numberField('freeOver', 'Free delivery over ($)', s.delivery.freeOver, '', '1')}
 					${numberField('radiusMiles', 'Delivery radius', s.delivery.radiusMiles, 'miles')}
-					${numberField('cutoffDays', 'Order cutoff', s.delivery.cutoffDays, 'days before')}
 				</div>
+				<div class="field"><label for="s-cutoff">Orders close <span class="optional">end of this day, for that week's delivery</span></label><select id="s-cutoff" name="cutoffDays">${[1, 2, 3, 4, 5, 6]
+					.map(n => `<option value="${n}" ${s.delivery.cutoffDays === n ? 'selected' : ''}>${weekdayName((s.delivery.day - n + 7) % 7)} (${n} day${n === 1 ? '' : 's'} before)</option>`)
+					.join('')}</select></div>
 				<p class="hint">Radius is measured from ${s.delivery.zones.map(z => e(z.label)).join(' and ')}. Set "Free delivery over" to 0 to always charge the fee.</p>
 			</section>
 
@@ -999,6 +1009,11 @@ function renderSettings() {
 	};
 	settingsForm.addEventListener('input', markDirty);
 	settingsForm.addEventListener('change', markDirty);
+	// The cutoff options name a weekday, so they follow the delivery day
+	settingsForm.deliveryDay.addEventListener('change', () => {
+		const day = Number(settingsForm.deliveryDay.value);
+		[...settingsForm.cutoffDays.options].forEach(option => (option.textContent = option.textContent.replace(/^\w+/, weekdayName((day - Number(option.value) + 7) % 7))));
+	});
 	settingsForm.querySelector('[data-settings-discard]').addEventListener('click', () => {
 		settingsDirty = false;
 		renderSettings();
@@ -1020,10 +1035,13 @@ function renderSettings() {
 			pickup: {
 				...s.pickup,
 				enabled: f.pickupEnabled.checked,
+				address: f.pickupAddress.value,
 				area: f.pickupArea.value,
+				hours: f.pickupHours.value,
 				details: f.pickupDetails.value,
 				days: [...event.target.querySelectorAll('[name="pickupDays"]:checked')].map(i => Number(i.value)),
-				leadDays: num('pickupLeadDays')
+				leadDays: num('pickupLeadDays'),
+				minBottles: num('pickupMinBottles')
 			},
 			delivery: {
 				...s.delivery,

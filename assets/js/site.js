@@ -7,7 +7,7 @@ import { addToCart, cartCount, cartLines, getCart, setQty } from './lib/cart.js'
 import { bottleImage, flashAdded, money, moneyShort } from './lib/components.js';
 import { ingredientIcon, juiceStatus } from './shared/catalog.js';
 import { DEFAULT_COPY, copyText } from './shared/content.js';
-import { weekdayName } from './shared/order-rules.js';
+import { cutoffDay, pickupMapUrl, weekdayName } from './shared/order-rules.js';
 import { wordmark } from './lib/brand.js';
 import { headerHTML } from './lib/header.js';
 import { icon } from './lib/icons.js';
@@ -90,6 +90,7 @@ function renderFooter(settings) {
 					<div class="site-footer__chips">
 						<a href="mailto:${e(settings.contactEmail)}" class="footer-chip">${icon('mail')}<span>${e(settings.contactEmail)}</span></a>
 						<a href="https://instagram.com/${e(settings.instagram)}" target="_blank" rel="noopener" class="footer-chip">${icon('instagram')}<span>@${e(settings.instagram)}</span></a>
+						${settings.pickup.enabled ? `<a href="${e(pickupMapUrl(settings.pickup))}" target="_blank" rel="noopener" class="footer-chip">${icon('pin')}<span>Pickup at ${e(settings.pickup.address || settings.pickup.area)}</span></a>` : ''}
 					</div>
 				</div>
 			</div>
@@ -200,13 +201,25 @@ function renderDrawer() {
 		settings?.delivery?.enabled && bottles < min
 			? `<p class="drawer__hint">${icon('truck')} Add ${min - bottles} more bottle${min - bottles === 1 ? '' : 's'} to unlock ${day} delivery.</p><div class="drawer__progress"><span style="--w: ${Math.round((bottles / min) * 100)}%"></span></div>`
 			: settings?.delivery?.enabled
-				? `<p class="drawer__hint drawer__hint--ok">${icon('check')} Your order qualifies for ${day} delivery.</p>`
+				? `<p class="drawer__hint drawer__hint--ok">${icon('check')} Your order qualifies for ${day} delivery. Order by the end of ${weekdayName(cutoffDay(settings.delivery))}.</p>`
 				: '';
 
 	foot.innerHTML = `
 		${deliveryNote}
+		${pickupNote(settings, bottles)}
 		<div class="drawer__total"><span>Subtotal &middot; ${bottles} bottle${bottles === 1 ? '' : 's'}</span><strong>${money(subtotal)}</strong></div>
 		<a href="/order" class="btn btn--lime btn--block">Checkout ${icon('arrowRight')}</a>`;
+}
+
+/** The pickup line in the cart: where it is, and how many more bottles it needs */
+function pickupNote(settings, bottles) {
+	const pickup = settings?.pickup;
+	if (!pickup?.enabled) return '';
+	const place = e(pickup.address || pickup.area);
+	const short = (pickup.minBottles || 0) - bottles;
+	return `<p class="drawer__hint drawer__hint--plain">${icon('pin')} ${
+		short > 0 ? `Pickup at ${place} needs ${pickup.minBottles} bottles, add ${short} more.` : `Or pick up at ${place}.`
+	}</p>`;
 }
 
 export function stepper(slug, qty) {

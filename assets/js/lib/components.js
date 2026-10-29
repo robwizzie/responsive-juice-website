@@ -1,5 +1,6 @@
 import { ingredientPhoto, juiceStatus } from '../shared/catalog.js';
 import { DEFAULT_COPY, copyText } from '../shared/content.js';
+import { cutoffDay, pickupAddress, pickupMapUrl, weekdayName } from '../shared/order-rules.js';
 import { escapeHtml as e } from './catalog.js';
 import { icon } from './icons.js';
 
@@ -97,11 +98,19 @@ const dayList = days => {
 	return names.length === 7 ? 'every day' : names.join(', ');
 };
 
+/** How far ahead a pickup has to be ordered, e.g. "Order 48 hours ahead". */
+export const noticeText = days => (days > 0 ? `Order ${days * 24} hours ahead, pressed to order` : 'Same-day pickup');
+
+/** Where pickup is, as a tappable address that opens maps. */
+export const pickupSpot = (pickup, className = 'pickup-spot') => `
+	<a class="${className}" href="${e(pickupMapUrl(pickup))}" target="_blank" rel="noopener">
+		${icon('pin')}<span><strong>${e(pickup.address || pickup.area)}</strong>${pickup.address ? `<small>${e(pickup.area)}</small>` : ''}</span><span class="${className}__go">Directions ${icon('arrowRight')}</span>
+	</a>`;
+
 /** The two ways to get juice (pickup and delivery), described from the live settings. Pass the page text to use Hunter's wording. */
 export function waysToOrder(settings, copy = DEFAULT_COPY) {
 	const t = key => e(copyText(copy, key, settings));
 	const { pickup, delivery } = settings;
-	const weekday = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 	const cards = [];
 	if (pickup.enabled) {
 		cards.push(`
@@ -109,28 +118,51 @@ export function waysToOrder(settings, copy = DEFAULT_COPY) {
 				<span class="way__icon">${icon('store')}</span>
 				<h3 class="way__title">Pickup in ${e(pickup.area.split(',')[0])}</h3>
 				<p class="way__text" data-edit="ways.pickup">${t('ways.pickup')}</p>
+				${pickupSpot(pickup)}
 				<ul class="way__list">
-					<li>${icon('calendar')} Pickup ${dayList(pickup.days)}</li>
-					<li>${icon('clock')} Order ${pickup.leadDays > 0 ? `${pickup.leadDays} day${pickup.leadDays === 1 ? '' : 's'} ahead` : 'same day'}, pressed to order</li>
-					<li>${icon('check')} No minimum</li>
+					<li>${icon('calendar')} Pickup ${dayList(pickup.days)}${pickup.hours ? `, ${e(pickup.hours)}` : ''}</li>
+					<li>${icon('clock')} ${noticeText(pickup.leadDays)}</li>
+					<li>${icon('bag')} ${pickup.minBottles > 0 ? `${pickup.minBottles} bottle minimum` : 'No minimum'}</li>
 				</ul>
 			</article>`);
 	}
 	if (delivery.enabled) {
-		const cutoff = weekday[(delivery.day - delivery.cutoffDays + 7) % 7];
 		cards.push(`
 			<article class="way way--feature" data-reveal>
 				<span class="way__icon">${icon('truck')}</span>
-				<h3 class="way__title">${weekday[delivery.day]} delivery in ${e(delivery.areaLabel)}</h3>
+				<h3 class="way__title">${weekdayName(delivery.day)} delivery in ${e(delivery.areaLabel)}</h3>
 				<p class="way__text" data-edit="ways.delivery">${t('ways.delivery')}</p>
 				<ul class="way__list">
+					<li>${icon('calendar')} Order by end of ${weekdayName(cutoffDay(delivery))} for ${weekdayName(delivery.day)}</li>
 					<li>${icon('bag')} ${delivery.minBottles} bottle minimum</li>
 					<li>${icon('truck')} ${moneyShort(delivery.fee)} delivery${delivery.freeOver > 0 ? `, free over ${moneyShort(delivery.freeOver)}` : ''}</li>
-					<li>${icon('calendar')} Order by end of ${cutoff}</li>
 				</ul>
 			</article>`);
 	}
 	return cards.join('');
+}
+
+/** The "no shipping yet" line under the pickup and delivery options. */
+export const shippingNote = (settings, copy = DEFAULT_COPY) =>
+	`<p class="ways-note" data-reveal>${icon('hourglass')}<span data-edit="ways.shipping">${e(copyText(copy, 'ways.shipping', settings))}</span></p>`;
+
+/** Common pickup and delivery questions, open-and-close style. Hunter edits the wording in Pages. */
+export function pickupFaq(settings, copy = DEFAULT_COPY) {
+	const t = key => e(copyText(copy, key, settings));
+	const items = [1, 2, 3, 4, 5]
+		.filter(n => copyText(copy, `faq.${n}.q`, settings).trim())
+		.map(
+			n => `
+			<details class="faq__item"${n === 1 ? ' open' : ''}>
+				<summary><span data-edit="faq.${n}.q">${t(`faq.${n}.q`)}</span>${icon('plus')}</summary>
+				<p data-edit="faq.${n}.a">${t(`faq.${n}.a`)}</p>
+			</details>`
+		);
+	return `
+		<div class="faq" data-reveal>
+			<h2 class="section-title section-title--sm faq__title" data-edit="faq.title">${t('faq.title')}</h2>
+			<div class="faq__list">${items.join('')}</div>
+		</div>`;
 }
 
 /** The little bottle that fills up while something loads (same markup as the juice page's static loader) */

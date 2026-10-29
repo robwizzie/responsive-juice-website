@@ -4,7 +4,7 @@
  */
 import nodemailer from 'nodemailer';
 import { escapeHtml as e } from './http.js';
-import { formatDate, formatMoney } from '../../../assets/js/shared/order-rules.js';
+import { formatDate, formatMoney, pickupAddress, pickupMapUrl } from '../../../assets/js/shared/order-rules.js';
 
 export const mailConfigured = () => Boolean(process.env.EMAIL_HOST && process.env.EMAIL_USER && process.env.EMAIL_PASS);
 
@@ -75,7 +75,7 @@ function fulfilmentBlock(order, settings, forOwner) {
 	}
 	return `<p style="margin:0 0 4px;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:#6b6f6a">Pickup</p>
 <p style="margin:0 0 12px;font-size:18px"><strong>${when}</strong></p>
-<p style="margin:0;line-height:1.5">${e(settings.pickup.area)}${forOwner ? '' : `<br>${e(settings.pickup.details)}`}</p>`;
+<p style="margin:0;line-height:1.5"><a href="${e(pickupMapUrl(settings.pickup))}" style="color:${INK};font-weight:bold">${e(pickupAddress(settings.pickup))}</a>${settings.pickup.hours ? `<br>Pickup times: ${e(settings.pickup.hours)}` : ''}${forOwner ? '' : `<br>${e(settings.pickup.details)}`}</p>`;
 }
 
 const box = inner => `<div style="background:#f7f5f0;border-radius:12px;padding:16px 18px;margin:16px 0">${inner}</div>`;

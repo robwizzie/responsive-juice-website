@@ -1,6 +1,6 @@
 import { ready, t } from '../site.js';
 import { flavorCarousel } from '../lib/carousel.js';
-import { bottleImage, garnishFor, statusStamp, waysToOrder } from '../lib/components.js';
+import { bottleImage, garnishFor, statusStamp, shippingNote, waysToOrder } from '../lib/components.js';
 import { escapeHtml as e } from '../lib/catalog.js';
 import { juiceStatus } from '../shared/catalog.js';
 
@@ -46,7 +46,9 @@ ready.then(({ juices, settings, copy }) => {
 	}
 
 	flavorCarousel(document.querySelector('[data-flavors]'), juices);
-	document.querySelector('[data-ways]').innerHTML = waysToOrder(settings, copy);
+	const ways = document.querySelector('[data-ways]');
+	ways.innerHTML = waysToOrder(settings, copy);
+	ways.insertAdjacentHTML('afterend', shippingNote(settings, copy));
 
 	// Hunter's own photo in the story block once he's uploaded one, otherwise a bottle on the river
 	const media = document.querySelector('[data-story-media]');

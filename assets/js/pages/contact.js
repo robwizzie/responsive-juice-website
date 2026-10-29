@@ -1,4 +1,6 @@
 import { ready, t } from '../site.js';
+import { pickupFaq } from '../lib/components.js';
+import { pickupMapUrl } from '../shared/order-rules.js';
 
 const form = document.getElementById('contact-form');
 const status = form.querySelector('.form__status');
@@ -7,7 +9,7 @@ const button = form.querySelector('button[type="submit"]');
 // /contact?topic=wholesale preselects the wholesale option
 if (new URLSearchParams(location.search).get('topic') === 'wholesale') form.topic.value = 'Wholesale / cafe or studio';
 
-ready.then(({ juices, settings }) => {
+ready.then(({ juices, settings, copy }) => {
 	// The header bottle rotates through the menu, and the card's accent follows each juice's color
 	const lineup = juices.filter(j => j.image);
 	const card = document.querySelector('.page-card');
@@ -39,6 +41,15 @@ ready.then(({ juices, settings }) => {
 			}, 3800);
 		}
 	}
+
+	// Pickup spot and the pickup/delivery questions follow Settings
+	const pickupCard = document.querySelector('[data-pickup-card]');
+	if (settings.pickup.enabled) {
+		pickupCard.href = pickupMapUrl(settings.pickup);
+		pickupCard.querySelector('[data-pickup-address]').textContent = settings.pickup.address || settings.pickup.area;
+		pickupCard.querySelector('[data-pickup-area]').textContent = `${settings.pickup.address ? `${settings.pickup.area} · ` : ''}${settings.pickup.hours || 'Directions'}`;
+	} else pickupCard.remove();
+	document.querySelector('[data-faq]').innerHTML = pickupFaq(settings, copy);
 
 	const link = document.querySelector('[data-contact-email]');
 	link.href = `mailto:${settings.contactEmail}`;

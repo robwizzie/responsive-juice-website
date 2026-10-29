@@ -129,7 +129,7 @@ function pageCopy(page, juices, settings) {
 		case 'juices':
 			return { lines: ['PRESSED', 'THIS WEEK'], note: juices.map(juice => juice.name).slice(0, 4).join(' · ') || 'Cold-pressed juice', cta: from };
 		case 'order':
-			return { lines: ['ORDER', 'FRESH'], note: `Pickup in ${settings.pickup?.area || 'Philadelphia'} or delivery`, cta: 'Order online' };
+			return { lines: ['ORDER', 'FRESH'], note: `Pickup in ${(settings.pickup?.area || 'Philadelphia').split(',')[0]} or delivery`, cta: 'Order online' };
 		case 'about':
 			return { lines: ["HEY, I'M", 'HUNTER'], note: 'One guy, one press, every bottle', cta: 'Meet the maker', photo: true };
 		case 'contact':

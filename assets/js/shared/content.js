@@ -8,7 +8,7 @@
  * Text can include {tokens} that fill in from the live settings, so a sentence like
  * "{deliveryDay} delivery" stays right when the delivery day changes.
  */
-import { weekdayName } from './order-rules.js';
+import { cutoffDay, pickupAddress, weekdayName } from './order-rules.js';
 
 const money = value => (Number.isInteger(Number(value)) ? `$${Number(value)}` : `$${Number(value).toFixed(2)}`);
 
@@ -17,7 +17,10 @@ export const TOKENS = {
 	deliveryDay: { label: 'Delivery day', value: settings => weekdayName(settings.delivery.day) },
 	deliveryArea: { label: 'Delivery area', value: settings => settings.delivery.areaLabel },
 	pickupCity: { label: 'Pickup city', value: settings => settings.pickup.area.split(',')[0] },
+	pickupAddress: { label: 'Pickup address', value: settings => pickupAddress(settings.pickup) },
+	cutoffDay: { label: 'Last day to order for delivery', value: settings => weekdayName(cutoffDay(settings.delivery)) },
 	minBottles: { label: 'Delivery minimum', value: settings => String(settings.delivery.minBottles) },
+	pickupMinBottles: { label: 'Pickup minimum', value: settings => String(settings.pickup.minBottles || 0) },
 	deliveryRadius: { label: 'Delivery radius', value: settings => `${settings.delivery.radiusMiles} miles` },
 	deliveryTowns: { label: 'Delivery towns', value: settings => settings.delivery.zones.map(zone => zone.label.split(',')[0]).join(' and ') },
 	email: { label: 'Email', value: settings => settings.contactEmail },
@@ -311,10 +314,28 @@ export const PAGES = [
 			},
 			{
 				title: 'Pickup & delivery cards',
-				hint: 'On the Home and Juices pages. Days, minimums and fees fill in from Settings.',
+				hint: 'On the Home and Juices pages. The address, days, minimums and fees fill in from Settings.',
 				fields: [
-					long('ways.pickup', 'Pickup text', 'Order online and grab your bottles fresh. Hunter confirms the spot and time once your order is pressed.'),
-					long('ways.delivery', 'Delivery text', 'Hunter drives a fresh batch to your door every {deliveryDay}, within {deliveryRadius} of {deliveryTowns}.')
+					long('ways.pickup', 'Pickup text', "Order online, then grab your bottles fresh at {pickupAddress}. Hunter texts you when they're ready."),
+					long('ways.delivery', 'Delivery text', 'Hunter drives a fresh batch to your door every {deliveryDay}, within {deliveryRadius} of {deliveryTowns}.'),
+					long('ways.shipping', 'Shipping note', "Shipping is coming soon. Hunter is working out the best and cheapest way to get bottles to you.")
+				]
+			},
+			{
+				title: 'Pickup & delivery questions',
+				hint: 'On the Order and Contact pages. Words in {curly brackets} fill in from Settings.',
+				fields: [
+					text('faq.title', 'Title', 'Pickup, delivery and shipping'),
+					text('faq.1.q', 'Question 1', 'Where do I pick up?'),
+					long('faq.1.a', 'Answer 1', 'At {pickupAddress}. Order at least 48 hours ahead, since every bottle is pressed for you. Choose a pickup day when you order, and Hunter will text you when your bottles are ready to grab.'),
+					text('faq.2.q', 'Question 2', 'When does delivery come?'),
+					long('faq.2.a', 'Answer 2', 'Every {deliveryDay}, right to your door, anywhere within {deliveryRadius} of {deliveryTowns}. Get your order in by the end of {cutoffDay} for that {deliveryDay}.'),
+					text('faq.3.q', 'Question 3', 'Is there a minimum?'),
+					long('faq.3.a', 'Answer 3', 'Pickup orders need at least {pickupMinBottles} bottles and delivery needs at least {minBottles}. Mix any flavors you like.'),
+					text('faq.4.q', 'Question 4', 'Do you ship?'),
+					long('faq.4.a', 'Answer 4', 'Not yet. Shipping is coming soon, and Hunter is working out the best and cheapest way to do it. Follow {instagram} to hear first.'),
+					text('faq.5.q', 'Question 5', 'How do I pay?'),
+					long('faq.5.a', 'Answer 5', 'Online when you order, through Stripe. Cards, Apple Pay and Google Pay all work.')
 				]
 			},
 			{

@@ -1,7 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { DEFAULT_JUICES, DEFAULT_SETTINGS, priceJuices } from '../assets/js/shared/catalog.js';
-import { availableDates, priceOrder, todayISO } from '../assets/js/shared/order-rules.js';
+import { availableDates, cutoffDay, pickupAddress, pickupMapUrl, priceOrder, todayISO } from '../assets/js/shared/order-rules.js';
+import { DEFAULT_COPY, copyText } from '../assets/js/shared/content.js';
 
 // Wednesday Oct 28 2026, noon in Philadelphia
 const WED = new Date('2026-10-28T16:00:00Z');
@@ -24,9 +25,12 @@ test('pickup dates need two days notice and skip Sundays', () => {
 });
 
 test('delivery needs the minimum number of bottles', () => {
-	const small = priceOrder({ items: [{ slug: 'simply-red', qty: 5 }], type: 'delivery' }, DEFAULT_JUICES, DEFAULT_SETTINGS, WED);
+	const small = priceOrder({ items: [{ slug: 'simply-red', qty: 6 }], type: 'delivery' }, DEFAULT_JUICES, DEFAULT_SETTINGS, WED);
 	assert.equal(small.ok, false);
-	const enough = priceOrder({ items: [{ slug: 'simply-red', qty: 6 }], type: 'delivery', date: '2026-11-02' }, DEFAULT_JUICES, DEFAULT_SETTINGS, WED);
+	assert.ok(small.errors.includes('Delivery needs at least 7 bottles.'));
+	// With a 6-bottle minimum the order stays under the free-delivery threshold, so the fee shows
+	const sixMin = { ...DEFAULT_SETTINGS, delivery: { ...DEFAULT_SETTINGS.delivery, minBottles: 6 } };
+	const enough = priceOrder({ items: [{ slug: 'simply-red', qty: 6 }], type: 'delivery', date: '2026-11-02' }, DEFAULT_JUICES, sixMin, WED);
 	assert.equal(enough.ok, true);
 	assert.equal(enough.subtotal, 4800);
 	assert.equal(enough.deliveryFee, 700);
@@ -68,4 +72,30 @@ test('every bottle uses the shop price unless it has its own', () => {
 	);
 	const order = priceOrder({ items: [{ slug: 'simply-orange', qty: 1 }, { slug: 'simply-red', qty: 1 }], type: 'pickup' }, juices, DEFAULT_SETTINGS, WED);
 	assert.equal(order.total, 1900);
+});
+
+test('pickup address and the Thursday cutoff show up in the page text', () => {
+	assert.equal(cutoffDay(DEFAULT_SETTINGS.delivery), 4);
+	assert.equal(pickupAddress(DEFAULT_SETTINGS.pickup), '1903 Jackson Street, Philadelphia, PA 19145');
+	assert.equal(pickupAddress({ address: '  ', area: 'Philadelphia, PA' }), 'Philadelphia, PA');
+	assert.match(pickupMapUrl(DEFAULT_SETTINGS.pickup), /query=1903%20Jackson%20Street%2C%20Philadelphia%2C%20PA%2019145$/);
+	assert.equal(
+		copyText(DEFAULT_COPY, 'faq.2.a', DEFAULT_SETTINGS),
+		'Every Monday, right to your door, anywhere within 30 miles of Blackwood and Woodbury. Get your order in by the end of Thursday for that Monday.'
+	);
+	assert.match(copyText(DEFAULT_COPY, 'faq.1.a', DEFAULT_SETTINGS), /^At 1903 Jackson Street, Philadelphia, PA 19145\./);
+});
+
+test('pickup needs 7 bottles and 48 hours, delivery needs 7 and closes Thursday', () => {
+	const items = qty => [{ slug: 'simply-orange', qty }];
+	const [firstPickup] = availableDates(DEFAULT_SETTINGS, 'pickup', WED);
+	assert.equal(firstPickup, '2026-10-30', 'ordered Wednesday, picked up Friday at the earliest');
+	assert.ok(priceOrder({ items: items(6), type: 'pickup', date: firstPickup }, DEFAULT_JUICES, DEFAULT_SETTINGS, WED).errors.includes('Pickup needs at least 7 bottles.'));
+	assert.ok(priceOrder({ items: items(7), type: 'pickup', date: firstPickup }, DEFAULT_JUICES, DEFAULT_SETTINGS, WED).ok);
+	assert.ok(!priceOrder({ items: items(7), type: 'pickup', date: '2026-10-29' }, DEFAULT_JUICES, DEFAULT_SETTINGS, WED).ok, 'tomorrow is too soon');
+	assert.ok(!priceOrder({ items: items(6), type: 'delivery', date: '2026-11-02' }, DEFAULT_JUICES, DEFAULT_SETTINGS, WED).ok, 'delivery needs 7 too');
+	assert.ok(priceOrder({ items: items(7), type: 'delivery', date: '2026-11-02' }, DEFAULT_JUICES, DEFAULT_SETTINGS, WED).ok);
+	assert.ok(!priceOrder({ items: items(7), type: 'delivery', date: '2026-11-02' }, DEFAULT_JUICES, DEFAULT_SETTINGS, FRI).ok, 'Friday is past the Thursday cutoff');
+	const noMinimum = { ...DEFAULT_SETTINGS, pickup: { ...DEFAULT_SETTINGS.pickup, minBottles: 0 } };
+	assert.ok(priceOrder({ items: items(1), type: 'pickup', date: firstPickup }, DEFAULT_JUICES, noMinimum, WED).ok);
 });

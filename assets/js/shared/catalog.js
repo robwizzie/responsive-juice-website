@@ -232,19 +232,25 @@ export const DEFAULT_SETTINGS = {
 	instagram: 'siponpressed',
 	pickup: {
 		enabled: true,
-		// Shown publicly on the site
-		area: 'Philadelphia, PA',
+		// Street address of the pickup spot, shown on every page next to the area
+		address: '1903 Jackson Street',
+		// Town and state, shown publicly on the site
+		area: 'Philadelphia, PA 19145',
+		// Optional pickup times shown on the site, e.g. "4pm to 7pm". Empty means Hunter texts a time.
+		hours: '',
 		// Only sent in the order confirmation email
-		details: 'Hunter will text you the pickup spot and time once your order is ready.',
+		details: 'Hunter will text you when your order is ready to grab.',
 		// 0 = Sunday … 6 = Saturday
 		days: [1, 2, 3, 4, 5, 6],
-		// Juice is pressed to order, so pickups need a little notice
-		leadDays: 2
+		// Juice is pressed to order, so pickups need 48 hours' notice (the earliest pickup is two days out)
+		leadDays: 2,
+		// Fewest bottles a pickup order can have. 0 means no minimum.
+		minBottles: 7
 	},
 	delivery: {
 		enabled: true,
 		day: 1, // Monday
-		minBottles: 6,
+		minBottles: 7,
 		fee: 7,
 		freeOver: 50,
 		radiusMiles: 30,

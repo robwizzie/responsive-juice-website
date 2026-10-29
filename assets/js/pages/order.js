@@ -1,10 +1,10 @@
 import { ready } from '../site.js';
 import { escapeHtml as e } from '../lib/catalog.js';
 import { addToCart, cartLines, getCart, setQty } from '../lib/cart.js';
-import { juiceLoader, money, moneyShort } from '../lib/components.js';
+import { juiceLoader, money, moneyShort, pickupFaq, pickupSpot, shippingNote } from '../lib/components.js';
 import { icon } from '../lib/icons.js';
 import { isOrderable } from '../shared/catalog.js';
-import { availableDates, formatDate, formatMoney, priceOrder, weekdayName } from '../shared/order-rules.js';
+import { availableDates, cutoffDay, formatDate, formatMoney, priceOrder, weekdayName } from '../shared/order-rules.js';
 
 const root = document.querySelector('[data-order]');
 const DETAILS_KEY = 'siponpressed-details';
@@ -12,6 +12,7 @@ const DETAILS_KEY = 'siponpressed-details';
 const state = { type: 'pickup', date: null, zone: null, submitting: false, error: '' };
 let juices = [];
 let settings = null;
+let catalogCopy;
 
 function savedDetails() {
 	try {
@@ -56,12 +57,12 @@ function renderLayout() {
 					<div class="choice-grid">
 						${
 							pickup.enabled
-								? `<label class="choice">
+								? `<label class="choice" data-pickup-choice>
 							<input type="radio" name="type" value="pickup" ${state.type === 'pickup' ? 'checked' : ''}>
 							<span class="choice__body">
 								<span class="choice__icon">${icon('store')}</span>
 								<span class="choice__title">Pickup</span>
-								<span class="choice__text">${e(pickup.area)} &middot; no minimum</span>
+								<span class="choice__text">${e(pickup.address || pickup.area)}</span>
 							</span>
 						</label>`
 								: ''
@@ -79,7 +80,8 @@ function renderLayout() {
 								: ''
 						}
 					</div>
-					<p class="order-step__hint" data-type-hint></p>
+					<div class="order-step__hint" data-type-hint></div>
+					${shippingNote(settings, catalogCopy)}
 				</fieldset>
 
 				<fieldset class="card order-step">
@@ -143,7 +145,8 @@ function renderLayout() {
 			<aside class="order__summary">
 				<div class="card summary" data-summary></div>
 			</aside>
-		</div>`;
+		</div>
+		${pickupFaq(settings, catalogCopy)}`;
 
 	const form = document.getElementById('order-form');
 	form.addEventListener('change', event => {
@@ -194,12 +197,15 @@ function renderTypeHint() {
 	const hint = document.querySelector('[data-type-hint]');
 	const { delivery, pickup } = settings;
 	if (state.type === 'delivery') {
-		const cutoff = weekdayName((delivery.day - delivery.cutoffDays + 7) % 7);
-		hint.innerHTML = `${icon('info')} We deliver within ${delivery.radiusMiles} miles of ${delivery.zones.map(z => e(z.label)).join(' or ')}. Orders close at the end of ${cutoff}. ${
+		const day = weekdayName(delivery.day);
+		hint.innerHTML = `<p>${icon('info')}<span>Delivered to your door every ${day}, within ${delivery.radiusMiles} miles of ${delivery.zones.map(z => e(z.label)).join(' or ')}. <strong>Order by the end of ${weekdayName(cutoffDay(delivery))}</strong> for that ${day}. ${
 			delivery.freeOver > 0 ? `${moneyShort(delivery.fee)} delivery, free on orders over ${moneyShort(delivery.freeOver)}.` : `${moneyShort(delivery.fee)} delivery.`
-		}`;
+		}</span></p>`;
 	} else {
-		hint.innerHTML = `${icon('info')} Pressed to order, so pickups open ${pickup.leadDays} day${pickup.leadDays === 1 ? '' : 's'} out. Hunter will text you the exact spot and time.`;
+		const when = pickup.hours ? `Pickup times are ${e(pickup.hours)}, and Hunter texts you when it's ready.` : "Hunter texts you when it's ready to grab.";
+		const min = pickup.minBottles > 0 ? `<strong>${pickup.minBottles} bottle minimum.</strong> ` : '';
+		const notice = pickup.leadDays > 0 ? `<strong>Order at least ${pickup.leadDays * 24} hours ahead</strong>, since every bottle is pressed for you. ` : '';
+		hint.innerHTML = `${pickupSpot(pickup)}<p>${icon('info')}<span>${min}${notice}${when}</span></p>`;
 	}
 	document.querySelector('[data-address]').hidden = state.type !== 'delivery';
 }
@@ -303,15 +309,17 @@ function renderSummary() {
 	summary.querySelector('[data-pay]').addEventListener('click', pay);
 	summary.querySelectorAll('[data-quick-add]').forEach(btn => btn.addEventListener('click', () => addToCart(btn.dataset.quickAdd)));
 
-	// Grey out delivery when the cart is under the minimum
-	const deliveryChoice = document.querySelector('[data-delivery-choice]');
-	if (deliveryChoice) {
-		const short = settings.delivery.minBottles - priced.bottles;
-		deliveryChoice.querySelector('.choice__text').innerHTML =
-			short > 0 && priced.bottles > 0
-				? `${e(settings.delivery.areaLabel)} &middot; add ${short} more bottle${short === 1 ? '' : 's'}`
-				: `${e(settings.delivery.areaLabel)} &middot; ${settings.delivery.minBottles}+ bottles`;
-	}
+	// Each option shows its minimum, or how many more bottles it needs
+	const bottles = cartLines(juices).reduce((sum, line) => sum + line.qty, 0);
+	const minimumText = (place, min) => {
+		const short = min - bottles;
+		if (!(min > 0)) return place;
+		return short > 0 && bottles > 0 ? `${place} &middot; add ${short} more bottle${short === 1 ? '' : 's'}` : `${place} &middot; ${min}+ bottles`;
+	};
+	const pickupChoice = document.querySelector('[data-pickup-choice] .choice__text');
+	if (pickupChoice) pickupChoice.innerHTML = minimumText(e(settings.pickup.address || settings.pickup.area), settings.pickup.minBottles);
+	const deliveryChoice = document.querySelector('[data-delivery-choice] .choice__text');
+	if (deliveryChoice) deliveryChoice.innerHTML = minimumText(e(settings.delivery.areaLabel), settings.delivery.minBottles);
 }
 
 /*=============== CHECKOUT ===============*/
@@ -394,6 +402,7 @@ function update() {
 ready.then(catalog => {
 	juices = catalog.juices;
 	settings = catalog.settings;
+	catalogCopy = catalog.copy;
 
 	if (!settings.orderingEnabled) {
 		root.innerHTML = `<div class="card closed"><h2 class="section-title section-title--sm">Online ordering is paused</h2><p>Hunter isn't taking online orders right now. Message him on Instagram <a href="https://instagram.com/${e(settings.instagram)}">@${e(settings.instagram)}</a> or <a href="/contact">send a note</a>.</p></div>`;

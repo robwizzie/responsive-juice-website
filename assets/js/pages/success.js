@@ -1,7 +1,7 @@
 import { ready } from '../site.js';
 import { escapeHtml as e } from '../lib/catalog.js';
 import { clearCart } from '../lib/cart.js';
-import { bottleImage } from '../lib/components.js';
+import { bottleImage, pickupSpot } from '../lib/components.js';
 import { icon } from '../lib/icons.js';
 import { formatDate, formatMoney } from '../shared/order-rules.js';
 
@@ -56,8 +56,13 @@ function nextSteps(order, settings) {
 		{ icon: 'check', title: 'Order placed', text: 'Hunter has your order and it is on the list.', done: true },
 		{ icon: 'drop', title: `Pressed fresh ${formatDate(order.date)}`, text: 'Your bottles are cold-pressed that morning, never before.' },
 		pickup
-			? { icon: 'pin', title: 'Pick it up', text: `Pickup is in ${e(settings.pickup.area)}. Hunter will text you the spot and time.` }
-			: { icon: 'truck', title: 'Delivered to you', text: 'Hunter will text you when he is on the way.' }
+			? {
+					icon: 'pin',
+					title: `Pick it up ${formatDate(order.date, { weekday: 'long' })}`,
+					text: `${settings.pickup.hours ? `Pickup times are ${e(settings.pickup.hours)}. ` : ''}Hunter will text you when it's ready to grab.`,
+					extra: pickupSpot(settings.pickup)
+				}
+			: { icon: 'truck', title: `Delivered ${formatDate(order.date, { weekday: 'long' })}`, text: 'Hunter brings it right to your door and texts you when he is on the way.' }
 	];
 	return `
 		<div class="card next-steps">
@@ -68,7 +73,7 @@ function nextSteps(order, settings) {
 						step => `
 					<li class="next-steps__item${step.done ? ' is-done' : ''}">
 						<span class="next-steps__icon">${icon(step.icon)}</span>
-						<div><strong>${step.title}</strong><p>${step.text}</p></div>
+						<div><strong>${step.title}</strong><p>${step.text}</p>${step.extra || ''}</div>
 					</li>`
 					)
 					.join('')}
