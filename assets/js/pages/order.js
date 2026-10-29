@@ -3,6 +3,7 @@ import { escapeHtml as e } from '../lib/catalog.js';
 import { addToCart, cartLines, getCart, setQty } from '../lib/cart.js';
 import { money, moneyShort } from '../lib/components.js';
 import { icon } from '../lib/icons.js';
+import { isOrderable } from '../shared/catalog.js';
 import { availableDates, formatDate, formatMoney, priceOrder, weekdayName } from '../shared/order-rules.js';
 
 const root = document.querySelector('[data-order]');
@@ -236,7 +237,7 @@ function renderSummary() {
 	const summary = document.querySelector('[data-summary]');
 	const lines = cartLines(juices);
 	const priced = priceOrder({ items: items(), type: state.type, date: state.date }, juices, settings);
-	const missing = juices.filter(j => j.inStock && !getCart()[j.slug]);
+	const missing = juices.filter(j => isOrderable(j) && !getCart()[j.slug]);
 	const blockers = priced.errors.filter(msg => !/cart is empty/.test(msg));
 
 	summary.innerHTML = `
@@ -365,7 +366,7 @@ ready.then(catalog => {
 	}
 
 	// Drop anything that has left the menu since it was added
-	Object.keys(getCart()).forEach(slug => !juices.some(j => j.slug === slug && j.inStock) && setQty(slug, 0));
+	Object.keys(getCart()).forEach(slug => !juices.some(j => j.slug === slug && isOrderable(j)) && setQty(slug, 0));
 
 	renderLayout();
 	update();
