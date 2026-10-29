@@ -406,7 +406,10 @@ ready.then(catalog => {
 	renderLayout();
 	update();
 	// Show the canceled note once, without it coming back on a refresh
-	if (new URLSearchParams(location.search).has('canceled')) history.replaceState(null, '', location.pathname);
+	if (new URLSearchParams(location.search).has('canceled')) {
+		history.replaceState(null, '', location.pathname);
+		requestAnimationFrame(() => root.querySelector('[data-checkout-note]')?.scrollIntoView({ block: 'center' }));
+	}
 	root.querySelector('[data-dismiss-note]')?.addEventListener('click', () => root.querySelector('[data-checkout-note]').remove());
 	window.addEventListener('cart:change', renderSummary);
 });
