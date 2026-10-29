@@ -84,7 +84,7 @@ export function customerConfirmation(order, settings, siteUrl, images) {
 	const first = e(order.customer.name.split(' ')[0]);
 	return layout(
 		siteUrl,
-		`<h1 style="margin:0 0 8px;font-family:Georgia,serif;font-size:26px">Thanks, ${first}!</h1>
+		`${testBanner(order)}<h1 style="margin:0 0 8px;font-family:Georgia,serif;font-size:26px">Thanks, ${first}!</h1>
 <p style="margin:0;line-height:1.6;color:#3d413c">Your order is in. Everything is pressed fresh for your ${order.type === 'delivery' ? 'delivery' : 'pickup'} day.</p>
 ${box(fulfilmentBlock(order, settings, false))}
 ${itemsTable(order, siteUrl, images)}
@@ -93,17 +93,21 @@ ${itemsTable(order, siteUrl, images)}
 	);
 }
 
+const testBanner = order =>
+	order.test ? `<p style="margin:0 0 16px;padding:10px 14px;border-radius:10px;background:#fdecc8;color:#8a5a00;font-size:13px;font-weight:bold">Test order: paid with a Stripe test card, so no real money moved.</p>` : '';
+
 export function ownerNotification(order, settings, siteUrl, images) {
 	const c = order.customer;
 	return layout(
 		siteUrl,
-		`<p style="margin:0 0 4px;display:inline-block;background:${LIME};color:${INK};font-size:12px;font-weight:bold;letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:99px">New ${order.type} order</p>
+		`${testBanner(order)}<p style="margin:0 0 4px;display:inline-block;background:${LIME};color:${INK};font-size:12px;font-weight:bold;letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:99px">New ${order.type} order</p>
 <h1 style="margin:12px 0 4px;font-family:Georgia,serif;font-size:24px">${e(c.name)} &middot; ${order.lines.reduce((n, l) => n + l.qty, 0)} bottles</h1>
 <p style="margin:0;line-height:1.6"><a href="mailto:${e(c.email)}" style="color:${INK}">${e(c.email)}</a> &middot; <a href="tel:${e(c.phone)}" style="color:${INK}">${e(c.phone)}</a></p>
 ${box(fulfilmentBlock(order, settings, true))}
 ${order.notes ? box(`<p style="margin:0 0 4px;font-size:13px;color:#6b6f6a">Customer note</p><p style="margin:0;white-space:pre-wrap">${e(order.notes)}</p>`) : ''}
 ${itemsTable(order, siteUrl, images)}
-<p style="font-size:13px;color:#6b6f6a">Paid with Stripe. All orders are listed at <a href="${siteUrl}/admin#orders" style="color:${INK}">${siteUrl.replace(/^https?:\/\//, '')}/admin</a>.</p>`
+<p style="margin:20px 0 8px"><a href="${siteUrl}/admin#orders" style="display:inline-block;background:${INK};color:#ffffff;text-decoration:none;font-weight:bold;padding:12px 20px;border-radius:99px">Open your orders</a></p>
+<p style="font-size:13px;color:#6b6f6a">Paid with Stripe. Mark it as making, ready and picked up in your admin.</p>`
 	);
 }
 
@@ -114,6 +118,14 @@ export function contactMessage({ name, email, message, topic }, siteUrl) {
 <h1 style="margin:0 0 8px;font-family:Georgia,serif;font-size:22px">${e(name)}</h1>
 <p style="margin:0 0 16px"><a href="mailto:${e(email)}" style="color:${INK}">${e(email)}</a></p>
 ${box(`<p style="margin:0;white-space:pre-wrap;line-height:1.6">${e(message)}</p>`)}
-<p style="font-size:13px;color:#6b6f6a">Reply to this email to answer ${e(name.split(' ')[0])} directly.</p>`
+<p style="font-size:13px;color:#6b6f6a">Reply to this email to answer ${e(name.split(' ')[0])} directly. It's also saved in <a href="${siteUrl}/admin#messages" style="color:${INK}">your admin under Messages</a>.</p>`
+	);
+}
+
+export function testEmail(settings, siteUrl) {
+	return layout(
+		siteUrl,
+		`<h1 style="margin:0 0 8px;font-family:Georgia,serif;font-size:24px">Emails are working</h1>
+<p style="margin:0;line-height:1.6;color:#3d413c">This is a test from your SiponPressed admin. New order alerts will come to this inbox, and every customer gets a confirmation like this one when they pay.</p>`
 	);
 }

@@ -7,14 +7,17 @@ import { wordmark } from '../lib/brand.js';
 import { escapeHtml as e } from '../lib/catalog.js';
 import { bottleImage, juiceCard, juiceLoader, money } from '../lib/components.js';
 import { BACKDROPS, DEFAULT_BACKDROP, JUICE_STATUSES, SPLASH_STYLES, ingredientKey, ingredientPhoto, juiceStatus, priceJuice, slugify } from '../shared/catalog.js';
-import { formatDate, formatMoney, todayISO, weekdayName } from '../shared/order-rules.js';
+import { weekdayName } from '../shared/order-rules.js';
+import { isOpen } from '../shared/order-status.js';
 import { prepareBottle, preparePhoto } from './image.js';
 import { leavePages, renderPages, pagesDirty } from './pages.js';
 import { allIngredients, renderIngredients } from './ingredients.js';
 import { mountPreview, previewMarkup } from './preview.js';
+import { refreshOrders, renderOrders } from './orders.js';
+import { refreshMessages, renderMessages } from './messages.js';
 
 const app = document.getElementById('admin');
-const state = { juices: [], settings: null, copy: {}, status: {}, orders: null, tab: 'menu' };
+const state = { juices: [], settings: null, copy: {}, status: {}, orders: null, messages: null, tab: 'menu' };
 
 /*=============== API ===============*/
 class AuthError extends Error {}
@@ -98,6 +101,7 @@ const TABS = [
 	{ id: 'ingredients', label: 'Ingredients', icon: 'orange' },
 	{ id: 'pages', label: 'Pages', icon: 'edit' },
 	{ id: 'orders', label: 'Orders', icon: 'bag' },
+	{ id: 'messages', label: 'Messages', icon: 'mail' },
 	{ id: 'settings', label: 'Settings', icon: 'gear' }
 ];
 
@@ -108,7 +112,7 @@ function renderShell() {
 				<a href="/" class="wordmark" aria-label="SiponPressed home">${wordmark()}</a>
 				<span class="admin-bar__badge">Admin</span>
 				<nav class="admin-tabs" aria-label="Admin sections">
-					${TABS.map(t => `<a href="#${t.id}" class="admin-tab" data-tab="${t.id}">${icon(t.icon)}<span>${t.label}</span></a>`).join('')}
+					${TABS.map(t => `<a href="#${t.id}" class="admin-tab" data-tab="${t.id}">${icon(t.icon)}<span>${t.label}</span><span class="tab-count" data-count="${t.id}" hidden></span></a>`).join('')}
 				</nav>
 				<div class="admin-bar__actions">
 					<a href="/" class="btn btn--outline btn--sm" target="_blank" rel="noopener">${icon('eye')} View site</a>
@@ -174,7 +178,7 @@ function showTab() {
 	state.tab = next;
 	document.body.dataset.tab = next;
 	document.querySelectorAll('.admin-tab').forEach(tab => tab.classList.toggle('is-active', tab.dataset.tab === state.tab));
-	({ menu: renderMenu, ingredients: () => renderIngredients(state), pages: () => renderPages(state), orders: renderOrders, settings: renderSettings })[state.tab]();
+	({ menu: renderMenu, ingredients: () => renderIngredients(state), pages: () => renderPages(state), orders: () => renderOrders(state), messages: () => renderMessages(state), settings: renderSettings })[state.tab]();
 }
 
 /*=============== MENU ===============*/
@@ -852,66 +856,40 @@ function openEditor(index) {
 	dialog.showModal();
 }
 
-/*=============== ORDERS ===============*/
-async function renderOrders() {
-	const main = document.getElementById('admin-main');
-	main.innerHTML = `<div class="admin-head"><div><h1 class="admin-title">Orders</h1><p class="muted">Paid orders, grouped by pickup or delivery day.</p></div><button type="button" class="btn btn--ghost" data-refresh>Refresh</button></div><div data-orders><div class="admin-loading admin-loading--inline">${juiceLoader('Getting your orders&hellip;')}</div></div>`;
-	main.querySelector('[data-refresh]').addEventListener('click', () => {
-		state.orders = null;
-		renderOrders();
-	});
-
-	if (!state.orders) {
-		const data = await guarded(() => api('orders'));
-		if (!data) return;
-		state.orders = data.orders;
+/*=============== BADGES ===============*/
+// Orders still to do and unread messages show as a count on their tab (and in the browser tab title)
+let lastSeenOrders = null;
+export async function updateCounts({ reload = false } = {}) {
+	if (reload) {
+		const [orders, messages] = await Promise.all([guarded(() => api('orders')).catch(() => null), guarded(() => api('messages')).catch(() => null)]);
+		if (orders) state.orders = orders.orders;
+		if (messages) state.messages = messages.messages;
+		if (state.tab === 'orders') refreshOrders(state);
+		if (state.tab === 'messages') refreshMessages(state);
 	}
-	if (state.tab !== 'orders') return;
-
-	const today = todayISO();
-	const byDate = new Map();
-	state.orders.forEach(order => byDate.set(order.date, [...(byDate.get(order.date) || []), order]));
-	const dates = [...byDate.keys()].sort();
-	const upcoming = dates.filter(d => d >= today);
-	const past = dates.filter(d => d < today).reverse();
-
-	const dayBlock = date => {
-		const orders = byDate.get(date);
-		const prep = new Map();
-		orders.forEach(o => o.lines.forEach(l => prep.set(l.name, (prep.get(l.name) || 0) + l.qty)));
-		const total = orders.reduce((sum, o) => sum + o.total, 0);
-		return `
-			<section class="order-day">
-				<header class="order-day__head">
-					<h2>${formatDate(date)}</h2>
-					<p>${orders.length} order${orders.length === 1 ? '' : 's'} &middot; ${formatMoney(total)}</p>
-				</header>
-				<div class="prep">${[...prep].map(([name, qty]) => `<span class="prep__item"><strong>${qty}</strong> ${e(name)}</span>`).join('')}</div>
-				<div class="order-cards">
-					${orders
-						.map(
-							o => `
-						<article class="order-card">
-							<div class="order-card__top">
-								<span class="pill ${o.type === 'delivery' ? 'pill--dark' : 'pill--ok'}">${o.type === 'delivery' ? 'Delivery' : 'Pickup'}</span>
-								<strong>${formatMoney(o.total)}</strong>
-							</div>
-							<h3>${e(o.customer.name)}</h3>
-							<p class="order-card__contact"><a href="tel:${e(o.customer.phone)}">${e(o.customer.phone)}</a> &middot; <a href="mailto:${e(o.customer.email)}">${e(o.customer.email)}</a></p>
-							${o.address ? `<p class="order-card__address">${icon('pin')} ${e([o.address.line1, o.address.line2, `${o.address.city}, NJ ${o.address.zip}`].filter(Boolean).join(', '))}${o.zoneCheck?.status === 'in' ? ` <span class="muted">(${o.zoneCheck.miles} mi)</span>` : ' <span class="pill pill--warn">check distance</span>'}</p>` : ''}
-							<ul class="order-card__items">${o.lines.map(l => `<li>${l.qty} &times; ${e(l.name)}</li>`).join('')}</ul>
-							${o.notes ? `<p class="order-card__notes">&ldquo;${e(o.notes)}&rdquo;</p>` : ''}
-						</article>`
-						)
-						.join('')}
-				</div>
-			</section>`;
-	};
-
-	main.querySelector('[data-orders]').innerHTML = `
-		${upcoming.length ? upcoming.map(dayBlock).join('') : '<p class="empty">No upcoming orders yet. New paid orders show up here and in your inbox.</p>'}
-		${past.length ? `<details class="past"><summary>Past orders (${past.reduce((n, d) => n + byDate.get(d).length, 0)})</summary>${past.map(dayBlock).join('')}</details>` : ''}`;
+	const counts = { orders: state.orders?.filter(isOpen).length || 0, messages: state.messages?.filter(m => !m.read && !m.archived).length || 0 };
+	Object.entries(counts).forEach(([tab, n]) => {
+		const badge = document.querySelector(`[data-count="${tab}"]`);
+		if (!badge) return;
+		badge.hidden = !n;
+		badge.textContent = n > 99 ? '99+' : n;
+		badge.closest('.admin-tab').setAttribute('aria-label', `${TABS.find(t => t.id === tab).label}${n ? `, ${n} ${tab === 'orders' ? 'to do' : 'new'}` : ''}`);
+	});
+	const total = counts.orders + counts.messages;
+	document.title = `${total ? `(${total}) ` : ''}Admin | SiponPressed`;
+	// A new order while the admin is open gets a heads-up
+	const ids = new Set((state.orders || []).map(o => o.id));
+	if (lastSeenOrders && [...ids].some(id => !lastSeenOrders.has(id))) toast('A new order just came in');
+	if (state.orders) lastSeenOrders = ids;
 }
+
+// Check for new orders and messages every minute while the admin is on screen
+let pollTimer;
+function startPolling() {
+	clearInterval(pollTimer);
+	pollTimer = setInterval(() => document.visibilityState === 'visible' && updateCounts({ reload: true }), 60000);
+}
+document.addEventListener('visibilitychange', () => document.visibilityState === 'visible' && state.settings && document.getElementById('admin-main') && updateCounts({ reload: true }));
 
 /*=============== SETTINGS ===============*/
 let settingsDirty = false;
@@ -963,6 +941,16 @@ function renderSettings() {
 			</section>
 
 			<section class="card settings__card">
+				<h2>Emails</h2>
+				${
+					state.status.email
+						? `<p>New orders and Contact page messages are emailed to <strong>${e(state.status.emailTo || s.contactEmail)}</strong>. Every customer also gets a confirmation email when they pay.</p>
+					<div><button type="button" class="btn btn--outline btn--sm" data-test-email>${icon('mail')} Send me a test email</button></div>`
+						: `<p class="hint hint--warn">${icon('info')} Emails are switched off until the email login is added in Netlify. Orders and messages still show up here in the admin.</p>`
+				}
+			</section>
+
+			<section class="card settings__card">
 				<h2>Contact</h2>
 				<div class="field-row">
 					<div class="field"><label for="s-email">Email shown on the site</label><input id="s-email" name="contactEmail" type="email" value="${e(s.contactEmail)}"></div>
@@ -994,6 +982,14 @@ function renderSettings() {
 				<div><button type="submit" class="btn btn--ink">Change password</button></div>
 			</section>
 		</form>`;
+
+	main.querySelector('[data-test-email]')?.addEventListener('click', async event => {
+		const button = event.currentTarget;
+		button.disabled = true;
+		const data = await guarded(() => api('test-email', { method: 'POST' })).catch(() => null);
+		button.disabled = false;
+		if (data) toast(`Sent to ${data.to}. Check that inbox (and spam).`);
+	});
 
 	const settingsForm = document.getElementById('settings-form');
 	const settingsBar = settingsForm.querySelector('[data-settings-bar]');
@@ -1076,9 +1072,11 @@ async function boot() {
 	if (!app.querySelector('.juice-loader')) app.innerHTML = `<div class="admin-loading">${juiceLoader('Opening your shop&hellip;')}</div>`;
 	const data = await guarded(() => api('data'));
 	if (!data) return;
-	Object.assign(state, { juices: data.juices, settings: data.settings, copy: data.copy || {}, status: data.status, orders: null });
+	Object.assign(state, { juices: data.juices, settings: data.settings, copy: data.copy || {}, status: data.status, orders: null, messages: null });
 	renderShell();
 	showTab();
+	if (!['orders', 'messages'].includes(state.tab)) updateCounts({ reload: true });
+	startPolling();
 }
 
 window.addEventListener('beforeunload', event => {

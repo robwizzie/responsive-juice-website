@@ -7,14 +7,14 @@ Website for SiponPressed, Hunter's cold-pressed juice company in Philadelphia. I
 | Path | What it is |
 | --- | --- |
 | `index.html`, `juices.html`, `juice.html`, `about.html`, `contact.html`, `order.html`, `success.html` | Public pages. `juice.html` renders every `/juices/:slug` page (served by the `juice-page` function so each juice has its own share tags). |
-| `admin.html` + `assets/js/admin/` | Hunter's admin at `/admin`: edit/add juices, edit the words and photos on every page, see orders, change the price and pickup/delivery settings. |
+| `admin.html` + `assets/js/admin/` | Hunter's admin at `/admin`: edit/add juices, edit the words and photos on every page, track orders (new → making → ready → picked up, with a "to press" list per day), read Contact page messages, change the price and pickup/delivery settings. Orders and Messages show a count on their tab. |
 | `assets/js/shared/content.js` | Every piece of page text (and the few photos) Hunter can change in **Admin → Pages**, with its default. The HTML marks each spot with `data-copy="<key>"`. |
 | `assets/js/shared/catalog.js` | The starting menu (Simply Orange, Green, Red) and default shop settings. |
 | `assets/js/shared/order-rules.js` | Dates, minimums, delivery fee and pricing. Used by both the order page and the checkout function, so they always agree. |
 | `netlify/functions/` | `catalog` (public menu, settings and Hunter's page text, which `site.js` fills into each page), `checkout` (Stripe Checkout), `stripe-webhook` (saves paid orders, sends emails), `delivery-check`, `contact`, `admin`, `images`, `order-summary`, `og` (share images), `juice-page`, `sitemap`. |
 | `assets/js/shared/seo.js` | Page titles, descriptions, share tags and structured data. Baked into each page's `<head>` by `node scripts/bake-header.mjs`. |
 
-Menu edits, settings, uploaded photos and orders are stored in **Netlify Blobs**, which every Netlify site has built in. There is no database to set up. Until something is saved in the admin, the defaults in `catalog.js` are used.
+Menu edits, settings, uploaded photos, orders and contact messages are stored in **Netlify Blobs**, which every Netlify site has built in. There is no database to set up. Until something is saved in the admin, the defaults in `catalog.js` are used.
 
 ## Ordering rules (defaults, all editable in /admin → Settings)
 
@@ -33,7 +33,7 @@ Add these under **Site configuration → Environment variables**, then redeploy:
 | `ADMIN_PASSWORD` | Admin sign in | Pick a long password and give it to Hunter. He can set his own in **Admin → Settings → Admin password** (saved as a salted hash); this one keeps working as a backup. Changing either signs everyone out. |
 | `STRIPE_SECRET_KEY` | Payments | Live secret key (`sk_live_...`) from Stripe → Developers → API keys. |
 | `STRIPE_WEBHOOK_SECRET` | Order confirmations | See below. |
-| `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_USER`, `EMAIL_PASS` | Order + contact emails | For Yahoo: `smtp.mail.yahoo.com`, `465`, `siponpressed@yahoo.com`, and a Yahoo **app password** (Account security → Generate app password), not the normal password. |
+| `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_USER`, `EMAIL_PASS` | Order + contact emails (Hunter gets one per order and message, customers get a confirmation). Without them, orders and messages still show in the admin. Settings → Emails has a test button. | For Yahoo: `smtp.mail.yahoo.com`, `465`, `siponpressed@yahoo.com`, and a Yahoo **app password** (Account security → Generate app password), not the normal password. |
 | `CONTACT_EMAIL` | Optional | Where order and contact emails go. Defaults to the email in admin settings (siponpressed@yahoo.com). |
 | `STRIPE_SECRET_KEY_TEST` | Optional | Used instead of the live key when running locally. |
 | `ADMIN_SESSION_SECRET` | Optional | Extra secret for signing admin sessions. |

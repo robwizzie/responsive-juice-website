@@ -32,7 +32,7 @@ export default async req => {
 		return new Response('OK', { status: 200 });
 	}
 
-	const order = { ...pending, status: 'paid', paidAt: new Date().toISOString(), stripeSessionId: session.id, total: session.amount_total ?? pending.total };
+	const order = { ...pending, status: 'paid', stage: 'new', test: !event.livemode, paidAt: new Date().toISOString(), stripeSessionId: session.id, total: session.amount_total ?? pending.total };
 	const alreadySaved = await getOrder(orderKey(order));
 	await saveOrder(alreadySaved || order);
 
@@ -41,11 +41,15 @@ export default async req => {
 		const siteUrl = publicSiteUrl(req);
 		const images = Object.fromEntries(juices.map(juice => [juice.slug, juice.emailImage || '']));
 		const when = formatDate(order.date, { weekday: 'short', month: 'short', day: 'numeric' });
-		const results = await Promise.allSettled([
-			sendMail({ to: ownerEmail(settings), replyTo: order.customer.email, subject: `New ${order.type} order: ${order.customer.name} (${when})`, html: ownerNotification(order, settings, siteUrl, images) }),
-			sendMail({ to: order.customer.email, replyTo: ownerEmail(settings), subject: `Your SiponPressed order for ${when}`, html: customerConfirmation(order, settings, siteUrl, images) })
+		const tag = order.test ? '[Test] ' : '';
+		const [owner, customer] = await Promise.allSettled([
+			sendMail({ to: ownerEmail(settings), replyTo: order.customer.email, subject: `${tag}New ${order.type} order: ${order.customer.name} (${when})`, html: ownerNotification(order, settings, siteUrl, images) }),
+			sendMail({ to: order.customer.email, replyTo: ownerEmail(settings), subject: `${tag}Your SiponPressed order for ${when}`, html: customerConfirmation(order, settings, siteUrl, images) })
 		]);
-		results.filter(r => r.status === 'rejected').forEach(r => console.error('Order email failed:', r.reason));
+		[owner, customer].filter(r => r.status === 'rejected').forEach(r => console.error('Order email failed:', r.reason));
+		// Kept on the order so the admin can say whether Hunter and the customer were emailed
+		const outcome = r => (r.status === 'rejected' ? 'failed' : r.value ? 'sent' : 'off');
+		await saveOrder({ ...order, emails: { owner: outcome(owner), customer: outcome(customer) } });
 	}
 
 	await deletePending(id);
