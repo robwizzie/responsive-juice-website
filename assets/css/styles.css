@@ -6,6 +6,8 @@
 
 /*=============== TOKENS ===============*/
 :root {
+	--select-line: #161513;
+	--dim: color-mix(in srgb, #161513 38%, #fdf6ea);
 	--ink: #161513;
 	--ink-2: #34322d;
 	--muted: #6f6a60;
@@ -55,6 +57,8 @@
 	:root {
 		color-scheme: dark;
 		--ink: #f3ede2;
+		--select-line: #c4dd3b;
+		--dim: #9e978b;
 		--ink-2: #d6cfc2;
 		--muted: #a29b8e;
 		--line: rgba(255, 246, 230, 0.1);
@@ -95,6 +99,12 @@
 .stamp--coming-soon,
 .way__icon,
 .contact-card__icon,
+.cart-btn__count,
+.press-day__badge,
+.press-day__steps li > span,
+.order-step__title > span:first-child,
+.page-card__steps li > span:first-child,
+.confirm__check,
 .portrait {
 	--ink: #161513;
 	--ink-2: #34322d;
@@ -2309,7 +2319,7 @@ p {
 }
 
 .statement .dim {
-	color: color-mix(in srgb, var(--ink) 38%, var(--paper));
+	color: var(--dim);
 }
 
 .statement__img {
@@ -2950,7 +2960,7 @@ html:not(.js) .cta-band .cta-band__scene {
 	font-weight: 700;
 }
 
-.page-card__steps span {
+.page-card__steps li > span:first-child {
 	display: grid;
 	place-items: center;
 	flex: none;
@@ -2988,6 +2998,24 @@ html:not(.js) .cta-band .cta-band__scene {
 	rotate: -8deg;
 	filter: drop-shadow(0 24px 22px rgba(40, 30, 0, 0.35));
 	animation: page-card-bob 4s var(--ease-in-out) infinite alternate;
+}
+
+/* Contact rotates through the juices: the bottle drops out and the next one rises in */
+.page-card__bottle > * {
+	transition:
+		opacity 0.45s ease,
+		transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.page-card__bottle.is-swapping > * {
+	opacity: 0;
+	transform: translateY(24px) scale(0.92);
+}
+
+.page-card,
+.page-card .page-card__kicker,
+.page-card .page-card__hl {
+	transition: color 0.6s ease;
 }
 
 @keyframes page-card-spin {
@@ -3083,8 +3111,8 @@ html:not(.js) .cta-band .cta-band__scene {
 	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
 	align-items: center;
 	gap: 2rem;
-	min-height: clamp(400px, 38vw, 540px);
-	padding: clamp(2rem, 5vw, 4rem);
+	min-height: clamp(360px, 32vw, 460px);
+	padding: clamp(2rem, 4vw, 3.25rem) clamp(2rem, 5vw, 4rem);
 	border-radius: var(--radius-xl);
 	/* Each bottle throws a glow in its own color (set per juice from menu.js) */
 	background:
@@ -3145,8 +3173,8 @@ html:not(.js) .cta-band .cta-band__scene {
 	display: grid;
 	grid-template: 100% / 100%;
 	align-self: end;
-	height: clamp(300px, 40cqi, 500px);
-	margin-bottom: clamp(-4rem, -5vw, -2rem);
+	height: clamp(280px, 36cqi, 440px);
+	margin-bottom: clamp(-3.25rem, -4vw, -2rem);
 }
 
 .menu-card__layer {
@@ -4118,7 +4146,16 @@ html:not(.js) .cta-band .cta-band__scene {
 	display: grid;
 	grid-template-columns: 0.9fr 1.1fr;
 	gap: clamp(2rem, 6vw, 5rem);
-	align-items: start;
+	align-items: center;
+}
+
+/* The heading and the bottles share one centered axis, and the copy sits level with them */
+.about-story > [data-reveal]:first-child {
+	text-align: center;
+}
+
+.about-story > [data-reveal]:first-child .kicker {
+	justify-content: center;
 }
 
 .about-story__copy p {
@@ -4202,8 +4239,9 @@ html:not(.js) .cta-band .cta-band__scene {
 	padding: 0;
 	border: 0;
 	border-radius: 50%;
-	background: color-mix(in srgb, #fff 86%, transparent);
-	color: var(--ink);
+	background: rgba(22, 21, 19, 0.62);
+	color: #fff;
+	box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
 	backdrop-filter: blur(8px);
 	cursor: pointer;
 	transition: transform 0.4s var(--spring), background 0.3s;
@@ -4211,6 +4249,7 @@ html:not(.js) .cta-band .cta-band__scene {
 
 .press-day__btn:hover {
 	background: var(--lime);
+	color: #161513;
 }
 
 .press-day__btn:active {
@@ -4286,13 +4325,21 @@ html:not(.js) .cta-band .cta-band__scene {
 .press-day__steps li > span {
 	display: grid;
 	place-items: center;
-	width: 40px;
-	height: 40px;
-	border-radius: 12px;
+	width: 46px;
+	height: 46px;
+	border-radius: 14px;
 	background: var(--lime);
-	color: var(--ink);
-	font-weight: 800;
-	font-size: 0.9rem;
+	box-shadow: inset 0 -3px 0 rgba(22, 21, 19, 0.14);
+	color: #161513;
+	font-weight: 900;
+	font-stretch: 125%;
+	font-size: 1.05rem;
+	letter-spacing: -0.02em;
+	rotate: -4deg;
+}
+
+.press-day__steps li:nth-child(even) > span {
+	rotate: 4deg;
 }
 
 .press-day__steps strong {
@@ -4682,13 +4729,31 @@ a.contact-card:hover {
 	color: var(--muted);
 }
 
+/* Selected: a lime-tinted card with a strong outline and a check, readable in both themes */
+.choice__body {
+	position: relative;
+}
+
 .choice input:checked + .choice__body {
-	border-color: var(--ink);
-	box-shadow: inset 0 0 0 1px var(--ink);
+	border-color: var(--select-line);
+	background: color-mix(in srgb, var(--lime) 16%, var(--card));
+	box-shadow: inset 0 0 0 1.5px var(--select-line);
 }
 
 .choice input:checked + .choice__body .choice__icon {
 	background: var(--lime);
+	color: #161513;
+}
+
+.choice input:checked + .choice__body::after {
+	content: '';
+	position: absolute;
+	top: 0.75rem;
+	right: 0.75rem;
+	width: 22px;
+	height: 22px;
+	border-radius: 50%;
+	background: var(--lime) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23161513' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center / 14px no-repeat;
 }
 
 .choice input:focus-visible + .choice__body,
@@ -4735,13 +4800,14 @@ a.contact-card:hover {
 }
 
 .date-chip input:checked + span {
-	background: var(--ink);
-	border-color: var(--ink);
-	color: var(--on-ink);
+	background: var(--lime);
+	border-color: var(--lime);
+	color: #161513;
 }
 
 .date-chip input:checked + span small {
-	color: var(--lime);
+	color: #161513;
+	opacity: 0.7;
 }
 
 .address {
@@ -5945,6 +6011,12 @@ a.contact-card:hover {
 	.section-head > div,
 	.section-lede {
 		margin-inline: auto;
+	}
+
+	/* In the stacked layout a 28rem flex-basis would become a height */
+	.section-head > div {
+		flex: none;
+		width: 100%;
 	}
 
 	.statement {
