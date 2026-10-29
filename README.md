@@ -59,9 +59,9 @@ npm test
 
 ## Editing page text
 
-Sign in at `/admin` → **Pages**. Every heading, paragraph, button label and badge on the site is listed by page (or search for the words you see). Edited fields turn green and have an **Original** button to undo. Nothing changes on the site until **Save & publish**. Text can include fill-ins like `{price}` or `{deliveryDay}` that update themselves from the settings.
+Sign in at `/admin` → **Pages**. The real page shows on the left (a sheet slides up on phones): click any words or photo on it to edit them, and the preview updates as you type. Every field is also listed beside it, by page, or search for the words you see. Edited fields turn green and have an **Original** button to undo. Nothing changes on the site until **Save & publish**. Text can include fill-ins like `{price}` or `{deliveryDay}` that update themselves from the settings.
 
-To make a new spot editable: add a field to `assets/js/shared/content.js`, then either put `data-copy="<key>"` on an element that holds only text in the HTML (its text must match the default; `npm test` checks) or read it with `t('<key>')` in the page's script.
+To make a new spot editable: add a field to `assets/js/shared/content.js`, then either put `data-copy="<key>"` on an element that holds only text in the HTML (its text must match the default; `npm test` checks) or read it with `t('<key>')` in the page's script and mark the element with `data-edit="<key>"` so it can be clicked in the preview. The preview loads the page with `?admin-preview` and borrows the unsaved edits from the admin (`previewHost` in `assets/js/lib/catalog.js`). The juice editor does the same with the juice page.
 
 ## Adding a juice
 

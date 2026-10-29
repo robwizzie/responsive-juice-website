@@ -46,7 +46,7 @@ ready.then(({ juices, settings }) => {
 	// Hunter's own wholesale photo replaces the bottles-on-ice shot
 	const wholesale = t('about.wholesale.photo');
 	const scene = document.querySelector('.cta-band--scene picture');
-	if (wholesale && scene) scene.outerHTML = `<img src="${e(wholesale)}" alt="" class="${scene.querySelector('img').className}" loading="lazy" decoding="async">`;
+	if (wholesale && scene) scene.outerHTML = `<img src="${e(wholesale)}" alt="" class="${scene.querySelector('img').className}" data-edit="about.wholesale.photo" loading="lazy" decoding="async">`;
 
 	const lineup = photographed.slice(0, 3);
 	document.querySelector('[data-about-bottles]').innerHTML = lineup

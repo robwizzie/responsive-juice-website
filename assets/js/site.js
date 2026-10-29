@@ -80,13 +80,13 @@ function renderFooter(settings) {
 	(main || document.body).insertAdjacentHTML(
 		main ? 'afterend' : 'beforeend',
 		`<footer class="site-footer" data-reveal>
-			<div class="site-footer__hero">
+			<div class="site-footer__hero" data-edit="footer.photo">
 				${scene}
 				<span class="site-footer__glow" aria-hidden="true"></span>
 				<span class="site-footer__fizz" aria-hidden="true">${FIZZ.map(([x, size, time, delay]) => `<i style="--x: ${x}%; --s: ${size}px; --t: ${time}s; --d: ${delay}s"></i>`).join('')}</span>
 				<div class="container site-footer__intro">
-					<p class="site-footer__tag"><span>${e(t('footer.tag1'))}</span> <span>${e(t('footer.tag2'))}</span></p>
-					<p class="site-footer__note">${e(t('footer.note'))}</p>
+					<p class="site-footer__tag"><span data-edit="footer.tag1">${e(t('footer.tag1'))}</span> <span data-edit="footer.tag2">${e(t('footer.tag2'))}</span></p>
+					<p class="site-footer__note" data-edit="footer.note">${e(t('footer.note'))}</p>
 					<div class="site-footer__chips">
 						<a href="mailto:${e(settings.contactEmail)}" class="footer-chip">${icon('mail')}<span>${e(settings.contactEmail)}</span></a>
 						<a href="https://instagram.com/${e(settings.instagram)}" target="_blank" rel="noopener" class="footer-chip">${icon('instagram')}<span>@${e(settings.instagram)}</span></a>
@@ -107,7 +107,7 @@ function renderFooter(settings) {
 				</div>
 				<div class="site-footer__bottom">
 					<p>&copy; ${year} SiponPressed &middot; Philadelphia, PA</p>
-					<p>${e(t('footer.bottom'))}</p>
+					<p data-edit="footer.bottom">${e(t('footer.bottom'))}</p>
 				</div>
 			</div>
 		</footer>`
@@ -128,6 +128,7 @@ function renderAnnouncement(settings) {
 	const message = !settings.orderingEnabled ? t('banner.paused') : settings.announcement;
 	if (!message) return;
 	bar.textContent = message;
+	if (!settings.orderingEnabled) bar.dataset.edit = 'banner.paused';
 	bar.hidden = false;
 }
 
