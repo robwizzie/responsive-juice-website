@@ -103,6 +103,9 @@ function cleanIngredientPhotos(input) {
 
 const days = list => [...new Set((Array.isArray(list) ? list : []).map(Number).filter(d => Number.isInteger(d) && d >= 0 && d <= 6))].sort();
 
+// Before the radius followed the pickup spot it was measured from fixed towns (`zones`); drop them on save
+const withoutOldZones = ({ zones, ...delivery }) => delivery;
+
 export function cleanSettings(input, current) {
 	const p = input?.pickup || {};
 	const d = input?.delivery || {};
@@ -129,7 +132,7 @@ export function cleanSettings(input, current) {
 				minBottles: number(p.minBottles, { min: 0, max: 100, fallback: current.pickup.minBottles ?? 0 })
 			},
 			delivery: {
-				...current.delivery,
+				...withoutOldZones(current.delivery),
 				enabled: d.enabled !== false,
 				day: days([d.day])[0] ?? current.delivery.day,
 				minBottles: number(d.minBottles, { min: 1, max: 100, fallback: current.delivery.minBottles }),

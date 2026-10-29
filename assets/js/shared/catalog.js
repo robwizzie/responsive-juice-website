@@ -253,13 +253,11 @@ export const DEFAULT_SETTINGS = {
 		minBottles: 7,
 		fee: 7,
 		freeOver: 50,
-		radiusMiles: 30,
-		// Same South Jersey area as before: within 30 miles of Blackwood or Woodbury
-		zones: [
-			{ label: 'Blackwood, NJ', lat: 39.8021, lng: -75.0649 },
-			{ label: 'Woodbury, NJ', lat: 39.8187, lng: -75.16145 }
-		],
-		areaLabel: 'South Jersey',
+		radiusMiles: 25,
+		// The radius is measured from the pickup spot. Saving a new pickup address in /admin looks it up
+		// again (US Census geocoder); `address` is the pickup line these coordinates were found for.
+		center: { address: '1903 Jackson Street, Philadelphia, PA 19145', lat: 39.924238, lng: -75.177996 },
+		areaLabel: 'Greater Philly',
 		// Monday orders close at the end of Thursday (Monday minus 4 days)
 		cutoffDays: 4
 	},

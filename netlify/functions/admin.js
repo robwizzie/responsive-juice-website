@@ -7,6 +7,7 @@ import { clientIp, error, json, publicSiteUrl, readJSON } from './lib/http.js';
 import { mailConfigured, ownerEmail, sendMail, testEmail } from './lib/mail.js';
 import { ORDER_STAGES, isTestOrder } from '../../assets/js/shared/order-status.js';
 import { stripeConfigured } from './lib/stripe.js';
+import { deliveryCenterFor } from './lib/geo.js';
 
 const IMAGE_TYPES = { 'image/webp': 'webp', 'image/png': 'png', 'image/jpeg': 'jpg' };
 const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
@@ -79,10 +80,13 @@ export default async (req, context) => {
 	if (action === 'settings' && req.method === 'PUT') {
 		const { value, error: problem } = cleanSettings((await readJSON(req)) || {}, await getSettings());
 		if (problem) return error(problem);
+		// The delivery radius follows the pickup spot, so a new pickup address moves it too
+		const { center, warning } = await deliveryCenterFor(value.pickup, value.delivery.center);
+		value.delivery.center = center;
 		await saveSettings(value);
 		await refreshSharePreviews();
 		// A new bottle price changes every juice that uses it
-		return json({ settings: value, juices: await getJuices(value) });
+		return json({ settings: value, juices: await getJuices(value), warning });
 	}
 
 	if (action === 'images' && req.method === 'POST') {

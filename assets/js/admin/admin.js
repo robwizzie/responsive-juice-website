@@ -947,7 +947,7 @@ function renderSettings() {
 				<div class="field"><label for="s-cutoff">Orders close <span class="optional">end of this day, for that week's delivery</span></label><select id="s-cutoff" name="cutoffDays">${[1, 2, 3, 4, 5, 6]
 					.map(n => `<option value="${n}" ${s.delivery.cutoffDays === n ? 'selected' : ''}>${weekdayName((s.delivery.day - n + 7) % 7)} (${n} day${n === 1 ? '' : 's'} before)</option>`)
 					.join('')}</select></div>
-				<p class="hint">Radius is measured from ${s.delivery.zones.map(z => e(z.label)).join(' and ')}. Set "Free delivery over" to 0 to always charge the fee.</p>
+				<p class="hint">Radius is measured from your pickup spot${s.delivery.center?.address ? `, ${e(s.delivery.center.address)}` : ''}. Change the pickup address above and the radius moves with it. Set "Free delivery over" to 0 to always charge the fee.</p>
 			</section>
 
 			<section class="card settings__card">
@@ -1063,7 +1063,7 @@ function renderSettings() {
 		state.settings = data.settings;
 		state.juices = data.juices;
 		settingsDirty = false;
-		toast("Settings saved. They're live on the site.");
+		toast(data.warning || "Settings saved. They're live on the site.", Boolean(data.warning));
 		renderSettings();
 	});
 

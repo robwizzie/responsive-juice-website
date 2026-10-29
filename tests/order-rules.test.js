@@ -81,7 +81,7 @@ test('pickup address and the Thursday cutoff show up in the page text', () => {
 	assert.match(pickupMapUrl(DEFAULT_SETTINGS.pickup), /query=1903%20Jackson%20Street%2C%20Philadelphia%2C%20PA%2019145$/);
 	assert.equal(
 		copyText(DEFAULT_COPY, 'faq.2.a', DEFAULT_SETTINGS),
-		'Every Monday, right to your door, anywhere within 30 miles of Blackwood and Woodbury. Get your order in by the end of Thursday for that Monday.'
+		'Every Monday, right to your door, anywhere within 25 miles of our Philadelphia pickup spot. Get your order in by the end of Thursday for that Monday.'
 	);
 	assert.match(copyText(DEFAULT_COPY, 'faq.1.a', DEFAULT_SETTINGS), /^At 1903 Jackson Street, Philadelphia, PA 19145\./);
 });

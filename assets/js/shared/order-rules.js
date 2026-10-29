@@ -128,9 +128,8 @@ export function milesBetween(a, b) {
 	return 3958.8 * 2 * Math.asin(Math.sqrt(h));
 }
 
-/** Distance from a point to the nearest delivery zone centre. */
-export function nearestZone(point, settings) {
-	return settings.delivery.zones
-		.map(zone => ({ zone, miles: milesBetween(point, zone) }))
-		.sort((a, b) => a.miles - b.miles)[0];
-}
+/** Distance in miles from a point to the delivery centre, which is the pickup spot. */
+export const milesFromCenter = (point, settings) => milesBetween(point, settings.delivery.center);
+
+/** Delivery addresses can be in any state the radius reaches from Philly. */
+export const DELIVERY_STATES = ['PA', 'NJ', 'DE'];

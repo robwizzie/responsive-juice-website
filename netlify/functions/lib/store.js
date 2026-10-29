@@ -34,7 +34,17 @@ export async function getJuices(settings) {
 export const saveJuices = juices => shop().setJSON('juices', juices);
 
 export async function getSettings() {
-	return mergeDeep(DEFAULT_SETTINGS, await shop().get('settings', { type: 'json' }));
+	return mergeDeep(DEFAULT_SETTINGS, upgradeSettings(await shop().get('settings', { type: 'json' })));
+}
+
+// Settings saved before delivery moved to Philly still carry the old South Jersey area name and
+// 30 mile radius (measured from Blackwood and Woodbury). Let those fall back to the new defaults.
+export function upgradeSettings(saved) {
+	if (!isObject(saved?.delivery) || !saved.delivery.zones) return saved;
+	const { zones, ...delivery } = saved.delivery;
+	if (delivery.areaLabel === 'South Jersey') delete delivery.areaLabel;
+	if (delivery.radiusMiles === 30) delete delivery.radiusMiles;
+	return { ...saved, delivery };
 }
 
 export const saveSettings = settings => shop().setJSON('settings', settings);

@@ -43,7 +43,7 @@ const typeTag = o => `<span class="order-type order-type--${o.type === 'delivery
 const stageTag = o => `<span class="order-stage order-stage--${orderStage(o)}">${stageLabel(orderStage(o), o.type)}</span>`;
 const testTag = o => (isTestOrder(o) ? '<span class="order-test" title="Paid with a Stripe test card. No real money.">Test</span>' : '');
 
-const addressLine = a => [a.line1, a.line2, `${a.city}, ${a.state || 'NJ'} ${a.zip}`].filter(Boolean).join(', ');
+const addressLine = a => [a.line1, a.line2, `${a.city}, ${a.state || 'PA'} ${a.zip}`].filter(Boolean).join(', ');
 const mapsLink = a => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addressLine(a))}`;
 
 // Real orders not made yet. Test orders never count toward what to press.
