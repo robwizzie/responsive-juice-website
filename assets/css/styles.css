@@ -3111,8 +3111,8 @@ html:not(.js) .cta-band .cta-band__scene {
 	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
 	align-items: center;
 	gap: 2rem;
-	min-height: clamp(400px, 38vw, 540px);
-	padding: clamp(2rem, 5vw, 4rem);
+	min-height: clamp(360px, 32vw, 460px);
+	padding: clamp(2rem, 4vw, 3.25rem) clamp(2rem, 5vw, 4rem);
 	border-radius: var(--radius-xl);
 	/* Each bottle throws a glow in its own color (set per juice from menu.js) */
 	background:
@@ -3173,8 +3173,8 @@ html:not(.js) .cta-band .cta-band__scene {
 	display: grid;
 	grid-template: 100% / 100%;
 	align-self: end;
-	height: clamp(300px, 40cqi, 500px);
-	margin-bottom: clamp(-4rem, -5vw, -2rem);
+	height: clamp(280px, 36cqi, 440px);
+	margin-bottom: clamp(-3.25rem, -4vw, -2rem);
 }
 
 .menu-card__layer {
@@ -6011,6 +6011,12 @@ a.contact-card:hover {
 	.section-head > div,
 	.section-lede {
 		margin-inline: auto;
+	}
+
+	/* In the stacked layout a 28rem flex-basis would become a height */
+	.section-head > div {
+		flex: none;
+		width: 100%;
 	}
 
 	.statement {
