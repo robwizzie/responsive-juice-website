@@ -8,17 +8,37 @@ const button = form.querySelector('button[type="submit"]');
 if (new URLSearchParams(location.search).get('topic') === 'wholesale') form.topic.value = 'Wholesale / cafe or studio';
 
 ready.then(({ juices, settings }) => {
-	// The bottle in the header is the first juice on the menu
-	const lead = juices.find(j => j.image);
-	const bottle = document.querySelector('.page-card__img');
-	if (lead && bottle && !bottle.src.endsWith(lead.imageSmall || lead.image)) {
-		bottle.src = lead.imageSmall || lead.image;
-		const splash = document.querySelector('.page-card__splash');
-		if (lead.splash && lead.splash !== 'none') splash.src = `/assets/img/splash/${lead.splash}-sm.webp`;
-		else splash.remove();
+	// The header bottle rotates through the menu, and the card's accent follows each juice's color
+	const lineup = juices.filter(j => j.image);
+	const card = document.querySelector('.page-card');
+	const stage = document.querySelector('.page-card__bottle');
+	const bottle = stage?.querySelector('.page-card__img');
+	const splash = stage?.querySelector('.page-card__splash');
+	const show = juice => {
+		bottle.src = juice.imageSmall || juice.image;
+		const hasSplash = juice.splash && juice.splash !== 'none';
+		if (hasSplash) splash.src = `/assets/img/splash/${juice.splash}-sm.webp`;
+		splash.hidden = !hasSplash;
+		if (/^#[0-9a-f]{6}$/i.test(juice.color || '')) card.style.setProperty('--accent', juice.color);
+	};
+	if (bottle && lineup.length) {
+		show(lineup[0]);
+		const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+		if (lineup.length > 1 && !still) {
+			// Warm the cache so each swap is instant
+			lineup.forEach(j => (new Image().src = j.imageSmall || j.image));
+			let i = 0;
+			setInterval(() => {
+				if (document.hidden) return;
+				i = (i + 1) % lineup.length;
+				stage.classList.add('is-swapping');
+				setTimeout(() => {
+					show(lineup[i]);
+					stage.classList.remove('is-swapping');
+				}, 450);
+			}, 3800);
+		}
 	}
-	// The header's accent follows that juice's color
-	if (/^#[0-9a-f]{6}$/i.test(lead?.color || '')) document.querySelector('.page-card').style.setProperty('--accent', lead.color);
 
 	const link = document.querySelector('[data-contact-email]');
 	link.href = `mailto:${settings.contactEmail}`;
