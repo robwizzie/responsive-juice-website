@@ -1,7 +1,7 @@
 import { test, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { DEFAULT_SETTINGS } from '../assets/js/shared/catalog.js';
-import { milesFromCenter, pickupAddress } from '../assets/js/shared/order-rules.js';
+import { milesFromCenter, milesOutside, pickupAddress } from '../assets/js/shared/order-rules.js';
 import { checkDeliveryAddress, deliveryCenterFor, formatAddress } from '../netlify/functions/lib/geo.js';
 import { cleanSettings } from '../netlify/functions/lib/validate.js';
 import { upgradeSettings, mergeDeep } from '../netlify/functions/lib/store.js';
@@ -51,6 +51,9 @@ test('delivery is 25 miles from the pickup spot on Jackson Street', () => {
 	assert.equal(miles('1000 N King St, Wilmington, DE 19801'), 23);
 	assert.equal(miles('125 W State St, Trenton, NJ 08608'), 30);
 	assert.equal(miles('640 E Wood St, Vineland, NJ 08360'), 31);
+	// Out-of-area messages say how far past the edge, not the distance from the pickup spot
+	assert.equal(milesOutside(31.3, DEFAULT_SETTINGS), 6);
+	assert.equal(milesOutside(25.2, DEFAULT_SETTINGS), 1);
 });
 
 test('real Philly, South Jersey and Delaware addresses land inside or outside the radius', async () => {
@@ -105,8 +108,9 @@ test('settings saved before the move drop the South Jersey towns and 30 mile rad
 	assert.deepEqual(saved.value.delivery.center, DEFAULT_SETTINGS.delivery.center);
 });
 
-test('no page text mentions Blackwood, Woodbury or South Jersey', () => {
+test('no page text mentions Blackwood, Woodbury or South Jersey, or ties delivery to the pickup spot', () => {
 	const all = Object.keys(DEFAULT_COPY).map(key => copyText(DEFAULT_COPY, key, DEFAULT_SETTINGS)).join('\n');
 	assert.doesNotMatch(all, /Blackwood|Woodbury|South Jersey/);
-	assert.equal(fillTokens('within {deliveryRadius} of {deliveryTowns}', DEFAULT_SETTINGS), 'within 25 miles of our Philadelphia pickup spot', 'old saved text still reads right');
+	assert.doesNotMatch(all, /pickup spot/);
+	assert.equal(fillTokens('within {deliveryRadius} of {deliveryTowns}', DEFAULT_SETTINGS), 'within 25 miles of Philadelphia', 'old saved text still reads right');
 });

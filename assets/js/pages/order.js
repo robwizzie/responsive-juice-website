@@ -4,7 +4,7 @@ import { addToCart, cartLines, getCart, setQty } from '../lib/cart.js';
 import { juiceLoader, money, moneyShort, pickupFaq, pickupSpot, shippingNote } from '../lib/components.js';
 import { icon } from '../lib/icons.js';
 import { isOrderable } from '../shared/catalog.js';
-import { DELIVERY_STATES, availableDates, cutoffDay, formatDate, formatMoney, priceOrder, weekdayName } from '../shared/order-rules.js';
+import { DELIVERY_STATES, availableDates, milesOutside, cutoffDay, formatDate, formatMoney, priceOrder, weekdayName } from '../shared/order-rules.js';
 
 const root = document.querySelector('[data-order]');
 const DETAILS_KEY = 'siponpressed-details';
@@ -198,7 +198,7 @@ function renderTypeHint() {
 	const { delivery, pickup } = settings;
 	if (state.type === 'delivery') {
 		const day = weekdayName(delivery.day);
-		hint.innerHTML = `<p>${icon('info')}<span>Delivered to your door every ${day}, within ${delivery.radiusMiles} miles of our pickup spot in ${e(pickup.area.split(',')[0])}. <strong>Order by the end of ${weekdayName(cutoffDay(delivery))}</strong> for that ${day}. ${
+		hint.innerHTML = `<p>${icon('info')}<span>Delivered to your door every ${day}, within ${delivery.radiusMiles} miles of ${e(pickup.area.split(',')[0])}. <strong>Order by the end of ${weekdayName(cutoffDay(delivery))}</strong> for that ${day}. ${
 			delivery.freeOver > 0 ? `${moneyShort(delivery.fee)} delivery, free on orders over ${moneyShort(delivery.freeOver)}.` : `${moneyShort(delivery.fee)} delivery.`
 		}</span></p>`;
 	} else {
@@ -229,6 +229,11 @@ async function checkZone() {
 	renderZone();
 }
 
+const outsideText = zone => {
+	const miles = milesOutside(zone?.miles || 0, settings);
+	return `${miles} mile${miles === 1 ? '' : 's'}`;
+};
+
 function renderZone() {
 	const el = document.querySelector('[data-zone-result]');
 	if (!el) return;
@@ -236,8 +241,8 @@ function renderZone() {
 	const messages = {
 		checking: ['', 'Checking…'],
 		incomplete: ['is-warn', 'Add your street and 5-digit ZIP.'],
-		in: ['is-ok', `${icon('check')} You're in the delivery area${zone?.miles != null ? ` (${zone.miles} mi from ${e(zone.zone)})` : ''}.`],
-		out: ['is-bad', `Sorry, that's about ${Math.round(zone?.miles || 0)} miles out. Delivery covers ${settings.delivery.radiusMiles} miles from our pickup spot. Pickup is always an option.`],
+		in: ['is-ok', `${icon('check')} You're in the delivery area.`],
+		out: ['is-bad', `Sorry, you're about ${outsideText(zone)} outside our delivery area. Pickup is always an option.`],
 		unknown: ['is-warn', "We couldn't find that address. Double-check the street and ZIP."],
 		unverified: ['is-warn', "We couldn't check right now, but you can still order. Hunter will confirm."]
 	};
