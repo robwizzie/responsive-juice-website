@@ -20,7 +20,7 @@ const MESSAGE_KEY = /^\d{4}-\d{2}-\d{2}T[\d:.]+Z\/[\w-]{1,64}$/;
 // new link previews right away. Only works on Netlify, so a local save just skips it.
 async function refreshSharePreviews() {
 	try {
-		await purgeCache({ tags: ['og', 'pages'] });
+		await purgeCache({ tags: ['og', 'pages', 'catalog'] });
 	} catch (err) {
 		if (process.env.NETLIFY) console.warn('Could not refresh share previews', err.message);
 	}

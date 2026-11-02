@@ -56,6 +56,10 @@ test('admin requires sign in and the admin header', async () => {
 	const menu = await (await fns.catalog(req('/api/catalog'))).json();
 	assert.deepEqual(menu.juices.map(j => j.slug), ['simply-orange', 'simply-green']);
 	assert.equal(menu.settings.pickup.details, undefined, 'private pickup details stay out of the public catalog');
+	// Cached at the CDN under a tag the admin clears on every save
+	const res = await fns.catalog(req('/api/catalog'));
+	assert.equal(res.headers.get('Netlify-Cache-Tag'), 'catalog');
+	assert.match(res.headers.get('Netlify-CDN-Cache-Control'), /max-age=300/);
 
 	// Invalid input is refused
 	const broken = await fns.admin(req('/api/admin/juices', { method: 'PUT', body: [{ name: '' }], headers: { cookie, 'x-admin-request': '1' } }), ctx);
