@@ -106,6 +106,10 @@ const TABS = [
 	{ id: 'messages', label: 'Messages', icon: 'mail' },
 	{ id: 'settings', label: 'Settings', icon: 'gear' }
 ];
+// On phones the everyday sections sit in a tab bar along the bottom; the rest live under More
+const DOCK = ['orders', 'menu', 'stats', 'messages'];
+
+const tabLink = (t, className) => `<a href="#${t.id}" class="${className}" data-tab="${t.id}">${icon(t.icon)}<span>${t.label}</span><span class="tab-count" data-count="${t.id}" hidden></span></a>`;
 
 function renderShell() {
 	app.innerHTML = `
@@ -114,7 +118,7 @@ function renderShell() {
 				<a href="/" class="wordmark" aria-label="SiponPressed home">${wordmark()}</a>
 				<span class="admin-bar__badge">Admin</span>
 				<nav class="admin-tabs" aria-label="Admin sections">
-					${TABS.map(t => `<a href="#${t.id}" class="admin-tab" data-tab="${t.id}">${icon(t.icon)}<span>${t.label}</span><span class="tab-count" data-count="${t.id}" hidden></span></a>`).join('')}
+					${TABS.map(t => tabLink(t, 'admin-tab')).join('')}
 				</nav>
 				<div class="admin-bar__actions">
 					<a href="/" class="btn btn--outline btn--sm" target="_blank" rel="noopener">${icon('eye')} View site</a>
@@ -123,11 +127,38 @@ function renderShell() {
 			</div>
 		</header>
 		<div class="admin-status" data-status></div>
-		<main class="admin-main" id="admin-main"></main>`;
+		<main class="admin-main" id="admin-main"></main>
+		<nav class="admin-dock" aria-label="Admin sections">
+			${TABS.filter(t => DOCK.includes(t.id))
+				.sort((a, b) => DOCK.indexOf(a.id) - DOCK.indexOf(b.id))
+				.map(t => tabLink(t, 'admin-tab admin-dock__tab'))
+				.join('')}
+			<button type="button" class="admin-tab admin-dock__tab" data-more aria-haspopup="dialog">${icon('dots')}<span>More</span></button>
+		</nav>
+		<dialog class="admin-more" aria-label="More sections">
+			<div class="admin-more__grip" aria-hidden="true"></div>
+			<div class="admin-more__links">
+				${TABS.filter(t => !DOCK.includes(t.id))
+					.map(t => tabLink(t, 'admin-tab admin-more__tab'))
+					.join('')}
+			</div>
+			<div class="admin-more__foot">
+				<a href="/" class="btn btn--outline" target="_blank" rel="noopener">${icon('eye')} View site</a>
+				<button type="button" class="btn btn--ghost" data-logout>${icon('logout')} Sign out</button>
+			</div>
+		</dialog>`;
 
-	app.querySelector('[data-logout]').addEventListener('click', async () => {
-		await api('logout', { method: 'POST' }).catch(() => {});
-		renderLogin();
+	app.querySelectorAll('[data-logout]').forEach(btn =>
+		btn.addEventListener('click', async () => {
+			await api('logout', { method: 'POST' }).catch(() => {});
+			renderLogin();
+		})
+	);
+	const more = app.querySelector('.admin-more');
+	app.querySelector('[data-more]').addEventListener('click', () => more.showModal());
+	// Tap outside the sheet (on the backdrop) or pick a section to close it
+	more.addEventListener('click', event => {
+		if (event.target === more || event.target.closest('a')) more.close();
 	});
 	renderStatus();
 }
@@ -156,11 +187,11 @@ function renderStatus() {
 		box.innerHTML = '';
 	};
 	box.innerHTML = missing.length && !hidden
-		? `<div class="admin-status__inner">${icon('info')}<div class="admin-status__text">
-			<p><strong>A few things still need setting up</strong> (the site works, but these are switched off):</p>
+		? `<div class="admin-status__inner">${icon('info')}<details class="admin-status__text"${matchMedia('(max-width: 760px)').matches ? '' : ' open'}>
+			<summary><strong>A few things still need setting up</strong><span class="admin-status__more"> (the site works, but these are switched off):</span></summary>
 			<ul>${missing.map(([text]) => `<li>${text}</li>`).join('')}</ul>
 			<details class="admin-status__tech"><summary>Details for whoever set up the site</summary><p>Add these in Netlify → Site configuration → Environment variables, then redeploy: ${missing.map(([, vars]) => `<code>${vars}</code>`).join(', ')}. The README has the steps.</p></details>
-		</div><button type="button" class="btn btn--ghost btn--sm admin-status__hide" data-status-hide>Got it</button></div>`
+		</details><button type="button" class="btn btn--ghost btn--sm admin-status__hide" data-status-hide>Got it</button></div>`
 		: '';
 }
 
@@ -179,7 +210,14 @@ function showTab() {
 	if (state.tab === 'pages' && next !== 'pages') leavePages();
 	state.tab = next;
 	document.body.dataset.tab = next;
-	document.querySelectorAll('.admin-tab').forEach(tab => tab.classList.toggle('is-active', tab.dataset.tab === state.tab));
+	document.querySelectorAll('.admin-tab[data-tab]').forEach(tab => {
+		tab.classList.toggle('is-active', tab.dataset.tab === state.tab);
+		if (tab.dataset.tab === state.tab) tab.setAttribute('aria-current', 'page');
+		else tab.removeAttribute('aria-current');
+	});
+	// More lights up while one of its sections is open
+	document.querySelector('[data-more]')?.classList.toggle('is-active', !DOCK.includes(state.tab));
+	window.scrollTo(0, 0);
 	({ menu: renderMenu, ingredients: () => renderIngredients(state), pages: () => renderPages(state), orders: () => renderOrders(state), stats: () => renderStats(state), messages: () => renderMessages(state), settings: renderSettings })[
 		state.tab
 	]();
@@ -1042,11 +1080,12 @@ export async function updateCounts({ reload = false } = {}) {
 	}
 	const counts = { orders: state.orders?.filter(isOpen).length || 0, messages: state.messages?.filter(m => !m.read && !m.archived).length || 0 };
 	Object.entries(counts).forEach(([tab, n]) => {
-		const badge = document.querySelector(`[data-count="${tab}"]`);
-		if (!badge) return;
-		badge.hidden = !n;
-		badge.textContent = n > 99 ? '99+' : n;
-		badge.closest('.admin-tab').setAttribute('aria-label', `${TABS.find(t => t.id === tab).label}${n ? `, ${n} ${tab === 'orders' ? 'to do' : 'new'}` : ''}`);
+		// The same count shows in the top bar and the phone tab bar
+		document.querySelectorAll(`[data-count="${tab}"]`).forEach(badge => {
+			badge.hidden = !n;
+			badge.textContent = n > 99 ? '99+' : n;
+			badge.closest('.admin-tab').setAttribute('aria-label', `${TABS.find(t => t.id === tab).label}${n ? `, ${n} ${tab === 'orders' ? 'to do' : 'new'}` : ''}`);
+		});
 	});
 	const total = counts.orders + counts.messages;
 	document.title = `${total ? `(${total}) ` : ''}Admin | SiponPressed`;
