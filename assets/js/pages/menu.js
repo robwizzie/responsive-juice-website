@@ -1,5 +1,5 @@
 import { ready } from '../site.js';
-import { juiceStatus } from '../shared/catalog.js';
+import { featuredJuices, juiceStatus, splashUrl } from '../shared/catalog.js';
 import { escapeHtml as e } from '../lib/catalog.js';
 import { bottleImage, juiceCard, shippingNote, waysToOrder } from '../lib/components.js';
 
@@ -44,10 +44,10 @@ ready.then(({ juices, settings, copy }) => {
 	document.querySelector('[data-menu]').innerHTML = juices.map((juice, i) => juiceCard(juice, { eager: i < 3 })).join('');
 	// Header lineup: splashes on their own layer behind, so none paints over a neighbouring bottle
 	const fan = document.querySelector('[data-fan]');
-	const shown = juices.filter(j => j.image).slice(0, 3);
+	const shown = featuredJuices(juices, settings, { needsPhoto: true });
 	const mid = (shown.length - 1) / 2;
 	const slot = (j, i, back) => {
-		const splash = back && j.splash && j.splash !== 'none' ? `<img src="/assets/img/splash/${j.splash}.webp" alt="" class="menu-card__splash" decoding="async">` : '';
+		const splash = back && splashUrl(j) ? `<img src="${splashUrl(j)}" alt="" class="menu-card__splash" decoding="async">` : '';
 		const tag = back ? 'span' : 'a';
 		const href = back ? '' : ` href="/juices/${j.slug}" tabindex="-1"`;
 		return `<${tag}${href} class="menu-card__bottle${i === mid ? ' is-mid' : ''}" style="--i: ${i}; --r: ${(i - mid) * 6}deg">${splash}<img src="${j.image}" alt="" class="menu-card__img${back ? ' is-ghost' : ''}" decoding="async"></${tag}>`;

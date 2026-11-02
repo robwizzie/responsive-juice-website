@@ -41,6 +41,8 @@ export function cleanJuice(input) {
 	return {
 		value: {
 			slug,
+			// Page addresses this juice used before, so old orders and links still find it
+			formerSlugs: [...new Set((Array.isArray(input.formerSlugs) ? input.formerSlugs : []).map(old => slugify(String(old))))].filter(old => old && old !== slug).slice(0, 10),
 			name,
 			tagline: text(input.tagline, 80),
 			description: text(input.description, 600),
@@ -49,6 +51,8 @@ export function cleanJuice(input) {
 			customPrice,
 			color: color(input.color),
 			splash: SPLASH_STYLES.includes(input.splash) ? input.splash : 'none',
+			// Empty means the splash keeps its own colors
+			splashColor: /^#[0-9a-f]{6}$/i.test(input.splashColor || '') ? input.splashColor.toLowerCase() : '',
 			image,
 			imageSmall: imagePath(input.imageSmall) || image,
 			backdrop: BACKDROPS[input.backdrop] ? input.backdrop : imagePath(input.backdrop) || DEFAULT_BACKDROP,
@@ -118,6 +122,8 @@ export function cleanSettings(input, current) {
 			orderingEnabled: input.orderingEnabled !== false,
 			bottlePrice: Math.round(number(input.bottlePrice, { min: 0.5, max: 500, fallback: current.bottlePrice }) * 100) / 100,
 			announcement: text(input.announcement, 160),
+			// Juices Hunter picked for the homepage hero and other few-bottle spots (slugs, in order)
+			featured: Array.isArray(input.featured) ? [...new Set(input.featured.map(slug => slugify(String(slug))).filter(Boolean))].slice(0, 3) : current.featured || [],
 			contactEmail: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.contactEmail || '') ? text(input.contactEmail, 120) : current.contactEmail,
 			instagram: text(input.instagram, 40).replace(/^@/, '') || current.instagram,
 			pickup: {

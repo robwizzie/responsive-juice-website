@@ -1,5 +1,6 @@
 import { ready, t } from '../site.js';
 import { escapeHtml as e } from '../lib/catalog.js';
+import { featuredJuices } from '../shared/catalog.js';
 import { icon } from '../lib/icons.js';
 
 /** The hero entrance: plays once the portrait photo is decoded, so nothing pops in halfway through. */
@@ -48,7 +49,7 @@ ready.then(({ juices, settings }) => {
 	const scene = document.querySelector('.cta-band--scene picture');
 	if (wholesale && scene) scene.outerHTML = `<img src="${e(wholesale)}" alt="" class="${scene.querySelector('img').className}" data-edit="about.wholesale.photo" loading="lazy" decoding="async">`;
 
-	const lineup = photographed.slice(0, 3);
+	const lineup = featuredJuices(juices, settings, { needsPhoto: true });
 	document.querySelector('[data-about-bottles]').innerHTML = lineup
 		.map((juice, i) => `<a href="/juices/${juice.slug}" tabindex="-1" class="${i === (lineup.length - 1) / 2 ? 'is-mid' : ''}" style="--i: ${i}"><img src="${juice.image}" alt="" loading="lazy" decoding="async"></a>`)
 		.join('');

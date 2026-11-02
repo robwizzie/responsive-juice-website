@@ -25,3 +25,19 @@ export function nextStep(order) {
 	if (stage === 'ready') return { stage: 'done', label: order.type === 'delivery' ? 'Mark delivered' : 'Mark picked up' };
 	return null;
 }
+
+/** The juice an order line was for, even if Hunter has since renamed it or changed its page address. */
+export const juiceForLine = (line, juices = []) => juices.find(j => j.slug === line.slug) || juices.find(j => j.formerSlugs?.includes(line.slug)) || null;
+
+/**
+ * An order's lines named the way the menu names them today, so renaming a juice (Simply Red to
+ * Simply Blue) updates past orders too. `orderedAs` keeps the name at checkout when it differs.
+ * Lines for juices that no longer exist keep their saved name.
+ */
+export function currentLines(order, juices) {
+	return order.lines.map(line => {
+		const juice = juiceForLine(line, juices);
+		if (!juice) return line;
+		return { ...line, slug: juice.slug, name: juice.name, ...(juice.name !== line.name ? { orderedAs: line.name } : {}) };
+	});
+}

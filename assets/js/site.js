@@ -5,7 +5,7 @@
 import { loadCatalog, escapeHtml as e } from './lib/catalog.js';
 import { addToCart, cartCount, cartLines, getCart, setQty } from './lib/cart.js';
 import { bottleImage, flashAdded, money, moneyShort } from './lib/components.js';
-import { ingredientIcon, juiceStatus } from './shared/catalog.js';
+import { featuredJuices, ingredientIcon, juiceStatus } from './shared/catalog.js';
 import { DEFAULT_COPY, copyText } from './shared/content.js';
 import { cutoffDay, pickupMapUrl, weekdayName } from './shared/order-rules.js';
 import { wordmark } from './lib/brand.js';
@@ -174,7 +174,7 @@ function renderDrawer() {
 	const lines = cartLines(juices);
 
 	if (lines.length === 0) {
-		body.innerHTML = `<div class="drawer__empty"><div class="drawer__empty-bottles" aria-hidden="true">${fan(juices)}</div><p>Your cart is empty. Let's fix that.</p><a href="/juices" class="btn btn--ink">See the juices</a></div>`;
+		body.innerHTML = `<div class="drawer__empty"><div class="drawer__empty-bottles" aria-hidden="true">${fan(featuredJuices(juices, settings, { needsPhoto: true }))}</div><p>Your cart is empty. Let's fix that.</p><a href="/juices" class="btn btn--ink">See the juices</a></div>`;
 		foot.innerHTML = '';
 		return;
 	}

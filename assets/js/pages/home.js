@@ -2,13 +2,13 @@ import { ready, t } from '../site.js';
 import { flavorCarousel } from '../lib/carousel.js';
 import { bottleImage, garnishFor, statusStamp, shippingNote, waysToOrder } from '../lib/components.js';
 import { escapeHtml as e } from '../lib/catalog.js';
-import { juiceStatus } from '../shared/catalog.js';
+import { featuredJuices, juiceStatus, splashUrl } from '../shared/catalog.js';
 
 /** One bottle in the hero, standing over its splash with two ingredients floating by. */
 function heroBottle(juice, i) {
 	const [fruitA, fruitB] = garnishFor(juice);
 	const fruit = (src, cls) => (src ? `<span class="hero__fruit ${cls}"><img src="${src}" alt="" decoding="async"></span>` : '');
-	const splash = juice.splash && juice.splash !== 'none' ? `<img src="/assets/img/splash/${juice.splash}.webp" alt="" class="hero__splash" decoding="async">` : '';
+	const splash = splashUrl(juice) ? `<img src="${splashUrl(juice)}" alt="" class="hero__splash" decoding="async">` : '';
 	return `
 		<a href="/juices/${juice.slug}" class="hero__bottle is-${juiceStatus(juice)}" style="--c: ${juice.color}; --i: ${i}" aria-label="${e(juice.name)}">
 			${splash}
@@ -19,13 +19,22 @@ function heroBottle(juice, i) {
 		</a>`;
 }
 
-/** Plays the hero entrance once the bottle photos are ready, on every load. */
+/** Plays the hero entrance (the words straight away; the bottles once they're live, see showBottles). */
 function playHero(hero) {
 	hero.classList.remove('is-in');
-	const imgs = [...hero.querySelectorAll('.hero__img')].filter(img => img.tagName === 'IMG');
-	const ready = imgs.map(img => (img.decode ? img.decode().catch(() => {}) : Promise.resolve()));
+	requestAnimationFrame(() => requestAnimationFrame(() => hero.classList.add('is-in')));
+}
+
+/**
+ * The page ships with the launch bottles baked in so the layout is ready, but they stay hidden
+ * until Hunter's live menu has arrived and its photos are decoded. That way a renamed or
+ * replaced juice never flashes up first and then swaps.
+ */
+function showBottles(trio) {
+	const imgs = [...trio.querySelectorAll('.hero__img')].filter(img => img.tagName === 'IMG');
+	const decoded = Promise.all(imgs.map(img => (img.decode ? img.decode().catch(() => {}) : Promise.resolve())));
 	const timeout = new Promise(resolve => setTimeout(resolve, 1500));
-	Promise.race([Promise.all(ready), timeout]).then(() => requestAnimationFrame(() => hero.classList.add('is-in')));
+	Promise.race([decoded, timeout]).then(() => requestAnimationFrame(() => trio.classList.add('is-live')));
 }
 
 const hero = document.querySelector('[data-hero]');
@@ -36,14 +45,12 @@ window.addEventListener('pageshow', event => event.persisted && playHero(hero));
 ready.then(({ juices, settings, copy }) => {
 	// The hero ships with the three launch bottles; rebuild it only if Hunter's menu differs
 	const trio = document.querySelector('[data-hero-trio]');
-	const shown = juices.slice(0, 3);
+	const shown = featuredJuices(juices, settings);
 	const current = [...trio.querySelectorAll('.hero__bottle')].map(a => a.getAttribute('href')).join();
 	const wanted = shown.map(j => `/juices/${j.slug}`).join();
 	const changed = shown.some((j, i) => juiceStatus(j) !== 'available' || !trio.querySelectorAll('.hero__img')[i]?.src?.endsWith(j.image));
-	if (shown.length && (current !== wanted || changed)) {
-		trio.innerHTML = shown.map(heroBottle).join('');
-		playHero(hero);
-	}
+	if (shown.length && (current !== wanted || changed)) trio.innerHTML = shown.map(heroBottle).join('');
+	showBottles(trio);
 
 	flavorCarousel(document.querySelector('[data-flavors]'), juices);
 	const ways = document.querySelector('[data-ways]');
@@ -62,12 +69,12 @@ ready.then(({ juices, settings, copy }) => {
 		if (photographed[0] && !story.src.endsWith(photographed[0].image)) story.src = photographed[0].image;
 	}
 
-	const fan = juices.filter(j => j.image).slice(0, 3);
+	const fan = featuredJuices(juices, settings, { needsPhoto: true });
 	// Wholesale band: the bottles rise up out of the bottom edge with their splashes bursting behind.
 	// Splashes sit on their own layer (each beside an invisible copy of its bottle for sizing) so no
 	// splash ever paints over a neighbouring bottle.
 	const ctaBottle = (j, i, splash) => {
-		const splashImg = splash && j.splash && j.splash !== 'none' ? `<img src="/assets/img/splash/${j.splash}.webp" alt="" class="cta-band__splash" loading="lazy" decoding="async">` : '';
+		const splashImg = splash && splashUrl(j) ? `<img src="${splashUrl(j)}" alt="" class="cta-band__splash" loading="lazy" decoding="async">` : '';
 		return `<span class="cta-band__bottle" style="--i: ${i}; --r: ${(i - (fan.length - 1) / 2) * 7}deg">${splashImg}<img src="${j.image}" alt="" class="cta-band__img${splash ? ' is-ghost' : ''}" loading="lazy" decoding="async"></span>`;
 	};
 	const ctaBottles = document.querySelector('[data-cta-bottles]');

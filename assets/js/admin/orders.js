@@ -6,7 +6,7 @@ import { icon } from '../lib/icons.js';
 import { escapeHtml as e } from '../lib/catalog.js';
 import { juiceLoader } from '../lib/components.js';
 import { formatDate, formatMoney, todayISO } from '../shared/order-rules.js';
-import { isOpen, isTestOrder, nextStep, orderStage, stageLabel } from '../shared/order-status.js';
+import { currentLines, isOpen, isTestOrder, nextStep, orderStage, stageLabel } from '../shared/order-status.js';
 import { api, guarded, toast, updateCounts } from './admin.js';
 
 let state = null;
@@ -20,6 +20,9 @@ const FILTERS = [
 
 const keyOf = order => `${order.date}/${order.id}`;
 const bottles = order => order.lines.reduce((n, l) => n + l.qty, 0);
+// Lines under each juice's current name (see currentLines), with the old name noted when it changed
+const lines = order => currentLines(order, state.juices);
+const lineName = l => `${e(l.name)}${l.orderedAs ? ` <span class="was">was ${e(l.orderedAs)}</span>` : ''}`;
 const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
 const shortDate = iso => formatDate(iso, { weekday: 'short', month: 'short', day: 'numeric' });
 
@@ -31,6 +34,7 @@ function dayLabel(date, today) {
 	const days = Math.round((new Date(`${date}T12:00:00Z`) - new Date(`${today}T12:00:00Z`)) / 86400000);
 	if (days === 0) return 'Today';
 	if (days === 1) return 'Tomorrow';
+	if (days === -1) return 'Yesterday';
 	return days > 0 ? `In ${days} days` : `${-days} days ago`;
 }
 
@@ -54,7 +58,7 @@ function pressList(orders) {
 	const counts = new Map();
 	orders
 		.filter(toMake)
-		.forEach(o => o.lines.forEach(l => counts.set(l.slug, { name: l.name, qty: (counts.get(l.slug)?.qty || 0) + l.qty })));
+		.forEach(o => lines(o).forEach(l => counts.set(l.slug, { name: l.name, qty: (counts.get(l.slug)?.qty || 0) + l.qty })));
 	return [...counts].map(([slug, { name, qty }]) => ({ slug, name, qty })).sort((a, b) => b.qty - a.qty);
 }
 
@@ -78,7 +82,7 @@ function orderCard(o) {
 			<div class="order-card__tags">${typeTag(o)}${stageTag(o)}${testTag(o)}<strong class="order-card__total">${formatMoney(o.total)}</strong></div>
 			<h3 class="order-card__name">${e(o.customer.name)}</h3>
 			<p class="order-card__meta">${plural(bottles(o), 'bottle')}${o.address ? ` &middot; ${e(o.address.city)}` : ''}</p>
-			<ul class="order-card__items">${o.lines.map(l => `<li style="--c:${e(juiceColor(l.slug))}"><strong>${l.qty}</strong> ${e(l.name)}</li>`).join('')}</ul>
+			<ul class="order-card__items">${lines(o).map(l => `<li style="--c:${e(juiceColor(l.slug))}"><strong>${l.qty}</strong> <span>${lineName(l)}</span></li>`).join('')}</ul>
 			${o.notes ? `<p class="order-card__notes">${icon('info')}<span>${e(o.notes)}</span></p>` : ''}
 			<div class="order-card__actions">
 				${step ? `<button type="button" class="btn btn--ink btn--sm order-card__next" data-stage="${step.stage}">${step.stage === 'done' ? icon('check') : ''}${step.label}</button>` : ''}
@@ -211,7 +215,9 @@ function openDetails(key) {
 				<section class="sheet__section">
 					<h3>Bottles</h3>
 					<table class="sheet__items">
-						${o.lines.map(l => `<tr><td><span class="dot" style="--c:${e(juiceColor(l.slug))}"></span>${l.qty} &times; ${e(l.name)}</td><td>${formatMoney(l.amount)}</td></tr>`).join('')}
+						${lines(o)
+							.map(l => `<tr><td><span class="dot" style="--c:${e(juiceColor(l.slug))}"></span>${l.qty} &times; ${lineName(l)}</td><td>${formatMoney(l.amount)}</td></tr>`)
+							.join('')}
 						${o.type === 'delivery' ? `<tr class="is-muted"><td>Delivery</td><td>${o.deliveryFee ? formatMoney(o.deliveryFee) : 'Free'}</td></tr>` : ''}
 						<tr class="is-total"><td>Paid</td><td>${formatMoney(o.total)}</td></tr>
 					</table>

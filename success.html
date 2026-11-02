@@ -35,6 +35,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,100..900;1,62..125,100..900&display=swap">
     <link rel="stylesheet" href="/assets/css/styles.css">
+    <!-- Start loading the live menu right away; pages wait for it so nothing flashes stale juice -->
+    <link rel="preload" href="/api/catalog" as="fetch" crossorigin>
     <script>document.documentElement.classList.add('js');if('scrollRestoration' in history&&!location.hash)history.scrollRestoration='manual'</script>
     <script type="module" src="/assets/js/pages/success.js"></script>
 </head>

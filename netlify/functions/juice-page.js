@@ -19,7 +19,7 @@ const META = /<!-- meta:start[^>]*-->[\s\S]*?<!-- meta:end -->/;
 
 // A short hash so a changed juice gets a new share-image address (link previews cache by URL)
 async function versionOf(juice) {
-	const key = JSON.stringify([juice.name, juice.tagline, juice.price, juice.color, juice.image, juice.splash, juiceStatus(juice), juice.statusNote]);
+	const key = JSON.stringify([juice.name, juice.tagline, juice.price, juice.color, juice.image, juice.splash, juice.splashColor, juiceStatus(juice), juice.statusNote]);
 	const digest = await crypto.subtle.digest('SHA-1', new TextEncoder().encode(key));
 	return Buffer.from(digest).toString('hex').slice(0, 8);
 }
@@ -43,6 +43,9 @@ export default async (req, context) => {
 	const [page, juices] = await Promise.all([fetch(new URL('/juice.html', origin)).then(res => res.text()), getJuices()]);
 	const juice = juices.find(item => item.slug === slug && item.active);
 	if (!juice) {
+		// A juice whose page address Hunter changed: send old links to its new page
+		const moved = juices.find(item => item.active && item.formerSlugs?.includes(slug));
+		if (moved) return new Response(null, { status: 301, headers: { Location: `/juices/${moved.slug}` } });
 		// The page shows its own "not found" message
 		return new Response(page, { status: 404, headers: { 'Content-Type': 'text/html; charset=utf-8' } });
 	}
