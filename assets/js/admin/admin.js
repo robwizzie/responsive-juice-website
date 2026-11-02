@@ -6,7 +6,7 @@ import { icon } from '../lib/icons.js';
 import { wordmark } from '../lib/brand.js';
 import { escapeHtml as e } from '../lib/catalog.js';
 import { bottleImage, juiceCard, juiceLoader, money } from '../lib/components.js';
-import { BACKDROPS, DEFAULT_BACKDROP, JUICE_STATUSES, SPLASH_STYLES, ingredientKey, ingredientPhoto, juiceStatus, priceJuice, slugify } from '../shared/catalog.js';
+import { BACKDROPS, DEFAULT_BACKDROP, JUICE_STATUSES, SPLASH_STYLES, featuredJuices, ingredientKey, ingredientPhoto, juiceStatus, priceJuice, slugify, splashUrl } from '../shared/catalog.js';
 import { weekdayName } from '../shared/order-rules.js';
 import { isOpen } from '../shared/order-status.js';
 import { prepareBottle, preparePhoto } from './image.js';
@@ -14,6 +14,7 @@ import { leavePages, renderPages, pagesDirty } from './pages.js';
 import { allIngredients, renderIngredients } from './ingredients.js';
 import { mountPreview, previewMarkup } from './preview.js';
 import { refreshOrders, renderOrders } from './orders.js';
+import { refreshStats, renderStats } from './stats.js';
 import { refreshMessages, renderMessages } from './messages.js';
 
 const app = document.getElementById('admin');
@@ -101,6 +102,7 @@ const TABS = [
 	{ id: 'ingredients', label: 'Ingredients', icon: 'orange' },
 	{ id: 'pages', label: 'Pages', icon: 'edit' },
 	{ id: 'orders', label: 'Orders', icon: 'bag' },
+	{ id: 'stats', label: 'Stats', icon: 'chart' },
 	{ id: 'messages', label: 'Messages', icon: 'mail' },
 	{ id: 'settings', label: 'Settings', icon: 'gear' }
 ];
@@ -178,7 +180,99 @@ function showTab() {
 	state.tab = next;
 	document.body.dataset.tab = next;
 	document.querySelectorAll('.admin-tab').forEach(tab => tab.classList.toggle('is-active', tab.dataset.tab === state.tab));
-	({ menu: renderMenu, ingredients: () => renderIngredients(state), pages: () => renderPages(state), orders: () => renderOrders(state), messages: () => renderMessages(state), settings: renderSettings })[state.tab]();
+	({ menu: renderMenu, ingredients: () => renderIngredients(state), pages: () => renderPages(state), orders: () => renderOrders(state), stats: () => renderStats(state), messages: () => renderMessages(state), settings: renderSettings })[
+		state.tab
+	]();
+}
+
+/*=============== FEATURED ===============*/
+// The three bottles on the homepage hero, the top of the Juices page, the footer and share images
+const featuredArt = juice => `
+	<span class="featured-art" style="--c: ${juice.color}">
+		${splashUrl(juice, { small: true }) ? `<img src="${splashUrl(juice, { small: true })}" alt="" class="featured-art__splash">` : ''}
+		${bottleImage(juice, { small: true, className: 'featured-art__bottle' })}
+	</span>`;
+
+function featuredBlock() {
+	const picks = featuredJuices(state.juices, state.settings);
+	const custom = (state.settings.featured || []).length > 0;
+	const slot = i => {
+		const juice = picks[i];
+		return `<li><button type="button" class="featured-slot" data-slot="${i}" ${juice ? `style="--c: ${juice.color}"` : ''} aria-label="Spot ${i + 1}: ${juice ? e(juice.name) : 'empty'}. Choose a juice">
+			<span class="featured-slot__n">${i + 1}</span>
+			${juice ? featuredArt(juice) : `<span class="featured-art featured-art--empty">${icon('plus')}</span>`}
+			<span class="featured-slot__name">${juice ? e(juice.name) : 'Pick a juice'}</span>
+			<span class="featured-slot__swap">${icon('swap')} Swap</span>
+		</button></li>`;
+	};
+	return `
+		<section class="featured">
+			<div class="featured__head">
+				<div>
+					<h2 class="featured__title">${icon('sparkle')} Front and center</h2>
+					<p class="hint">The three bottles on the homepage, at the top of the Juices page and in link previews. Tap one to swap in a different juice.</p>
+				</div>
+				${custom ? '<button type="button" class="btn btn--ghost btn--sm" data-featured-reset>Use menu order</button>' : ''}
+			</div>
+			<ol class="featured__slots">${[0, 1, 2].map(slot).join('')}</ol>
+		</section>`;
+}
+
+async function saveFeatured(featured, message) {
+	const data = await guarded(() => api('settings', { method: 'PUT', json: { ...state.settings, featured } })).catch(() => null);
+	if (!data) return;
+	state.settings = data.settings;
+	state.juices = data.juices;
+	toast(message);
+	renderMenu();
+}
+
+/** Opens a picker of every juice on the site for one featured spot. Picking one already featured swaps the two. */
+function pickFeatured(slot) {
+	const current = featuredJuices(state.juices, state.settings).map(j => j.slug);
+	const options = state.juices.filter(j => j.active !== false);
+	document.body.insertAdjacentHTML(
+		'beforeend',
+		`<dialog class="featured-picker" aria-labelledby="featured-picker-title">
+			<div class="featured-picker__head">
+				<h2 id="featured-picker-title">Spot ${slot + 1}</h2>
+				<button type="button" class="icon-btn" data-close aria-label="Close">${icon('close')}</button>
+			</div>
+			<p class="hint">Pick the juice to show here.</p>
+			<ul class="featured-picker__list">
+				${options
+					.map(j => {
+						const at = current.indexOf(j.slug);
+						return `<li><button type="button" class="featured-option${at === slot ? ' is-current' : ''}" data-pick="${e(j.slug)}" style="--c: ${j.color}">
+							${featuredArt(j)}
+							<span class="featured-option__name">${e(j.name)}</span>
+							<span class="featured-option__note">${at === slot ? 'Here now' : at >= 0 ? `In spot ${at + 1}, will swap` : JUICE_STATUSES[juiceStatus(j)]}</span>
+						</button></li>`;
+					})
+					.join('')}
+			</ul>
+		</dialog>`
+	);
+	const dialog = document.body.lastElementChild;
+	const close = () => {
+		dialog.close();
+		dialog.remove();
+	};
+	dialog.addEventListener('click', event => {
+		if (event.target === dialog || event.target.closest('[data-close]')) return close();
+		const pick = event.target.closest('[data-pick]')?.dataset.pick;
+		if (!pick) return;
+		close();
+		if (current[slot] === pick) return;
+		const next = [...current];
+		const from = next.indexOf(pick);
+		if (from >= 0) next[from] = next[slot];
+		next[slot] = pick;
+		const name = state.juices.find(j => j.slug === pick)?.name;
+		saveFeatured(next.filter(Boolean), `${name} is now in spot ${slot + 1}`);
+	});
+	dialog.addEventListener('close', () => dialog.isConnected && dialog.remove());
+	dialog.showModal();
 }
 
 /*=============== MENU ===============*/
@@ -229,6 +323,7 @@ function renderMenu() {
 			</div>
 		</div>
 		<p class="hint price-note">Every juice uses this price unless you give it its own in the editor. It updates the cards, cart, checkout and share images.</p>
+		${featuredBlock()}
 		<ul class="menu-list">
 			${state.juices
 				.map(
@@ -236,11 +331,14 @@ function renderMenu() {
 				<li class="menu-row${j.active ? '' : ' is-hidden'}" style="--c: ${j.color}">
 					<span class="menu-row__img">${bottleImage(j, { small: true })}</span>
 					<div class="menu-row__info">
-						<p class="menu-row__name">${e(j.name)}${j.active ? '' : ' <span class="pill">Hidden</span>'}</p>
+						<p class="menu-row__name">${e(j.name)}${j.active ? '' : ' <span class="pill">Inactive</span>'}</p>
 						<p class="menu-row__meta">${[j.price ? `${money(j.price)}${j.customPrice ? ' <span class="pill">own price</span>' : ''}` : 'No price yet', j.nutrition.calories ? `${j.nutrition.calories} cal` : '', j.ingredients.map(e).join(', ')].filter(Boolean).join(' &middot; ')}</p>
 						<div class="status-switch" role="group" aria-label="${e(j.name)} availability">
-							${Object.entries(JUICE_STATUSES)
-								.map(([value, label]) => `<button type="button" class="status-switch__btn status-switch__btn--${value}" data-status="${i}" data-value="${value}" aria-pressed="${juiceStatus(j) === value}" title="${STATUS_HINTS[value]}">${label}</button>`)
+							${Object.entries(LISTINGS)
+								.map(
+									([value, label]) =>
+										`<button type="button" class="status-switch__btn status-switch__btn--${value}" data-status="${i}" data-value="${value}" aria-pressed="${listing(j) === value}" title="${STATUS_HINTS[value]}">${label}</button>`
+								)
 								.join('')}
 						</div>
 					</div>
@@ -256,6 +354,8 @@ function renderMenu() {
 		${state.juices.length === 0 ? '<p class="empty">No juices yet. Add your first one.</p>' : ''}`;
 
 	main.querySelector('[data-new]').addEventListener('click', () => openEditor(null));
+	main.querySelectorAll('[data-slot]').forEach(btn => btn.addEventListener('click', () => pickFeatured(Number(btn.dataset.slot))));
+	main.querySelector('[data-featured-reset]')?.addEventListener('click', () => saveFeatured([], 'Showing the first three on the menu'));
 	const priceForm = main.querySelector('[data-price-form]');
 	const priceSave = priceForm.querySelector('button');
 	priceForm.price.addEventListener('input', () => (priceSave.hidden = Number(priceForm.price.value) === state.settings.bottlePrice));
@@ -282,18 +382,76 @@ function renderMenu() {
 			const i = Number(btn.dataset.status);
 			const status = btn.dataset.value;
 			const juice = state.juices[i];
-			if (juiceStatus(juice) === status) return;
+			if (listing(juice) === status) return;
+			if (status === 'inactive')
+				return saveJuices(
+					state.juices.map((j, k) => (k === i ? { ...j, active: false } : j)),
+					`${juice.name} is inactive: hidden everywhere, with its orders and stats kept`
+				);
 			if (status !== 'coming-soon' && !juice.image) return toast(`Add a bottle photo to ${juice.name} before marking it ${JUICE_STATUSES[status].toLowerCase()}.`, true);
 			if (status !== 'coming-soon' && juice.customPrice && !(juice.price >= 0.5)) return toast(`Give ${juice.name} a price first.`, true);
-			const list = state.juices.map((j, k) => (k === i ? { ...j, status, statusNote: '' } : j));
+			const list = state.juices.map((j, k) => (k === i ? { ...j, active: true, status, statusNote: '' } : j));
 			const messages = { available: `${juice.name} is available again`, 'sold-out': `${juice.name} marked sold out`, 'coming-soon': `${juice.name} marked coming soon` };
 			saveJuices(list, messages[status]);
 		})
 	);
 }
 
-const STATUS_ICONS = { available: 'check', 'sold-out': 'prohibit', 'coming-soon': 'hourglass' };
-const STATUS_HINTS = { available: 'People can order it', 'sold-out': 'Shown, but greyed out', 'coming-soon': 'A teaser. Photo and price optional' };
+const STATUS_ICONS = { available: 'check', 'sold-out': 'prohibit', 'coming-soon': 'hourglass', inactive: 'archive' };
+const STATUS_HINTS = {
+	available: 'People can order it',
+	'sold-out': 'Shown, but greyed out',
+	'coming-soon': 'A teaser. Photo and price optional',
+	inactive: 'Hidden everywhere. Its orders and stats are kept'
+};
+
+// The site's three statuses plus Inactive: a retired juice that's hidden everywhere (active: false)
+// but kept, with its past orders and stats, so it can come back later
+const LISTINGS = { ...JUICE_STATUSES, inactive: 'Inactive' };
+const listing = juice => (juice.active === false ? 'inactive' : juiceStatus(juice));
+
+const splashMode = juice => (!juice.splashColor ? 'original' : juice.splashColor === juice.color ? 'juice' : 'custom');
+
+/** Splash shape thumbnails (shown in the color they'll appear in) plus how the splash is colored. */
+function splashPicker(juice) {
+	const mode = splashMode(juice);
+	return `
+		<div class="field splash-field" data-splash-field>
+			<p class="field-label">Splash behind the bottle</p>
+			<div class="splash-editor">
+			<div class="splash-stage" data-splash-stage aria-hidden="true">
+				${splashStage(juice)}
+			</div>
+			<div class="splash-controls">
+			<p class="splash-step"><span>1</span> Pick a shape</p>
+			<div class="splash-picks" role="radiogroup" aria-label="Splash shape">
+				<label class="splash-pick"><input type="radio" name="splash" value="none" ${SPLASH_STYLES.includes(juice.splash) ? '' : 'checked'}><span class="splash-pick__thumb splash-pick__thumb--none">None</span></label>
+				${SPLASH_STYLES.map(
+					shape =>
+						`<label class="splash-pick" title="${shape[0].toUpperCase() + shape.slice(1)} splash"><input type="radio" name="splash" value="${shape}" ${juice.splash === shape ? 'checked' : ''}><span class="splash-pick__thumb"><img src="${splashUrl({ ...juice, splash: shape }, { small: true })}" alt="${shape} splash" data-splash-shape="${shape}" decoding="async"></span></label>`
+				).join('')}
+			</div>
+			<p class="splash-step"><span>2</span> Pick its color</p>
+			<div class="splash-color">
+				<div class="segmented" role="radiogroup" aria-label="Splash color">
+					<label><input type="radio" name="splashMode" value="original" ${mode === 'original' ? 'checked' : ''}><span>Its own colors</span></label>
+					<label><input type="radio" name="splashMode" value="juice" ${mode === 'juice' ? 'checked' : ''}><span>Juice color</span></label>
+					<label><input type="radio" name="splashMode" value="custom" ${mode === 'custom' ? 'checked' : ''}><span>Pick a color</span></label>
+				</div>
+				<div class="color-input splash-color__pick" data-splash-custom ${mode === 'custom' ? '' : 'hidden'}><input name="splashColor" type="color" value="${juice.splashColor || juice.color}" aria-label="Splash color"><span data-splash-color-value>${juice.splashColor || juice.color}</span></div>
+			</div>
+			</div>
+			</div>
+			<p class="hint">The preview shows exactly what sits behind the bottle on the site.</p>
+		</div>`;
+}
+
+/** The bottle standing on its splash, as the site shows it (a bottle outline until there's a photo). */
+function splashStage(juice) {
+	const splash = splashUrl(juice);
+	const bottle = juice.imageSmall || juice.image || '/assets/img/bottles/silhouette.png';
+	return `${splash ? `<img src="${splash}" alt="" class="splash-stage__splash">` : '<span class="splash-stage__none">No splash</span>'}<img src="${bottle}" alt="" class="splash-stage__bottle${juice.image ? '' : ' is-outline'}">`;
+}
 
 const BLANK = {
 	name: '',
@@ -306,6 +464,7 @@ const BLANK = {
 	customPrice: false,
 	color: '#b6d43a',
 	splash: 'lime',
+	splashColor: '',
 	image: '',
 	imageSmall: '',
 	emailImage: '',
@@ -410,15 +569,8 @@ function openEditor(index) {
 							</div>
 							<div class="field"><label for="f-tagline">Tagline <span class="optional">short, shows under the name</span></label><input id="f-tagline" name="tagline" maxlength="80" value="${e(juice.tagline)}"></div>
 							<div class="field"><label for="f-description">Description</label><textarea id="f-description" name="description" rows="3" maxlength="600">${e(juice.description)}</textarea></div>
-							<div class="field-row">
-								<div class="field"><label for="f-color">Color</label><div class="color-input"><input id="f-color" name="color" type="color" value="${juice.color}"><span data-color-value>${juice.color}</span></div></div>
-								<div class="field"><label for="f-splash">Splash behind bottle</label>
-									<select id="f-splash" name="splash">${['none', ...SPLASH_STYLES].map(s => `<option value="${s}" ${juice.splash === s ? 'selected' : ''}>${s === 'none' ? 'None' : s[0].toUpperCase() + s.slice(1)}</option>`).join('')}</select>
-								</div>
-							</div>
-							<div class="toggles">
-								<label class="toggle"><input type="checkbox" name="active" ${juice.active ? 'checked' : ''}><span></span> Show on the site</label>
-							</div>
+							<div class="field"><label for="f-color">Color</label><div class="color-input"><input id="f-color" name="color" type="color" value="${juice.color}"><span data-color-value>${juice.color}</span></div></div>
+							${splashPicker(juice)}
 						</section>
 
 						<section class="editor__section" data-section="ingredients">
@@ -436,10 +588,10 @@ function openEditor(index) {
 						<section class="editor__section" data-section="availability">
 							<h3>Availability</h3>
 							<div class="status-picks">
-								${Object.entries(JUICE_STATUSES)
+								${Object.entries(LISTINGS)
 									.map(
 										([value, label]) => `
-									<label class="status-pick status-pick--${value}"><input type="radio" name="status" value="${value}" ${juiceStatus(juice) === value ? 'checked' : ''}><span>${icon(STATUS_ICONS[value])}<strong>${label}</strong><small>${STATUS_HINTS[value]}</small></span></label>`
+									<label class="status-pick status-pick--${value}"><input type="radio" name="status" value="${value}" ${listing(juice) === value ? 'checked' : ''}><span>${icon(STATUS_ICONS[value])}<strong>${label}</strong><small>${STATUS_HINTS[value]}</small></span></label>`
 									)
 									.join('')}
 							</div>
@@ -655,6 +807,7 @@ function openEditor(index) {
 	};
 	let pageReady = false;
 	let pageTimer;
+	let splashTimer;
 	const pagePreview = mountPreview(form.querySelector('[data-preview-page]'), {
 		path: `/juices/${original?.slug || state.juices.find(j => j.active)?.slug || state.juices[0]?.slug || 'simply-orange'}`,
 		draft: () => ({ juice: previewJuice(), replaces: original?.slug }),
@@ -676,6 +829,8 @@ function openEditor(index) {
 			...juice,
 			name: f.name.value.trim(),
 			slug: slugify(f.slug.value || f.name.value),
+			// Remember the old page address so earlier orders and shared links still find this juice
+			formerSlugs: original && original.slug !== slugify(f.slug.value || f.name.value) ? [...new Set([original.slug, ...(original.formerSlugs || [])])] : juice.formerSlugs || [],
 			tagline: f.tagline.value.trim(),
 			description: f.description.value.trim(),
 			ingredients: [...ingredients],
@@ -684,8 +839,10 @@ function openEditor(index) {
 			price: Number(f.price.value) || 0,
 			color: f.color.value,
 			splash: f.splash.value,
-			active: f.active.checked,
-			status: form.querySelector('[name="status"]:checked')?.value || 'available',
+			splashColor: { original: '', juice: f.color.value, custom: f.splashColor.value }[form.querySelector('[name="splashMode"]:checked')?.value || 'original'],
+			// Inactive hides the juice but keeps the status it had, ready for when it comes back
+			active: form.querySelector('[name="status"]:checked')?.value !== 'inactive',
+			status: (value => (value === 'inactive' ? juiceStatus(juice) : value))(form.querySelector('[name="status"]:checked')?.value || 'available'),
 			statusNote: f.statusNote.value.trim(),
 			backdrop: backdrop === 'photo' ? customBackdrop || DEFAULT_BACKDROP : backdrop,
 			sizeOz: num('sizeOz') || 16,
@@ -699,6 +856,21 @@ function openEditor(index) {
 		clearTimeout(pageTimer);
 		if (pageReady) pageTimer = setTimeout(() => pagePreview.render(previewJuice()) || pagePreview.reload(0), 120);
 		form.querySelector('[data-color-value]').textContent = current.color;
+		form.querySelector('[data-splash-color-value]').textContent = form.elements.splashColor.value;
+		form.querySelector('[data-splash-custom]').hidden = form.querySelector('[name="splashMode"]:checked')?.value !== 'custom';
+		clearTimeout(splashTimer);
+		splashTimer = setTimeout(() => {
+			const stage = form.querySelector('[data-splash-stage]');
+			const html = splashStage(current);
+			if (stage.dataset.html !== html) {
+				stage.dataset.html = html;
+				stage.innerHTML = html;
+			}
+			form.querySelectorAll('[data-splash-shape]').forEach(img => {
+				const src = splashUrl({ ...current, splash: img.dataset.splashShape }, { small: true });
+				if (img.getAttribute('src') !== src) img.src = src;
+			});
+		}, 250);
 		form.querySelector('[data-preview]').innerHTML =
 			current.image || current.status === 'coming-soon'
 				? juiceCard({ ...current, name: current.name || 'Juice name', imageSmall: current.imageSmall || current.image })
@@ -865,6 +1037,7 @@ export async function updateCounts({ reload = false } = {}) {
 		if (orders) state.orders = orders.orders;
 		if (messages) state.messages = messages.messages;
 		if (state.tab === 'orders') refreshOrders(state);
+		if (state.tab === 'stats') refreshStats(state);
 		if (state.tab === 'messages') refreshMessages(state);
 	}
 	const counts = { orders: state.orders?.filter(isOpen).length || 0, messages: state.messages?.filter(m => !m.read && !m.archived).length || 0 };
@@ -1093,7 +1266,7 @@ async function boot() {
 	Object.assign(state, { juices: data.juices, settings: data.settings, copy: data.copy || {}, status: data.status, orders: null, messages: null });
 	renderShell();
 	showTab();
-	if (!['orders', 'messages'].includes(state.tab)) updateCounts({ reload: true });
+	if (!['orders', 'messages', 'stats'].includes(state.tab)) updateCounts({ reload: true });
 	startPolling();
 }
 
