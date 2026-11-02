@@ -3300,6 +3300,26 @@ html:not(.js) .cta-band .cta-band__scene {
 }
 
 /* Menu page header: a dark card so it stands out, the lineup bursting out of the right side */
+
+/* The glow colors behind the three bottles, set from the live menu by menu.js. They start
+   transparent and fade in, so a juice Hunter has replaced never glows in its old color first. */
+@property --c1 {
+	syntax: '<color>';
+	inherits: true;
+	initial-value: transparent;
+}
+
+@property --c2 {
+	syntax: '<color>';
+	inherits: true;
+	initial-value: transparent;
+}
+
+@property --c3 {
+	syntax: '<color>';
+	inherits: true;
+	initial-value: transparent;
+}
 .menu-hero {
 	padding-block: clamp(0.5rem, 1.5vw, 1rem) clamp(1.5rem, 3vw, 2.5rem);
 }
@@ -3315,9 +3335,9 @@ html:not(.js) .cta-band .cta-band__scene {
 	border-radius: var(--radius-xl);
 	/* Each bottle throws a glow in its own color (set per juice from menu.js) */
 	background:
-		radial-gradient(26% 60% at 62% 78%, color-mix(in srgb, var(--c1, #f59e1b) 80%, transparent), transparent 70%),
-		radial-gradient(28% 66% at 76% 58%, color-mix(in srgb, var(--c2, #8db62f) 80%, transparent), transparent 70%),
-		radial-gradient(26% 60% at 90% 78%, color-mix(in srgb, var(--c3, #e0322f) 80%, transparent), transparent 70%),
+		radial-gradient(26% 60% at 62% 78%, color-mix(in srgb, var(--c1) 80%, transparent), transparent 70%),
+		radial-gradient(28% 66% at 76% 58%, color-mix(in srgb, var(--c2) 80%, transparent), transparent 70%),
+		radial-gradient(26% 60% at 90% 78%, color-mix(in srgb, var(--c3) 80%, transparent), transparent 70%),
 		radial-gradient(60% 90% at 0% 0%, rgba(196, 221, 59, 0.14), transparent 60%),
 		var(--night);
 	box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
@@ -3325,6 +3345,10 @@ html:not(.js) .cta-band .cta-band__scene {
 	overflow: hidden;
 	isolation: isolate;
 	container-type: inline-size;
+	transition:
+		--c1 0.8s var(--ease),
+		--c2 0.8s var(--ease),
+		--c3 0.8s var(--ease);
 }
 
 .menu-card__actions {
@@ -3482,9 +3506,9 @@ html:not(.js) .cta-band .cta-band__scene {
 
 	.menu-card {
 		background:
-			radial-gradient(26% 26% at 24% 90%, color-mix(in srgb, var(--c1, #f59e1b) 55%, transparent), transparent 72%),
-			radial-gradient(30% 30% at 50% 82%, color-mix(in srgb, var(--c2, #8db62f) 55%, transparent), transparent 72%),
-			radial-gradient(26% 26% at 76% 90%, color-mix(in srgb, var(--c3, #e0322f) 55%, transparent), transparent 72%),
+			radial-gradient(26% 26% at 24% 90%, color-mix(in srgb, var(--c1) 55%, transparent), transparent 72%),
+			radial-gradient(30% 30% at 50% 82%, color-mix(in srgb, var(--c2) 55%, transparent), transparent 72%),
+			radial-gradient(26% 26% at 76% 90%, color-mix(in srgb, var(--c3) 55%, transparent), transparent 72%),
 			radial-gradient(80% 50% at 0% 0%, rgba(196, 221, 59, 0.12), transparent 60%),
 			var(--night);
 	}

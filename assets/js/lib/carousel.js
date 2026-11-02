@@ -92,10 +92,18 @@ export function flavorCarousel(root, juices) {
 		place(el, to);
 	}
 
+	let colored = false;
 	function render(dir) {
 		const juice = juices[active];
+		// The first color goes on instantly (no fade from the stylesheet's placeholder color)
+		if (!colored) root.style.transition = 'none';
 		root.style.setProperty('--flavor', juice.color);
 		root.style.setProperty('--on-flavor', onColor(juice.color));
+		if (!colored) {
+			void root.offsetWidth;
+			root.style.transition = '';
+			colored = true;
+		}
 		// The flavor's last word set huge behind the bottles ("ORANGE"), re-stamped on every change
 		word.textContent = juice.name.split(' ').pop();
 		word.style.setProperty('--len', word.textContent.length);
