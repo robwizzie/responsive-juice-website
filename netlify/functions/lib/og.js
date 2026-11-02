@@ -6,7 +6,7 @@
  */
 import satori from 'satori';
 import sharp from 'sharp';
-import { juiceStatus, onColor } from '../../../assets/js/shared/catalog.js';
+import { featuredJuices, juiceStatus, onColor, splashUrl } from '../../../assets/js/shared/catalog.js';
 
 export const OG_WIDTH = 1200;
 export const OG_HEIGHT = 630;
@@ -70,7 +70,7 @@ const wordmark = (origin, color) =>
 
 /* ---------- pieces ---------- */
 
-const splashFor = juice => `/assets/img/splash/${juice.splash || 'orange'}.webp`;
+const splashFor = juice => splashUrl({ splash: 'orange', ...juice });
 
 const STATUS_TEXT = { 'sold-out': 'Sold out', 'coming-soon': 'Coming soon' };
 const priceText = juice => (Number(juice.price) ? `$${Number(juice.price).toFixed(2)}` : '');
@@ -145,7 +145,7 @@ async function pageCard(origin, page, juices, settings) {
 	const copy = pageCopy(page, juices, settings);
 	const left = 620;
 	const artH = OG_HEIGHT - BAND;
-	const art = copy.photo ? await portrait(origin, settings, artH) : await bottleFan(origin, juices, OG_WIDTH - left - 20, artH - 50);
+	const art = copy.photo ? await portrait(origin, settings, artH) : await bottleFan(origin, featuredJuices(juices, settings, { needsPhoto: true }), OG_WIDTH - left - 20, artH - 50);
 	return h(
 		'div',
 		{ width: OG_WIDTH, height: OG_HEIGHT, background: NIGHT, position: 'relative', fontFamily: 'Archivo', overflow: 'hidden' },

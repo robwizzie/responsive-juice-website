@@ -36,6 +36,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,100..900;1,62..125,100..900&display=swap">
     <link rel="stylesheet" href="/assets/css/styles.css">
+    <!-- Start loading the live menu right away; pages wait for it so nothing flashes stale juice -->
+    <link rel="preload" href="/api/catalog" as="fetch" crossorigin>
     <script>document.documentElement.classList.add('js');if('scrollRestoration' in history&&!location.hash)history.scrollRestoration='manual'</script>
     <script type="module" src="/assets/js/pages/contact.js"></script>
 </head>
@@ -69,7 +71,7 @@
     <main id="main">
         <section class="page-card-hero">
             <div class="container">
-                <div class="page-card page-card--night page-card--orange page-card--compact">
+                <div class="page-card page-card--night page-card--orange page-card--compact" data-live-accent>
                     <div class="page-card__copy">
                         <p class="page-card__kicker" data-copy="contact.hero.kicker">Contact</p>
                         <h1 class="page-card__title"><span class="hero__line"><span data-copy="contact.hero.line1">Let's talk</span></span> <span class="hero__line"><span class="page-card__hl" data-copy="contact.hero.line2">juice</span></span></h1>

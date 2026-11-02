@@ -1,4 +1,4 @@
-import { ingredientPhoto, juiceStatus } from '../shared/catalog.js';
+import { ingredientPhoto, juiceStatus, splashUrl } from '../shared/catalog.js';
 import { DEFAULT_COPY, copyText } from '../shared/content.js';
 import { cutoffDay, pickupAddress, pickupMapUrl, weekdayName } from '../shared/order-rules.js';
 import { escapeHtml as e } from './catalog.js';
@@ -37,7 +37,7 @@ export function statusStamp(juice, { className = '' } = {}) {
 export function bottleArt(juice, { size = 'md', eager = false, small = false } = {}) {
 	const [fruitA, fruitB] = garnishFor(juice);
 	const loading = eager ? 'eager' : 'lazy';
-	const splash = juice.splash && juice.splash !== 'none' ? `/assets/img/splash/${juice.splash}${small ? '-sm' : ''}.webp` : null;
+	const splash = splashUrl(juice, { small });
 	const layer = (cls, src) => `<span class="${cls}"><img src="${src}" alt="" loading="${loading}" decoding="async"></span>`;
 	return `
 		<div class="bottle-art bottle-art--${size}" style="--c: ${juice.color}" data-parallax aria-hidden="true">

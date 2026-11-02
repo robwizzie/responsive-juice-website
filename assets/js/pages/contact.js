@@ -1,6 +1,7 @@
 import { ready, t } from '../site.js';
 import { pickupFaq } from '../lib/components.js';
 import { pickupMapUrl } from '../shared/order-rules.js';
+import { splashUrl } from '../shared/catalog.js';
 
 const form = document.getElementById('contact-form');
 const status = form.querySelector('.form__status');
@@ -18,14 +19,18 @@ ready.then(({ juices, settings, copy }) => {
 	const splash = stage?.querySelector('.page-card__splash');
 	const show = juice => {
 		bottle.src = juice.imageSmall || juice.image;
-		const hasSplash = juice.splash && juice.splash !== 'none';
-		if (hasSplash) splash.src = `/assets/img/splash/${juice.splash}-sm.webp`;
+		const src = splashUrl(juice, { small: true });
+		const hasSplash = Boolean(src);
+		if (hasSplash) splash.src = src;
 		// Hide it without dropping it from the layout, so a juice with no splash doesn't shrink the card
 		splash.style.visibility = hasSplash ? '' : 'hidden';
 		if (/^#[0-9a-f]{6}$/i.test(juice.color || '')) card.style.setProperty('--accent', juice.color);
 	};
+	// Reveal the card once the first live bottle is decoded (see data-live-accent in the CSS)
+	const reveal = () => requestAnimationFrame(() => card?.classList.add('is-live'));
 	if (bottle && lineup.length) {
 		show(lineup[0]);
+		Promise.race([bottle.decode?.().catch(() => {}), new Promise(resolve => setTimeout(resolve, 1500))]).then(reveal);
 		const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
 		if (lineup.length > 1 && !still) {
 			// Warm the cache so each swap is instant
@@ -41,7 +46,7 @@ ready.then(({ juices, settings, copy }) => {
 				}, 450);
 			}, 3800);
 		}
-	}
+	} else reveal();
 
 	// Pickup spot and the pickup/delivery questions follow Settings
 	const pickupCard = document.querySelector('[data-pickup-card]');

@@ -7,6 +7,31 @@
 
 export const SPLASH_STYLES = ['orange', 'green', 'red', 'purple', 'berry', 'pink', 'lime', 'crimson'];
 
+const HEX = /^#[0-9a-f]{6}$/i;
+
+/**
+ * The juices for the spots that show just a few bottles (homepage hero, Juices header, footer,
+ * share images…): the ones Hunter picked in Admin → Menu, in his order, topped up from the menu
+ * order when he's picked fewer. Hidden juices never show. `needsPhoto` skips teasers without a photo.
+ */
+export function featuredJuices(juices, settings, { count = 3, needsPhoto = false } = {}) {
+	const shown = juices.filter(juice => juice.active !== false && (!needsPhoto || juice.image));
+	const picks = (settings?.featured || []).map(slug => shown.find(juice => juice.slug === slug)).filter(Boolean);
+	return [...new Set([...picks, ...shown])].slice(0, count);
+}
+
+/**
+ * A juice's splash image, or null for none. `splash` picks the shape; when Hunter has also picked
+ * a `splashColor`, the shape is repainted in that color by the splash function (/api/splash/…).
+ */
+export function splashUrl(juice, { small = false } = {}) {
+	const shape = juice?.splash;
+	if (!SPLASH_STYLES.includes(shape)) return null;
+	const size = small ? '-sm' : '';
+	const color = HEX.test(juice.splashColor || '') ? juice.splashColor.slice(1).toLowerCase() : '';
+	return color ? `/api/splash/${shape}/${color}${size}.webp` : `/assets/img/splash/${shape}${size}.webp`;
+}
+
 /** Whether a juice can be ordered. Hunter sets this per juice in /admin. */
 export const JUICE_STATUSES = {
 	available: 'Available',
@@ -226,6 +251,9 @@ export const DEFAULT_SETTINGS = {
 	// Ingredient photos Hunter uploaded in /admin → Ingredients, keyed by ingredientKey(). They
 	// replace the bundled photo (or fill in for an ingredient the site has no photo of) everywhere.
 	ingredientPhotos: {},
+	// Up to three juice slugs for the homepage hero and other few-bottle spots, picked in /admin → Menu.
+	// Empty means the first three on the menu.
+	featured: [],
 	// Optional banner shown across the top of every page (e.g. "Back in stock Monday!")
 	announcement: '',
 	contactEmail: 'siponpressed@yahoo.com',

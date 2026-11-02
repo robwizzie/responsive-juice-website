@@ -7,7 +7,7 @@ Website for SiponPressed, Hunter's cold-pressed juice company in Philadelphia. I
 | Path | What it is |
 | --- | --- |
 | `index.html`, `juices.html`, `juice.html`, `about.html`, `contact.html`, `order.html`, `success.html` | Public pages. `juice.html` renders every `/juices/:slug` page (served by the `juice-page` function so each juice has its own share tags). |
-| `admin.html` + `assets/js/admin/` | Hunter's admin at `/admin`: edit/add juices, edit the words and photos on every page, track orders (new → making → ready → picked up, with a "to press" list per day), read Contact page messages, change the price and pickup/delivery settings. Orders and Messages show a count on their tab. |
+| `admin.html` + `assets/js/admin/` | Hunter's admin at `/admin`: edit/add juices, edit the words and photos on every page, track orders (new → making → ready → picked up, with a "to press" list per day), read Contact page messages, see sales in **Stats**, change the price and pickup/delivery settings. Orders and Messages show a count on their tab. |
 | `assets/js/shared/content.js` | Every piece of page text (and the few photos) Hunter can change in **Admin → Pages**, with its default. The HTML marks each spot with `data-copy="<key>"`. |
 | `assets/js/shared/catalog.js` | The starting menu (Simply Orange, Green, Red) and default shop settings. |
 | `assets/js/shared/order-rules.js` | Dates, minimums, delivery fee and pricing. Used by both the order page and the checkout function, so they always agree. |
@@ -65,7 +65,23 @@ To make a new spot editable: add a field to `assets/js/shared/content.js`, then 
 
 ## Adding a juice
 
-Sign in at `/admin` → **Menu** → **Add a juice**. Upload a bottle photo (a PNG with the background removed looks best; remove.bg works well), add the ingredients one by one (tap an ingredient's photo to upload your own), fill in the nutrition, and save. The site, cart and checkout pick it up immediately. Use **Mark sold out** to pause a flavor without hiding it, or untick **Show on the site** to hide it.
+Sign in at `/admin` → **Menu** → **Add a juice**. Upload a bottle photo (a PNG with the background removed looks best; remove.bg works well), add the ingredients one by one (tap an ingredient's photo to upload your own), fill in the nutrition, and save. The site, cart and checkout pick it up immediately.
+
+Each juice has one of four statuses: **Available**, **Sold out** (shown but greyed out), **Coming soon** (a teaser) and **Inactive** (hidden everywhere, but its past orders and stats are kept, so it can come back later). Set it on the juice's row in **Menu** or in its editor.
+
+**Splash:** pick any of the splash shapes, then keep its own colors, match the juice's color, or pick any color. Recolored splashes are drawn by the `splash` function (`/api/splash/<shape>/<hex>.webp`) from the shapes in `assets/img/splash/`, keeping their light and shade, and cached for good.
+
+**Renaming a juice** keeps its history: past orders, the to-press list and Stats show the new name (with "was Simply Red" on old orders). If its page address changes too, the old address is remembered (`formerSlugs`) so old orders and shared links still find it.
+
+## Front and center
+
+**Menu → Front and center** picks the three bottles shown in the homepage hero, at the top of the Juices page, in the footer and in link previews. Tap a spot to swap in any juice; **Use menu order** goes back to the first three on the menu. Stored as `featured` in settings; `featuredJuices()` in `catalog.js` fills in from the menu order and skips hidden juices.
+
+## Stats
+
+**Admin → Stats** adds up the saved orders: money, bottles, orders and average order for any day, week, month or year (with arrows to go back), compared with the same days of the period before; best sellers as a podium or a full ranked list (the least popular show at zero); money by month split by juice; today against an average day; forecasts for the month and next week's bottles; what's already booked to press; juice trends; the busiest days; and repeat customers.
+
+A sale is a paid order that wasn't canceled, counted on the day it was paid (Philadelphia time). Money includes delivery fees. Stripe test orders are left out unless **Include test orders** is on (it starts on while there are no real sales yet). The maths is in `assets/js/admin/stats-data.js` and tested in `tests/stats.test.js`.
 
 ## Link previews
 

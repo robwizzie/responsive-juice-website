@@ -4,7 +4,7 @@
  *    bottles line up to the right like a shelf; swipe, arrows, dots, keys and autoplay.
  *  - rail: a row of cards that scrolls sideways with snap, drag-to-scroll and arrow buttons.
  */
-import { juiceStatus, onColor } from '../shared/catalog.js';
+import { juiceStatus, onColor, splashUrl } from '../shared/catalog.js';
 import { escapeHtml as e } from './catalog.js';
 import { bottleImage, garnishFor, money, statusStamp } from './components.js';
 import { icon } from './icons.js';
@@ -31,7 +31,7 @@ function slide(juice, i, total) {
 
 function item(juice, i) {
 	const [fruitA, fruitB] = garnishFor(juice);
-	const splash = juice.splash && juice.splash !== 'none' ? `<img src="/assets/img/splash/${juice.splash}.webp" alt="" class="flavors__splash" loading="lazy" decoding="async">` : '';
+	const splash = splashUrl(juice) ? `<img src="${splashUrl(juice)}" alt="" class="flavors__splash" loading="lazy" decoding="async">` : '';
 	const fruit = (src, cls) => (src ? `<span class="flavors__fruit ${cls}"><img src="${src}" alt="" decoding="async"></span>` : '');
 	return `
 		<div class="flavors__item is-${juiceStatus(juice)}" data-item="${i}" role="button" tabindex="-1" aria-label="Show ${e(juice.name)}">
@@ -92,10 +92,18 @@ export function flavorCarousel(root, juices) {
 		place(el, to);
 	}
 
+	let colored = false;
 	function render(dir) {
 		const juice = juices[active];
+		// The first color goes on instantly (no fade from the stylesheet's placeholder color)
+		if (!colored) root.style.transition = 'none';
 		root.style.setProperty('--flavor', juice.color);
 		root.style.setProperty('--on-flavor', onColor(juice.color));
+		if (!colored) {
+			void root.offsetWidth;
+			root.style.transition = '';
+			colored = true;
+		}
 		// The flavor's last word set huge behind the bottles ("ORANGE"), re-stamped on every change
 		word.textContent = juice.name.split(' ').pop();
 		word.style.setProperty('--len', word.textContent.length);
