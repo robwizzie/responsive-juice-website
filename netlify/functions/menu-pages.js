@@ -62,11 +62,16 @@ export function fillPage(path, page, juices, settings) {
 export default async (req, context) => {
 	const path = new URL(req.url).pathname.replace(/\/+$/, '') || '/';
 	const file = FILES[path];
-	const page = await fetch(new URL(file, requestOrigin(req))).then(res => res.text());
+	// The page file, the settings and the menu all load at once (getJuices waits on the settings itself)
+	const pageText = fetch(new URL(file, requestOrigin(req))).then(res => res.text());
+	const settings = getSettings();
+	const menu = Promise.all([getJuices(settings), settings]);
+	menu.catch(() => {});
+	const page = await pageText;
 	let html = page;
 	try {
-		const settings = await getSettings();
-		html = fillPage(path, page, await getJuices(settings), settings);
+		const [juices, shopSettings] = await menu;
+		html = fillPage(path, page, juices, shopSettings);
 	} catch (err) {
 		// The page still works without it: the browser fills in the menu as before
 		console.warn('Could not add the menu to', path, err.message);
