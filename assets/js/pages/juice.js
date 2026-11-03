@@ -191,6 +191,7 @@ ready.then(({ juices, settings }) => {
 	const draft = previewHost?.draft()?.juice;
 	const juice = draft || juices.find(j => j.slug === slug);
 	if (!juice) {
+		document.documentElement.setAttribute('data-no-track', '');
 		location.replace('/juices');
 		return;
 	}

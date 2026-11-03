@@ -4,6 +4,7 @@
  */
 import { loadCatalog, escapeHtml as e } from './lib/catalog.js';
 import { addToCart, cartCount, cartLines, getCart, setQty } from './lib/cart.js';
+import { track } from './lib/visits.js';
 import { bottleImage, flashAdded, money, moneyShort } from './lib/components.js';
 import { featuredJuices, ingredientIcon, juiceStatus, webImage } from './shared/catalog.js';
 import { DEFAULT_COPY, copyText } from './shared/content.js';
@@ -306,6 +307,7 @@ function bindCart() {
 		if (add) {
 			const qty = Number(add.dataset.qty || 1);
 			addToCart(add.dataset.add, qty);
+			track('cart', { j: add.dataset.add });
 			flashAdded(add);
 			flyToCart(add);
 			const juice = juices.find(j => j.slug === add.dataset.add);
@@ -418,5 +420,7 @@ ready.then(() =>
 		revealOnScroll();
 		initParallax();
 		document.documentElement.classList.add('is-ready');
+		// Counted once the page has shown, so a juice page that redirects isn't counted
+		track();
 	})
 );

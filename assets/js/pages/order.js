@@ -5,6 +5,7 @@ import { juiceLoader, money, moneyShort, pickupFaq, pickupSpot, shippingNote } f
 import { icon } from '../lib/icons.js';
 import { isOrderable } from '../shared/catalog.js';
 import { DELIVERY_STATES, availableDates, milesOutside, cutoffDay, formatDate, formatMoney, priceOrder, weekdayName } from '../shared/order-rules.js';
+import { track } from '../lib/visits.js';
 
 const root = document.querySelector('[data-order]');
 const DETAILS_KEY = 'siponpressed-details';
@@ -348,6 +349,7 @@ async function pay() {
 	renderSummary();
 	showCover();
 	const data = Object.fromEntries(new FormData(form));
+	track('checkout');
 	try {
 		const res = await fetch('/api/checkout', {
 			method: 'POST',
