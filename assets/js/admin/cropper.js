@@ -6,6 +6,7 @@
  *   // { blob, preview } for the cropped photo, 'whole' to use it uncropped, or null if canceled
  */
 import { icon } from '../lib/icons.js';
+import { photoBlob } from './image.js';
 
 const MAX_ZOOM = 4;
 
@@ -18,8 +19,6 @@ function loadImage(source) {
 		img.src = typeof source === 'string' ? source : URL.createObjectURL(source);
 	});
 }
-
-const toBlob = (canvas, type, quality) => new Promise(resolve => canvas.toBlob(resolve, type, quality));
 
 /** The part of the photo inside the frame, in the photo's own pixels. Pure, so it can be tested. */
 export function cropRect({ width, height }, frame, { zoom, x, y }) {
@@ -172,7 +171,7 @@ export async function cropPhoto(source, { aspect = 4 / 5, maxSide = 1600, title 
 			const ctx = canvas.getContext('2d');
 			ctx.imageSmoothingQuality = 'high';
 			ctx.drawImage(img, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
-			const blob = await toBlob(canvas, 'image/webp', 0.86);
+			const blob = await photoBlob(canvas);
 			resolve(blob ? { blob, preview: URL.createObjectURL(blob) } : null);
 		});
 		dialog.showModal();

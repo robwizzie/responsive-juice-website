@@ -45,6 +45,15 @@ function opaqueBounds(ctx, width, height) {
 
 const toBlob = (canvas, type, quality) => new Promise(resolve => canvas.toBlob(resolve, type, quality));
 
+/**
+ * A photo (no transparency) as WebP, or as JPEG in browsers that can't make WebP (Safari falls
+ * back to PNG, several times bigger). The server turns uploads into WebP either way.
+ */
+export async function photoBlob(canvas) {
+	const webp = await toBlob(canvas, 'image/webp', 0.84);
+	return webp?.type === 'image/webp' ? webp : toBlob(canvas, 'image/jpeg', 0.86);
+}
+
 export async function prepareBottle(file) {
 	const img = await loadImage(file);
 	// Work on a capped copy so huge phone photos don't stall the tab
@@ -83,6 +92,6 @@ export async function preparePhoto(file, maxSide = 1800) {
 	ctx.imageSmoothingQuality = 'high';
 	ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 	URL.revokeObjectURL(img.src);
-	const blob = await toBlob(canvas, 'image/webp', 0.84);
+	const blob = await photoBlob(canvas);
 	return { blob, preview: URL.createObjectURL(blob) };
 }

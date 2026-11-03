@@ -1,6 +1,6 @@
 import { ready, t } from '../site.js';
 import { escapeHtml as e } from '../lib/catalog.js';
-import { featuredJuices } from '../shared/catalog.js';
+import { featuredJuices, webImage } from '../shared/catalog.js';
 import { icon } from '../lib/icons.js';
 
 /** The hero entrance: plays once the portrait photo is decoded, so nothing pops in halfway through. */
@@ -30,7 +30,7 @@ ready.then(({ juices, settings }) => {
 	const photographed = juices.filter(j => j.image);
 	const photo = document.querySelector('[data-portrait-photo]');
 	// Hunter's own upload from /admin wins; otherwise the photo that ships with the site
-	const portrait = settings.aboutPhoto || HUNTER_PHOTO;
+	const portrait = webImage(settings.aboutPhoto) || HUNTER_PHOTO;
 	if (portrait) {
 		photo.innerHTML = `<img src="${e(portrait)}" alt="Hunter, founder of SiponPressed" decoding="async">`;
 	} else {
@@ -45,7 +45,7 @@ ready.then(({ juices, settings }) => {
 	playHero(photo);
 
 	// Hunter's own wholesale photo replaces the bottles-on-ice shot
-	const wholesale = t('about.wholesale.photo');
+	const wholesale = webImage(t('about.wholesale.photo'));
 	const scene = document.querySelector('.cta-band--scene picture');
 	if (wholesale && scene) scene.outerHTML = `<img src="${e(wholesale)}" alt="" class="${scene.querySelector('img').className}" data-edit="about.wholesale.photo" loading="lazy" decoding="async">`;
 

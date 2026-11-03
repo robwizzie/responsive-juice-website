@@ -5,7 +5,7 @@
 import { loadCatalog, escapeHtml as e } from './lib/catalog.js';
 import { addToCart, cartCount, cartLines, getCart, setQty } from './lib/cart.js';
 import { bottleImage, flashAdded, money, moneyShort } from './lib/components.js';
-import { featuredJuices, ingredientIcon, juiceStatus } from './shared/catalog.js';
+import { featuredJuices, ingredientIcon, juiceStatus, webImage } from './shared/catalog.js';
 import { DEFAULT_COPY, copyText } from './shared/content.js';
 import { cutoffDay, pickupMapUrl, weekdayName } from './shared/order-rules.js';
 import { wordmark } from './lib/brand.js';
@@ -70,7 +70,7 @@ const FIZZ = [
 function renderFooter(settings) {
 	const main = document.querySelector('main');
 	const year = new Date().getFullYear();
-	const photo = t('footer.photo');
+	const photo = webImage(t('footer.photo'));
 	const scene = photo
 		? `<img src="${e(photo)}" alt="" class="site-footer__scene" loading="lazy" decoding="async">`
 		: `<picture>

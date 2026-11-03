@@ -28,3 +28,13 @@ test('old-site addresses are gone, and none of them is something the site still 
 	}
 	assert.ok(RETIRED_SLUGS.every(slug => !OLD_SLUGS[slug]));
 });
+
+test('uploaded photos are shown as WebP, except the PNG kept for emails', async () => {
+	const { webImage, prepareJuices } = await import('../assets/js/shared/catalog.js');
+	assert.equal(webImage('/api/images/49b290ec-7e01.png'), '/api/images/49b290ec-7e01.webp');
+	assert.equal(webImage('/api/images/abc.jpg'), '/api/images/abc.webp');
+	assert.equal(webImage('/assets/img/bottles/simply-orange.png'), '/assets/img/bottles/simply-orange.png');
+	assert.equal(webImage(''), '');
+	const [juice] = prepareJuices([{ slug: 'b', image: '/api/images/a.png', imageSmall: '/api/images/b.png', emailImage: '/api/images/c.png' }], { ingredientPhotos: { lime: '/api/images/d.png' } });
+	assert.deepEqual([juice.image, juice.imageSmall, juice.emailImage, juice.ingredientImages.lime], ['/api/images/a.webp', '/api/images/b.webp', '/api/images/c.png', '/api/images/d.webp']);
+});

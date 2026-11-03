@@ -34,7 +34,10 @@ export function statusStamp(juice, { className = '' } = {}) {
 export function heroBottle(juice, i) {
 	const [fruitA, fruitB] = garnishFor(juice);
 	const fruit = (src, cls) => (src ? `<span class="hero__fruit ${cls}"><img src="${src}" alt="" decoding="async"></span>` : '');
-	const splash = splashUrl(juice) ? `<img src="${splashUrl(juice)}" alt="" class="hero__splash" decoding="async">` : '';
+	// Shown about 300px wide (190px on phones), so phones get the 480px splash, not the 1000px one
+	const splash = splashUrl(juice)
+		? `<img src="${splashUrl(juice)}" srcset="${splashUrl(juice, { small: true })} 480w, ${splashUrl(juice)} 1000w" sizes="(max-width: 720px) 190px, 300px" alt="" class="hero__splash" decoding="async">`
+		: '';
 	return `
 		<a href="/juices/${juice.slug}" class="hero__bottle is-${juiceStatus(juice)}" style="--c: ${juice.color}; --i: ${i}" aria-label="${e(juice.name)}">
 			${splash}

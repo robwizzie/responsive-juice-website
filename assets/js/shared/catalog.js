@@ -149,8 +149,20 @@ export function priceJuice(juice, settings) {
 }
 export const priceJuices = (juices, settings) => juices.map(juice => priceJuice(juice, settings));
 
-/** The menu as the site shows it: live prices, plus the shared ingredient photo library on each juice. */
-export const prepareJuices = (juices, settings) => priceJuices(juices, settings).map(juice => ({ ...juice, ingredientImages: settings?.ingredientPhotos || {} }));
+/**
+ * The WebP version of an uploaded photo. Uploads from Safari were saved as PNG (it can't make WebP),
+ * several times bigger; /api/images serves any of them as <id>.webp. Other addresses pass through.
+ */
+export const webImage = url => (typeof url === 'string' ? url.replace(/^(\/api\/images\/[\w-]+)\.(png|jpg)$/, '$1.webp') : url);
+
+const webImages = photos => Object.fromEntries(Object.entries(photos || {}).map(([key, url]) => [key, webImage(url)]));
+
+/**
+ * The menu as the site shows it: live prices, the shared ingredient photo library on each juice,
+ * and photos as WebP (emailImage stays PNG for email clients and Stripe).
+ */
+export const prepareJuices = (juices, settings) =>
+	priceJuices(juices, settings).map(juice => ({ ...juice, image: webImage(juice.image), imageSmall: webImage(juice.imageSmall), ingredientImages: webImages(settings?.ingredientPhotos) }));
 
 export const slugify = text =>
 	String(text || '')

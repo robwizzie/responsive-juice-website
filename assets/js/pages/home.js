@@ -2,7 +2,7 @@ import { ready, t } from '../site.js';
 import { flavorCarousel } from '../lib/carousel.js';
 import { heroBottle, shippingNote, waysToOrder } from '../lib/components.js';
 import { escapeHtml as e } from '../lib/catalog.js';
-import { featuredJuices, juiceStatus, splashUrl } from '../shared/catalog.js';
+import { featuredJuices, juiceStatus, splashUrl, webImage } from '../shared/catalog.js';
 
 /** Plays the hero entrance (the words straight away; the bottles once they're live, see showBottles). */
 function playHero(hero) {
@@ -44,7 +44,7 @@ ready.then(({ juices, settings, copy }) => {
 
 	// Hunter's own photo in the story block once he's uploaded one, otherwise a bottle on the river
 	const media = document.querySelector('[data-story-media]');
-	const portrait = t('home.story.photo') || settings.aboutPhoto || '/assets/img/hunter-portrait.webp';
+	const portrait = webImage(t('home.story.photo') || settings.aboutPhoto) || '/assets/img/hunter-portrait.webp';
 	if (portrait) {
 		media.classList.add('story__media--photo');
 		media.innerHTML = `<img src="${e(portrait)}" alt="Hunter, the founder of SiponPressed" class="story__photo" loading="lazy" decoding="async">`;
