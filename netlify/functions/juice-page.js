@@ -13,7 +13,7 @@ export const OLD_SLUGS = {
 // Juices from the previous menu with no replacement. They answer "410 Gone" so search engines
 // drop them (a redirect to the menu keeps the old listing alive as a near-duplicate); people
 // still land on the menu, since the page sends anyone without a juice there.
-export const RETIRED_SLUGS = ['sour-punch', 'strawberry-banana', 'electric-berry-lemonade', 'midnight-rush', 'cinnamon-green-apple', 'blue-limeade'];
+export const RETIRED_SLUGS = ['sour-punch', 'strawberry-banana', 'electric-berry-lemonade', 'midnight-rush', 'cinnamon-green-apple'];
 
 const NOINDEX = '<!-- meta:start -->\n    <meta name="robots" content="noindex">\n    <title>Not on the menu | SiponPressed</title>\n    <!-- meta:end -->';
 
