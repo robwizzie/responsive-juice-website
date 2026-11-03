@@ -2,6 +2,9 @@ User-agent: *
 Allow: /
 Disallow: /admin
 Disallow: /api/
+# Hunter's uploaded photos and splash colors are served from /api, and search engines need them
+Allow: /api/images/
+Allow: /api/splash/
 Disallow: /success
 
 Sitemap: https://siponpressed.com/sitemap.xml

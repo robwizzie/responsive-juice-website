@@ -1,7 +1,7 @@
 # /juices/<slug> (and the old juice addresses) are served by netlify/functions/juice-page.js
+# / and /juices are served by netlify/functions/menu-pages.js (the live menu baked into the HTML)
 
 # Pages
-/juices          /juices.html    200
 /about           /about.html     200
 /contact         /contact.html   200
 /order           /order.html     200

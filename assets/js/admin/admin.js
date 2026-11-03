@@ -1018,7 +1018,7 @@ function openEditor(index) {
 			const { blobs, hasTransparency, preview: localUrl } = await prepareBottle(file);
 			box.innerHTML = `<img src="${localUrl}" alt="">`;
 			form.querySelector('.photo__btn').firstChild.nextSibling.textContent = ' Replace photo';
-			const uploads = await guarded(() => Promise.all(Object.entries(blobs).map(([key, blob]) => api('images', { method: 'POST', blob }).then(r => [key, r.url]))));
+			const uploads = await guarded(() => Promise.all(Object.entries(blobs).map(([key, blob]) => api(key === 'emailImage' ? 'images?original' : 'images', { method: 'POST', blob }).then(r => [key, r.url]))));
 			if (!uploads) return;
 			Object.assign(juice, Object.fromEntries(uploads));
 			warn.hidden = hasTransparency;

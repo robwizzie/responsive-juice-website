@@ -30,6 +30,24 @@ export function statusStamp(juice, { className = '' } = {}) {
 	return `<span class="stamp stamp--${status} ${className}">${icon(status === 'sold-out' ? 'prohibit' : 'hourglass')}${e(label)}</span>`;
 }
 
+/** One bottle in the hero, standing over its splash with two ingredients floating by. */
+export function heroBottle(juice, i) {
+	const [fruitA, fruitB] = garnishFor(juice);
+	const fruit = (src, cls) => (src ? `<span class="hero__fruit ${cls}"><img src="${src}" alt="" decoding="async"></span>` : '');
+	// Shown about 300px wide (190px on phones), so phones get the 480px splash, not the 1000px one
+	const splash = splashUrl(juice)
+		? `<img src="${splashUrl(juice)}" srcset="${splashUrl(juice, { small: true })} 480w, ${splashUrl(juice)} 1000w" sizes="(max-width: 720px) 190px, 300px" alt="" class="hero__splash" decoding="async">`
+		: '';
+	return `
+		<a href="/juices/${juice.slug}" class="hero__bottle is-${juiceStatus(juice)}" style="--c: ${juice.color}; --i: ${i}" aria-label="${e(juice.name)}">
+			${splash}
+			${fruit(fruitA, 'hero__fruit--a')}
+			${fruit(fruitB, 'hero__fruit--b')}
+			${bottleImage(juice, { eager: true, className: 'hero__img' })}
+			${statusStamp(juice, { className: 'hero__stamp' })}
+		</a>`;
+}
+
 /**
  * The "floating juice" scene: the bottle over its colour splash with ingredients and leaves
  * drifting around it. Layers move a little with the pointer (see initParallax).

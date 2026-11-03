@@ -8,6 +8,7 @@ import { mailConfigured, ownerEmail, sendMail, testEmail } from './lib/mail.js';
 import { ORDER_STAGES, isTestOrder } from '../../assets/js/shared/order-status.js';
 import { stripeConfigured } from './lib/stripe.js';
 import { deliveryCenterFor } from './lib/geo.js';
+import { toWebp } from './lib/webp.js';
 
 const IMAGE_TYPES = { 'image/webp': 'webp', 'image/png': 'png', 'image/jpeg': 'jpg' };
 const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
@@ -95,8 +96,11 @@ export default async (req, context) => {
 		if (!extension) return error('Upload a PNG, JPEG or WebP image.');
 		const data = await req.arrayBuffer();
 		if (data.byteLength === 0 || data.byteLength > MAX_IMAGE_BYTES) return error('That image is too large (4 MB max).');
-		const key = `${randomUUID()}.${extension}`;
-		await imageStore().set(key, data, { metadata: { contentType: type } });
+		// Stored as WebP (much smaller), except where a PNG is asked for: emails and Stripe need one
+		const keep = new URL(req.url).searchParams.has('original') || type === 'image/webp';
+		const body = keep ? data : await toWebp(data);
+		const key = `${randomUUID()}.${keep ? extension : 'webp'}`;
+		await imageStore().set(key, body, { metadata: { contentType: keep ? type : 'image/webp' } });
 		return json({ url: `/api/images/${key}` });
 	}
 

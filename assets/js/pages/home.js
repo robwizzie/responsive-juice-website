@@ -1,23 +1,8 @@
 import { ready, t } from '../site.js';
 import { flavorCarousel } from '../lib/carousel.js';
-import { bottleImage, garnishFor, statusStamp, shippingNote, waysToOrder } from '../lib/components.js';
+import { heroBottle, shippingNote, waysToOrder } from '../lib/components.js';
 import { escapeHtml as e } from '../lib/catalog.js';
-import { featuredJuices, juiceStatus, splashUrl } from '../shared/catalog.js';
-
-/** One bottle in the hero, standing over its splash with two ingredients floating by. */
-function heroBottle(juice, i) {
-	const [fruitA, fruitB] = garnishFor(juice);
-	const fruit = (src, cls) => (src ? `<span class="hero__fruit ${cls}"><img src="${src}" alt="" decoding="async"></span>` : '');
-	const splash = splashUrl(juice) ? `<img src="${splashUrl(juice)}" alt="" class="hero__splash" decoding="async">` : '';
-	return `
-		<a href="/juices/${juice.slug}" class="hero__bottle is-${juiceStatus(juice)}" style="--c: ${juice.color}; --i: ${i}" aria-label="${e(juice.name)}">
-			${splash}
-			${fruit(fruitA, 'hero__fruit--a')}
-			${fruit(fruitB, 'hero__fruit--b')}
-			${bottleImage(juice, { eager: true, className: 'hero__img' })}
-			${statusStamp(juice, { className: 'hero__stamp' })}
-		</a>`;
-}
+import { featuredJuices, juiceStatus, splashUrl, webImage } from '../shared/catalog.js';
 
 /** Plays the hero entrance (the words straight away; the bottles once they're live, see showBottles). */
 function playHero(hero) {
@@ -37,8 +22,9 @@ function showBottles(trio) {
 	Promise.race([decoded, timeout]).then(() => requestAnimationFrame(() => trio.classList.add('is-live')));
 }
 
+// The page ships with the hero's entrance already playing (is-in in the HTML), so the headline
+// shows without waiting for this script; only a return visit from the back button replays it
 const hero = document.querySelector('[data-hero]');
-playHero(hero);
 // Coming back with the browser's back button restores the page as it was; replay the entrance
 window.addEventListener('pageshow', event => event.persisted && playHero(hero));
 
@@ -59,7 +45,7 @@ ready.then(({ juices, settings, copy }) => {
 
 	// Hunter's own photo in the story block once he's uploaded one, otherwise a bottle on the river
 	const media = document.querySelector('[data-story-media]');
-	const portrait = t('home.story.photo') || settings.aboutPhoto || '/assets/img/hunter-portrait.webp';
+	const portrait = webImage(t('home.story.photo') || settings.aboutPhoto) || '/assets/img/hunter-portrait.webp';
 	if (portrait) {
 		media.classList.add('story__media--photo');
 		media.innerHTML = `<img src="${e(portrait)}" alt="Hunter, the founder of SiponPressed" class="story__photo" loading="lazy" decoding="async">`;

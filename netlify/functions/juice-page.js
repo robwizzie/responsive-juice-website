@@ -3,17 +3,19 @@ import { juiceMetaTags, juiceVideo } from '../../assets/js/shared/seo.js';
 import { getJuices } from './lib/store.js';
 import { requestOrigin } from './lib/http.js';
 
-// Juices from the previous menu, sent to their closest new flavor
-const OLD_SLUGS = {
+// Juices from the previous menu that became one of today's, sent to that flavor
+export const OLD_SLUGS = {
 	'tropical-storm': '/juices/simply-orange',
 	'sweet-green': '/juices/simply-green',
-	'strawberry-lemonade': '/juices/simply-red',
-	'sour-punch': '/juices',
-	'strawberry-banana': '/juices',
-	'electric-berry-lemonade': '/juices',
-	'midnight-rush': '/juices',
-	'cinnamon-green-apple': '/juices'
+	'strawberry-lemonade': '/juices/simply-red'
 };
+
+// Juices from the previous menu with no replacement. They answer "410 Gone" so search engines
+// drop them (a redirect to the menu keeps the old listing alive as a near-duplicate); people
+// still land on the menu, since the page sends anyone without a juice there.
+export const RETIRED_SLUGS = ['sour-punch', 'strawberry-banana', 'electric-berry-lemonade', 'midnight-rush', 'cinnamon-green-apple'];
+
+const NOINDEX = '<!-- meta:start -->\n    <meta name="robots" content="noindex">\n    <title>Not on the menu | SiponPressed</title>\n    <!-- meta:end -->';
 
 const META = /<!-- meta:start[^>]*-->[\s\S]*?<!-- meta:end -->/;
 
@@ -42,12 +44,14 @@ export default async (req, context) => {
 	const origin = requestOrigin(req);
 	const [page, juices] = await Promise.all([fetch(new URL('/juice.html', origin)).then(res => res.text()), getJuices()]);
 	const juice = juices.find(item => item.slug === slug && item.active);
+	const gone = () => page.replace(META, () => NOINDEX);
 	if (!juice) {
 		// A juice whose page address Hunter changed: send old links to its new page
 		const moved = juices.find(item => item.active && item.formerSlugs?.includes(slug));
 		if (moved) return new Response(null, { status: 301, headers: { Location: `/juices/${moved.slug}` } });
-		// The page shows its own "not found" message
-		return new Response(page, { status: 404, headers: { 'Content-Type': 'text/html; charset=utf-8' } });
+		// Not a juice (any more): kept out of search results; the page sends visitors to the menu
+		const status = RETIRED_SLUGS.includes(slug) ? 410 : 404;
+		return new Response(gone(), { status, headers: { 'Content-Type': 'text/html; charset=utf-8', 'X-Robots-Tag': 'noindex' } });
 	}
 
 	const [version, hasVideo] = await Promise.all([versionOf(juice), exists(new URL(juiceVideo(slug), origin))]);

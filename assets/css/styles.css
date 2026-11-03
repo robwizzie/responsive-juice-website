@@ -4,6 +4,18 @@
   Type is Archivo throughout; the wordmark is the label's logo as an SVG.
 ==========================================================================*/
 
+/*=============== FONT ===============*/
+/* Archivo (variable weight and width), served from this site so the first paint doesn't wait on
+   another server. Latin only: every character the site uses. Preloaded in each page's <head>. */
+@font-face {
+	font-family: 'Archivo';
+	font-style: normal;
+	font-weight: 100 900;
+	font-stretch: 62% 125%;
+	font-display: swap;
+	src: url('/assets/fonts/archivo-latin.woff2') format('woff2');
+}
+
 /*=============== TOKENS ===============*/
 :root {
 	--select-line: #161513;
@@ -4295,17 +4307,17 @@ html:not(.js) .cta-band .cta-band__scene {
 
 .portrait__frame {
 	position: relative;
-	aspect-ratio: 4 / 5;
 	padding: 14px 14px 70px;
 	border-radius: 18px;
 	background: #fff;
 	box-shadow: var(--shadow-lg);
 }
 
+/* The photo window is 4:5, the same shape the admin crops portraits to */
 .portrait__photo {
 	position: relative;
 	width: 100%;
-	height: 100%;
+	aspect-ratio: 4 / 5;
 	border-radius: 8px;
 	overflow: hidden;
 	background: var(--paper-2);
