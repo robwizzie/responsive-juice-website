@@ -1,23 +1,8 @@
 import { ready, t } from '../site.js';
 import { flavorCarousel } from '../lib/carousel.js';
-import { bottleImage, garnishFor, statusStamp, shippingNote, waysToOrder } from '../lib/components.js';
+import { heroBottle, shippingNote, waysToOrder } from '../lib/components.js';
 import { escapeHtml as e } from '../lib/catalog.js';
 import { featuredJuices, juiceStatus, splashUrl } from '../shared/catalog.js';
-
-/** One bottle in the hero, standing over its splash with two ingredients floating by. */
-function heroBottle(juice, i) {
-	const [fruitA, fruitB] = garnishFor(juice);
-	const fruit = (src, cls) => (src ? `<span class="hero__fruit ${cls}"><img src="${src}" alt="" decoding="async"></span>` : '');
-	const splash = splashUrl(juice) ? `<img src="${splashUrl(juice)}" alt="" class="hero__splash" decoding="async">` : '';
-	return `
-		<a href="/juices/${juice.slug}" class="hero__bottle is-${juiceStatus(juice)}" style="--c: ${juice.color}; --i: ${i}" aria-label="${e(juice.name)}">
-			${splash}
-			${fruit(fruitA, 'hero__fruit--a')}
-			${fruit(fruitB, 'hero__fruit--b')}
-			${bottleImage(juice, { eager: true, className: 'hero__img' })}
-			${statusStamp(juice, { className: 'hero__stamp' })}
-		</a>`;
-}
 
 /** Plays the hero entrance (the words straight away; the bottles once they're live, see showBottles). */
 function playHero(hero) {
