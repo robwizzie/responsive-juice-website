@@ -22,8 +22,9 @@ function showBottles(trio) {
 	Promise.race([decoded, timeout]).then(() => requestAnimationFrame(() => trio.classList.add('is-live')));
 }
 
+// The page ships with the hero's entrance already playing (is-in in the HTML), so the headline
+// shows without waiting for this script; only a return visit from the back button replays it
 const hero = document.querySelector('[data-hero]');
-playHero(hero);
 // Coming back with the browser's back button restores the page as it was; replay the entrance
 window.addEventListener('pageshow', event => event.persisted && playHero(hero));
 
