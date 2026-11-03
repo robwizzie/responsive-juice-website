@@ -3574,7 +3574,12 @@ body[data-tab='pages'] .admin-main {
 }
 
 .featured-picker {
+	/* The site's reset zeroes margins, which would pin the dialog to the top-left corner */
+	margin: auto;
 	width: min(560px, calc(100vw - 2rem));
+	max-height: calc(100dvh - 2rem);
+	overflow-y: auto;
+	overscroll-behavior: contain;
 	padding: 1.25rem;
 	border: 0;
 	border-radius: var(--radius);
