@@ -1,5 +1,7 @@
 /**
- * Admin → Stats: how the juices are selling. Best sellers (as a podium or a ranked list) for any
+ * Admin → Stats, in two modes: Sales (below) and Website (visitors, in stats-web.js).
+ *
+ * Sales: how the juices are selling. Best sellers (as a podium or a ranked list) for any
  * day, week, month or year, money by month, today against a typical day, simple forecasts, juice
  * trends, the busiest days and the regulars. The numbers come from stats-data.js.
  */
@@ -10,11 +12,16 @@ import { splashUrl } from '../shared/catalog.js';
 import { formatMoney } from '../shared/order-rules.js';
 import { isTestOrder } from '../shared/order-status.js';
 import { addDays, booked, change, comparison, dailySeries, fulfillmentSplit, inRange, juiceRanking, localDay, monthlySeries, period, predictions, regulars, salesFrom, todayVsOthers, totals, weekdayPattern, weeklyJuiceSeries } from './stats-data.js';
-import { updateCounts } from './admin.js';
+import { api, updateCounts } from './admin.js';
+import { websiteView } from './stats-web.js';
 
 let state = null;
 // What Hunter is looking at; kept while he moves between tabs
-const view = { unit: 'month', offset: 0, includeTest: null, layout: 'podium' };
+const view = { mode: 'sales', unit: 'month', offset: 0, includeTest: false, layout: 'podium' };
+// Website visits, fetched when Website is opened and refreshed at most once a minute
+let visits = null;
+let visitsAt = 0;
+let visitsLoading = false;
 
 const UNITS = [
 	{ id: 'day', label: 'Day' },
@@ -318,17 +325,43 @@ function peopleCard(sales) {
 
 /* ---------- page ---------- */
 
+async function loadVisits(today) {
+	if (visitsLoading || Date.now() - visitsAt < 60 * 1000) return;
+	visitsLoading = true;
+	try {
+		visits = await api(`visits?from=${addDays(today, -800)}&to=${today}`);
+		visitsAt = Date.now();
+	} catch {
+		visits ||= { days: [], live: 0, failed: true };
+	} finally {
+		visitsLoading = false;
+	}
+	if (view.mode === 'web') render();
+}
+
+const MODES = [
+	{ id: 'sales', label: 'Sales', note: 'Orders, money and juices', icon: 'receipt' },
+	{ id: 'web', label: 'Website', note: 'Visitors and what they look at', icon: 'monitor' }
+];
+
 function render() {
 	const box = document.querySelector('[data-stats]');
 	if (!box || !state.orders) return;
+	const web = view.mode === 'web';
 	const hasReal = state.orders.some(o => !isTestOrder(o));
-	const includeTest = view.includeTest ?? !hasReal;
+	// Test orders stay out unless Hunter switches them on
+	const includeTest = view.includeTest;
 	const sales = salesFrom(state.orders, state.juices, { includeTest });
 	const today = localDay(Date.now());
-	const p = period(view.unit, today, view.offset, sales[0]?.day || today);
-	const testOnly = includeTest && !hasReal;
+	const firstDay = web ? visits?.days?.[0]?.day : sales[0]?.day;
+	const p = period(view.unit, today, view.offset, firstDay || today);
+	if (web) loadVisits(today);
 
+	box.classList.toggle('stats--web', web);
 	box.innerHTML = `
+		<div class="stats-mode" role="tablist" aria-label="Which stats">
+			${MODES.map(m => `<button type="button" role="tab" class="stats-mode__tab stats-mode__tab--${m.id}" data-mode="${m.id}" aria-selected="${view.mode === m.id}">${icon(m.icon)}<span><strong>${m.label}</strong><small>${m.note}</small></span></button>`).join('')}
+		</div>
 		<div class="stats-bar">
 			<div class="segmented" role="radiogroup" aria-label="Time span">
 				${UNITS.map(u => `<label><input type="radio" name="unit" value="${u.id}" ${view.unit === u.id ? 'checked' : ''}><span>${u.label}</span></label>`).join('')}
@@ -342,9 +375,16 @@ function render() {
 				<button type="button" class="icon-btn" data-step="1" aria-label="Later" ${view.offset >= 0 ? 'disabled' : ''}>${icon('caretRight')}</button>
 			</div>`
 			}
-			<label class="toggle stats-test"><input type="checkbox" data-include-test ${includeTest ? 'checked' : ''}><span></span> Include test orders</label>
+			${
+				web
+					? `<p class="stats-live${visits?.live ? ' is-on' : ''}"><span class="stats-live__dot"></span>${visits ? (visits.live ? `${visits.live} on the site now` : 'Nobody on the site right now') : 'Checking&hellip;'}</p>`
+					: `<label class="toggle stats-test"><input type="checkbox" data-include-test ${includeTest ? 'checked' : ''}><span></span> Include test orders</label>`
+			}
 		</div>
-		${testOnly ? `<p class="stats-banner">${icon('info')} <span>No real sales yet, so these numbers are from <strong>test orders</strong>. They'll switch to real sales as soon as the first paid order comes in.</span></p>` : ''}
+		${
+			web
+				? websiteView({ visits, p, today, against: comparison(p, today), sales, juices: state.juices, h: { delta, juiceArt, dateText, loader: juiceLoader } })
+				: `${!hasReal && !includeTest ? `<p class="stats-banner">${icon('info')} <span>No real sales yet. Switch on <strong>Include test orders</strong> to see how this page looks with your test orders.</span></p>` : ''}
 		${kpis(sales, p, today)}
 		<div class="stats-grid">
 			${bestSellers(sales, p)}
@@ -354,7 +394,8 @@ function render() {
 			${trendsCard(sales, today)}
 			${weekdayCard(sales)}
 			${peopleCard(sales)}
-		</div>`;
+		</div>`
+		}`;
 }
 
 function bind(box) {
@@ -371,7 +412,9 @@ function bind(box) {
 	box.addEventListener('click', event => {
 		const step = event.target.closest('[data-step]');
 		const month = event.target.closest('[data-month]');
-		if (step) view.offset = Math.min(0, view.offset + Number(step.dataset.step));
+		const mode = event.target.closest('[data-mode]');
+		if (mode) view.mode = mode.dataset.mode;
+		else if (step) view.offset = Math.min(0, view.offset + Number(step.dataset.step));
 		else if (month) {
 			view.unit = 'month';
 			view.offset = Number(month.dataset.month);
@@ -384,7 +427,7 @@ export async function renderStats(adminState) {
 	state = adminState;
 	const main = document.getElementById('admin-main');
 	main.innerHTML = `
-		<div class="admin-head"><div><h1 class="admin-title">Stats</h1><p class="muted">How the juices are selling. Every number comes from paid orders; canceled ones don't count.</p></div></div>
+		<div class="admin-head"><div><h1 class="admin-title">Stats</h1><p class="muted">How the juices are selling, and who's visiting the site.</p></div></div>
 		<div class="stats" data-stats>${state.orders ? '' : `<div class="admin-loading admin-loading--inline">${juiceLoader('Adding up your sales&hellip;')}</div>`}</div>`;
 	bind(main.querySelector('[data-stats]'));
 	if (!state.orders) await updateCounts({ reload: true });
@@ -394,5 +437,7 @@ export async function renderStats(adminState) {
 /** Called when fresh orders arrive while Stats is open. */
 export function refreshStats(adminState) {
 	state = adminState;
+	// The minute-by-minute refresh also brings the visitor numbers up to date
+	if (view.mode === 'web') visitsAt = 0;
 	render();
 }

@@ -81,7 +81,11 @@ Each juice has one of four statuses: **Available**, **Sold out** (shown but grey
 
 **Admin → Stats** adds up the saved orders: money, bottles, orders and average order for any day, week, month or year (with arrows to go back), compared with the same days of the period before; best sellers as a podium or a full ranked list (the least popular show at zero); money by month split by juice; today against an average day; forecasts for the month and next week's bottles; what's already booked to press; juice trends; the busiest days; and repeat customers.
 
-A sale is a paid order that wasn't canceled, counted on the day it was paid (Philadelphia time). Money includes delivery fees. Stripe test orders are left out unless **Include test orders** is on (it starts on while there are no real sales yet). The maths is in `assets/js/admin/stats-data.js` and tested in `tests/stats.test.js`.
+A sale is a paid order that wasn't canceled, counted on the day it was paid (Philadelphia time). Money includes delivery fees. Stripe test orders are left out unless **Include test orders** is switched on. The maths is in `assets/js/admin/stats-data.js` and tested in `tests/stats.test.js`.
+
+**Stats → Website** (blue, so it's never confused with sales) shows who visits the site: visitors, page views, pages per visit and the share who ordered; visitors per day or month; where they came from (Instagram, Google, typed in…); the most looked-at juices and how many were added to cart; browsing → cart → checkout → paid; top pages; phones vs computers; top places; busiest hours; and how many are on the site right now.
+
+It's counted by the site itself, with no cookies or third-party trackers: each public page sends a tiny hit to `/api/hit` (`netlify/functions/hit.js`), saved in the `visits` Blobs store. A visitor is a hash of their IP address and browser salted with the day, so people count once a day and can't be followed across days. Bots, the admin's own visits (while signed in) and the admin's live previews aren't counted. Finished days are rolled up into one summary when Stats is opened. Add `?utm_source=flyer` (or any name) to a shared link and it shows up as its own source. Code: `netlify/functions/lib/visits.js`, `assets/js/admin/visits-data.js`, `assets/js/admin/stats-web.js`; tests in `tests/visits.test.js`.
 
 ## Link previews
 

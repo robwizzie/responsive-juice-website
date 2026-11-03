@@ -9,6 +9,7 @@ import { ORDER_STAGES, isTestOrder } from '../../assets/js/shared/order-status.j
 import { stripeConfigured } from './lib/stripe.js';
 import { deliveryCenterFor } from './lib/geo.js';
 import { toWebp } from './lib/webp.js';
+import { visitDay, visitsBetween } from './lib/visits.js';
 
 const IMAGE_TYPES = { 'image/webp': 'webp', 'image/png': 'png', 'image/jpeg': 'jpg' };
 const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
@@ -60,6 +61,15 @@ export default async (req, context) => {
 		const settings = await getSettings();
 		const [juices, copy] = await Promise.all([getJuices(settings), getCopyEdits()]);
 		return json({ juices, settings, copy, status: { stripe: stripeConfigured(), email: mailConfigured(), emailTo: ownerEmail(settings), webhook: Boolean(process.env.STRIPE_WEBHOOK_SECRET) } });
+	}
+
+	// Website visits for Stats → Website: day summaries from ?from= to ?to= (YYYY-MM-DD)
+	if (action === 'visits' && req.method === 'GET') {
+		const params = new URL(req.url).searchParams;
+		const iso = /^\d{4}-\d{2}-\d{2}$/;
+		const to = iso.test(params.get('to') || '') ? params.get('to') : visitDay();
+		const from = iso.test(params.get('from') || '') ? params.get('from') : to;
+		return json(await visitsBetween(from, to));
 	}
 
 	if (action === 'juices' && req.method === 'PUT') {
