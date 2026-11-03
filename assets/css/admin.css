@@ -5008,3 +5008,119 @@ body[data-tab='pages'] .admin-main {
 .savebar__count .cfield__dot {
 	flex-shrink: 0;
 }
+
+/*=============== PHOTO CROPPER ===============*/
+.cropper {
+	/* The site's reset zeroes margins, which would pin the dialog to the top-left corner */
+	margin: auto;
+	width: min(520px, calc(100vw - 2rem));
+	max-height: calc(100dvh - 2rem);
+	overflow-y: auto;
+	overscroll-behavior: contain;
+	padding: 1.1rem 1.25rem 1.25rem;
+	border: 0;
+	border-radius: var(--radius-lg);
+	background: var(--card);
+	color: var(--ink);
+	box-shadow: var(--shadow-lg);
+}
+
+.cropper::backdrop {
+	background: rgba(22, 21, 19, 0.55);
+}
+
+.cropper__head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1rem;
+}
+
+.cropper__title {
+	font-size: 1.2rem;
+	font-weight: 800;
+}
+
+.cropper__hint {
+	margin: 0.25rem 0 0.9rem;
+	color: var(--muted);
+	font-size: 0.875rem;
+}
+
+.cropper__stage {
+	position: relative;
+	/* Short enough that the buttons stay on screen, whatever the shape */
+	width: min(100%, calc((100dvh - 19rem) * var(--a, 1)));
+	max-height: calc(100dvh - 19rem);
+	margin-inline: auto;
+	overflow: hidden;
+	border-radius: var(--radius-sm);
+	background: #161513;
+	cursor: grab;
+	touch-action: none;
+	user-select: none;
+	-webkit-user-select: none;
+}
+
+.cropper__stage.is-dragging {
+	cursor: grabbing;
+}
+
+.cropper__stage:focus-visible {
+	outline: 3px solid var(--lime);
+	outline-offset: 3px;
+}
+
+.cropper__img {
+	position: absolute;
+	top: 0;
+	left: 0;
+	max-width: none;
+	pointer-events: none;
+	transform-origin: 0 0;
+}
+
+/* Rule-of-thirds lines while dragging, to help line up a face */
+.cropper__grid {
+	position: absolute;
+	inset: 0;
+	background:
+		linear-gradient(90deg, transparent calc(33.33% - 0.5px), rgba(255, 255, 255, 0.5) 0 calc(33.33% + 0.5px), transparent 0 calc(66.66% - 0.5px), rgba(255, 255, 255, 0.5) 0 calc(66.66% + 0.5px), transparent 0),
+		linear-gradient(transparent calc(33.33% - 0.5px), rgba(255, 255, 255, 0.5) 0 calc(33.33% + 0.5px), transparent 0 calc(66.66% - 0.5px), rgba(255, 255, 255, 0.5) 0 calc(66.66% + 0.5px), transparent 0);
+	box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.6);
+	opacity: 0;
+	transition: opacity 0.25s var(--ease);
+	pointer-events: none;
+}
+
+.cropper__stage.is-dragging .cropper__grid {
+	opacity: 1;
+}
+
+.cropper__zoom {
+	display: flex;
+	align-items: center;
+	gap: 0.6rem;
+	margin: 1rem auto 0;
+	max-width: 360px;
+	color: var(--muted);
+}
+
+.cropper__zoom .icon {
+	width: 1rem;
+	height: 1rem;
+}
+
+.cropper__zoom input {
+	flex: 1;
+	accent-color: var(--ink);
+}
+
+.cropper__foot {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-between;
+	align-items: center;
+	gap: 0.5rem;
+	margin-top: 1rem;
+}

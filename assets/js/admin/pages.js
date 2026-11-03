@@ -9,11 +9,17 @@ import { escapeHtml as e } from '../lib/catalog.js';
 import { DEFAULT_COPY, PAGES, TOKENS, copyField, fillTokens } from '../shared/content.js';
 import { api, guarded, toast } from './admin.js';
 import { preparePhoto } from './image.js';
+import { cropPhoto } from './cropper.js';
 import { mountPreview, previewMarkup } from './preview.js';
 
 // Hunter's portrait lives in the shop settings (the share card reads it there), but he finds
 // it with the rest of the About page
 const ABOUT_PHOTO = '@aboutPhoto';
+// The shape each photo is shown in on the site, so the cropper frames it the same way
+const PORTRAIT = { aspect: 4 / 5, maxSide: 1400, shape: 'Portrait', title: 'Fit your photo in the frame' };
+const WIDE = { aspect: 16 / 9, maxSide: 2200, shape: 'Wide', title: 'Fit your photo' };
+const photoShape = key => (key === ABOUT_PHOTO || key === 'home.story.photo' ? PORTRAIT : WIDE);
+
 const ABOUT_PHOTO_FIELD = { key: ABOUT_PHOTO, label: 'Photo of you', type: 'image', portrait: true, hint: 'Goes in the photo frame at the top of the About page and on the home page. A portrait (taller than wide) looks best.' };
 
 let state = null;
@@ -77,6 +83,7 @@ function imageField(field) {
 				<div class="photo__copy">
 					<div class="photo__btns">
 						<label class="btn btn--ghost btn--sm photo__btn">${icon('upload')} ${current ? 'Replace' : 'Upload your own'}<input type="file" accept="image/png,image/webp,image/jpeg" data-photo-key="${field.key}" hidden></label>
+						${current ? `<button type="button" class="btn btn--ghost btn--sm" data-crop-key="${field.key}">${icon('crop')} Adjust</button>` : ''}
 						${current ? `<button type="button" class="btn btn--ghost btn--sm" data-reset="${field.key}">${icon('trash')} Use the original</button>` : ''}
 					</div>
 					${field.hint ? `<p class="hint">${e(field.hint)}</p>` : ''}
@@ -410,18 +417,17 @@ export function renderPages(adminState) {
 		setDraft(input.dataset.key, input.value);
 	});
 
-	root.addEventListener('change', async event => {
-		const fileInput = event.target.closest('[data-photo-key]');
-		const file = fileInput?.files[0];
-		if (!file) return;
-		const key = fileInput.dataset.photoKey;
+	// A new photo (or an existing one being adjusted) goes through the cropper, then uploads
+	async function usePhoto(key, source) {
+		const shape = photoShape(key);
+		const cropped = await cropPhoto(source, shape);
+		if (!cropped) return;
 		const box = main.querySelector(`[data-photo-box="${CSS.escape(key)}"]`);
 		uploads++;
-		box.classList.add('is-busy');
+		box?.classList.add('is-busy');
 		try {
-			const field = key === ABOUT_PHOTO ? ABOUT_PHOTO_FIELD : copyField(key);
-			const { blob, preview: local } = await preparePhoto(file, field.portrait ? 1400 : 2000);
-			box.innerHTML = `<img src="${local}" alt="">`;
+			const { blob, preview: local } = cropped === 'whole' ? await preparePhoto(source instanceof Blob ? source : await fetch(source).then(res => res.blob()), shape.maxSide) : cropped;
+			if (box) box.innerHTML = `<img src="${local}" alt="">`;
 			const upload = await guarded(() => api('images', { method: 'POST', blob }));
 			if (upload) {
 				setDraft(key, upload.url);
@@ -433,6 +439,21 @@ export function renderPages(adminState) {
 			uploads--;
 			renderPanel();
 		}
+	}
+
+	root.addEventListener('change', event => {
+		const fileInput = event.target.closest('[data-photo-key]');
+		const file = fileInput?.files[0];
+		if (!file) return;
+		fileInput.value = '';
+		usePhoto(fileInput.dataset.photoKey, file).catch(err => toast(err.message, true));
+	});
+
+	root.addEventListener('click', event => {
+		const adjust = event.target.closest('[data-crop-key]');
+		if (!adjust) return;
+		const key = adjust.dataset.cropKey;
+		usePhoto(key, value(key)).catch(err => toast(err.message, true));
 	});
 }
 
