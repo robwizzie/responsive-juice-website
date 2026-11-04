@@ -5652,3 +5652,219 @@ body[data-tab='pages'] .admin-main {
 	overflow: visible;
 	transform: translateX(-50%);
 }
+
+/*=============== OUTSIDE SALES ===============*/
+.order-type--handoff {
+	background: #e9e3ff;
+	color: #3d2a8a;
+}
+
+.order-source,
+.order-unpaid {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.3rem;
+	height: 1.6rem;
+	padding: 0 0.6rem;
+	border-radius: 99px;
+	font-size: 0.75rem;
+	font-weight: 700;
+	white-space: nowrap;
+}
+
+.order-source {
+	background: var(--paper-2);
+	color: var(--ink-2);
+}
+
+.order-source .icon {
+	width: 0.95rem;
+	height: 0.95rem;
+}
+
+.order-source--stripe {
+	background: #ece9ff;
+	color: #4b3fb5;
+}
+
+.order-unpaid {
+	background: #ffe3d6;
+	color: #a3360f;
+}
+
+.order-card__needs {
+	display: flex;
+	gap: 0.5rem;
+	margin: 0.85rem 0 0;
+	padding: 0.65rem 0.8rem;
+	border: 1.5px dashed #b9b0f0;
+	border-radius: var(--radius-sm);
+	background: #f6f4ff;
+	color: #3d2a8a;
+	font-size: 0.9rem;
+}
+
+.order-card__needs .icon {
+	flex-shrink: 0;
+	margin-top: 0.1rem;
+}
+
+.link-btn {
+	padding: 0;
+	border: 0;
+	background: none;
+	color: inherit;
+	font: inherit;
+	font-weight: 700;
+	text-decoration: underline;
+	text-underline-offset: 2px;
+	cursor: pointer;
+}
+
+.orders-actions .btn .icon {
+	width: 1.1rem;
+	height: 1.1rem;
+}
+
+.segmented--wrap {
+	display: flex;
+	gap: 0.45rem;
+	padding: 0;
+	background: none;
+}
+
+.segmented--wrap span {
+	padding: 0.6rem 1rem;
+	border: 1.5px solid var(--line-strong);
+	color: var(--ink-2);
+}
+
+.segmented--wrap input:checked + span {
+	border-color: var(--ink);
+}
+
+@media (max-width: 720px) {
+	.orders-actions {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		width: 100%;
+	}
+
+	.orders-actions [data-add-sale] {
+		grid-column: 1 / -1;
+		min-height: 52px;
+	}
+
+	.orders-actions .btn {
+		justify-content: center;
+	}
+}
+
+.sale-sheet .sheet__section h3 .optional {
+	margin-left: 0.25rem;
+	font-weight: 600;
+	letter-spacing: 0;
+	text-transform: none;
+}
+
+.sale-form {
+	padding-bottom: 0;
+}
+
+.sale-juices {
+	display: grid;
+	gap: 0.5rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.sale-juice {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	padding: 0.5rem 0.5rem 0.5rem 0.75rem;
+	border: 1.5px solid var(--line);
+	border-radius: var(--radius);
+	transition:
+		border-color 0.2s,
+		background-color 0.2s;
+}
+
+.sale-juice.has-qty {
+	border-color: color-mix(in srgb, var(--c) 70%, var(--ink));
+	background: color-mix(in srgb, var(--c) 10%, var(--card));
+}
+
+.sale-juice__dot {
+	flex: none;
+	width: 14px;
+	height: 14px;
+	border-radius: 50%;
+	background: var(--c);
+}
+
+.sale-juice__name {
+	flex: 1;
+	min-width: 0;
+	font-weight: 700;
+}
+
+.sale-juice__name small {
+	display: block;
+	color: var(--muted);
+	font-size: 0.8rem;
+	font-weight: 600;
+}
+
+.sale-juice .stepper__btn {
+	width: 44px;
+	height: 44px;
+}
+
+.sale-price .input-prefix {
+	max-width: 12rem;
+	min-height: 52px;
+	font-size: 1.25rem;
+	font-weight: 700;
+}
+
+.sale-price input {
+	width: 100%;
+	border: 0;
+	box-shadow: none;
+	padding: 0.5rem 0.75rem 0.5rem 0.25rem;
+	font: inherit;
+	background: none;
+}
+
+.sale-price input:focus {
+	outline: none;
+}
+
+.sale-form__date {
+	margin-top: 1rem;
+	max-width: 14rem;
+}
+
+.sale-form__foot {
+	position: sticky;
+	bottom: 0;
+	margin: 0 -1.5rem;
+	padding: 1rem 1.5rem max(1rem, env(safe-area-inset-bottom));
+	border-top: 1px solid var(--line);
+	background: var(--card);
+}
+
+.sale-form__save {
+	width: 100%;
+	min-height: 52px;
+	justify-content: center;
+}
+
+.sale-form__error {
+	margin: 0 0 0.75rem;
+	color: #b3261e;
+	font-size: 0.9rem;
+	font-weight: 600;
+}

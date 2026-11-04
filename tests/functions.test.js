@@ -192,3 +192,64 @@ test('contact messages are saved for the admin even without email set up', async
 	assert.equal((await call('DELETE', { key })).status, 200);
 	assert.equal((await (await call('GET')).json()).messages.length, 0);
 });
+
+test('outside sales: Hunter adds, edits and deletes one, and Tap to Pay payments arrive on their own', async () => {
+	const ctx = { ip: '9.9.9.9' };
+	const login = await fns.admin(req('/api/admin/login', { method: 'POST', body: { password: 'secret' }, headers: { 'x-admin-request': '1' } }), ctx);
+	const headers = { cookie: login.headers.get('set-cookie').split(';')[0], 'x-admin-request': '1' };
+	const call = (path, method, body) => fns.admin(req(`/api/admin/${path}`, { method, body, headers }), ctx);
+
+	assert.equal((await call('sales', 'POST', { items: [], date: '2026-11-04' })).status, 400, 'needs a bottle');
+	const added = await call('sales', 'POST', { items: [{ slug: 'simply-orange', qty: 3 }], total: 2000, payment: 'venmo', channel: 'instagram', type: 'pickup', date: '2026-11-07', customer: { name: '' } });
+	assert.equal(added.status, 200);
+	const { order, key } = await added.json();
+	assert.equal(order.source, 'manual');
+	assert.equal(order.stage, 'new', 'a pickup waits in To do');
+	assert.equal(order.test, false);
+	assert.equal(order.lines.reduce((s, l) => s + l.amount, 0), 2000, 'the deal price is spread over the lines');
+
+	// Moving the day moves its key, and the old copy goes away
+	const edited = await call('sales', 'PUT', { key, items: [{ slug: 'simply-orange', qty: 3 }], total: 2000, payment: 'cash', type: 'pickup', date: '2026-11-08' });
+	assert.equal(edited.status, 200);
+	const moved = await edited.json();
+	assert.equal(moved.key, `2026-11-08/${order.id}`);
+	assert.equal(moved.order.stage, 'new');
+	assert.equal(await fns.store.getOrder(key), null);
+
+	// Website orders aren't edited this way
+	await fns.store.saveOrder({ id: 'web-1', type: 'pickup', date: '2026-11-08', customer: { name: 'Web' }, lines: [], total: 800, status: 'paid', stripeSessionId: 'cs_live_2' });
+	assert.equal((await call('sales', 'PUT', { key: '2026-11-08/web-1', items: [{ slug: 'simply-orange', qty: 1 }], date: '2026-11-08' })).status, 400);
+
+	assert.equal((await call('orders', 'DELETE', { key: moved.key })).status, 200, 'a typed-in sale can be deleted');
+
+	// Tap to Pay in the Stripe app: no order_id, card_present
+	const send = async object => {
+		const payload = JSON.stringify({ id: `evt_${object.id}`, object: 'event', type: 'payment_intent.succeeded', livemode: true, created: object.created, data: { object } });
+		const signature = new Stripe('sk_test_fake').webhooks.generateTestHeaderString({ payload, secret: 'whsec_test' });
+		return fns.webhook(new Request('https://siponpressed.test/webhook/stripe', { method: 'POST', body: payload, headers: { 'stripe-signature': signature } }));
+	};
+	const created = Math.floor(Date.parse('2026-11-04T18:00:00Z') / 1000);
+	assert.equal((await send({ id: 'pi_tap1', object: 'payment_intent', amount: 1600, amount_received: 1600, created, payment_method_types: ['card_present'], metadata: {} })).status, 200);
+	assert.equal((await send({ id: 'pi_tap1', object: 'payment_intent', amount: 1600, amount_received: 1600, created, payment_method_types: ['card_present'], metadata: {} })).status, 200);
+	assert.equal((await send({ id: 'pi_site', object: 'payment_intent', amount: 800, created, payment_method_types: ['card'], metadata: { order_id: 'order-9' } })).status, 200);
+
+	const tap = await fns.store.getOrder('2026-11-04/pi_tap1');
+	assert.equal(tap.source, 'stripe');
+	assert.equal(tap.stripe.kind, 'tap');
+	assert.equal(tap.type, 'handoff');
+	assert.equal(tap.stage, 'done');
+	assert.equal(tap.total, 1600);
+	assert.equal(tap.needsDetails, true);
+	assert.equal(tap.test, false);
+	assert.equal(await fns.store.getOrder('2026-11-04/pi_site'), null, 'website payments are left to their checkout event');
+
+	// Hunter adds what was bought; the amount stays what Stripe charged
+	const filled = await (await call('sales', 'PUT', { key: '2026-11-04/pi_tap1', items: [{ slug: 'simply-green', qty: 2 }], total: 1, type: 'handoff', date: '2026-11-04', customer: { name: 'Market buyer' } })).json();
+	assert.equal(filled.order.total, 1600);
+	assert.equal(filled.order.needsDetails, false);
+	assert.equal(filled.order.stage, 'done');
+	assert.equal(filled.order.lines[0].amount, 1600);
+	assert.equal((await call('orders', 'DELETE', { key: '2026-11-04/pi_tap1' })).status, 400, 'real Stripe money is kept');
+	await fns.store.deleteOrder('2026-11-04/pi_tap1');
+	await fns.store.deleteOrder('2026-11-08/web-1');
+});

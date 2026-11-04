@@ -3,6 +3,7 @@ import { customerConfirmation, ownerEmail, ownerNotification, sendMail } from '.
 import { publicSiteUrl } from './lib/http.js';
 import { stripe } from './lib/stripe.js';
 import { formatDate } from '../../assets/js/shared/order-rules.js';
+import { importStripePayment } from './lib/stripe-import.js';
 
 // Stripe calls this after a successful payment. We turn the saved order into a confirmed
 // one and email Hunter and the customer. Stripe may retry, so this is safe to run twice.
@@ -17,6 +18,14 @@ export default async req => {
 		return new Response(`Webhook Error: ${err.message}`, { status: 400 });
 	}
 
+	// A card payment the website didn't start, like Tap to Pay in the Stripe app. Website
+	// checkouts set order_id on their payment, and those are handled below.
+	if (event.type === 'payment_intent.succeeded') {
+		const intent = event.data.object;
+		if (!intent.metadata?.order_id) await importStripePayment({ intent, livemode: event.livemode });
+		return new Response('OK', { status: 200 });
+	}
+
 	if (event.type !== 'checkout.session.completed' && event.type !== 'checkout.session.async_payment_succeeded') {
 		return new Response('Ignored', { status: 200 });
 	}
@@ -27,6 +36,11 @@ export default async req => {
 	const id = session.metadata?.order_id || session.client_reference_id;
 	const pending = id && (await getPending(id));
 	if (!pending) {
+		// A Payment Link checkout: not started by the site, but it says what was bought
+		if (session.payment_link && !id) {
+			await importStripePayment({ session, livemode: event.livemode, created: event.created });
+			return new Response('OK', { status: 200 });
+		}
 		// Already processed (pending copy removed) or not one of ours
 		console.warn(`No pending order for session ${session.id}`);
 		return new Response('OK', { status: 200 });

@@ -11,7 +11,7 @@ import { bottleImage, juiceLoader } from '../lib/components.js';
 import { splashUrl } from '../shared/catalog.js';
 import { formatMoney } from '../shared/order-rules.js';
 import { isTestOrder } from '../shared/order-status.js';
-import { addDays, booked, change, comparison, dailySeries, fulfillmentSplit, inRange, juiceRanking, localDay, monthlySeries, period, predictions, regulars, salesFrom, todayVsOthers, totals, weekdayPattern, weeklyJuiceSeries } from './stats-data.js';
+import { addDays, booked, change, comparison, dailySeries, fulfillmentSplit, inRange, sourceSplit, juiceRanking, localDay, monthlySeries, period, predictions, regulars, salesFrom, todayVsOthers, totals, weekdayPattern, weeklyJuiceSeries } from './stats-data.js';
 import { api, updateCounts } from './admin.js';
 import { websiteView } from './stats-web.js';
 
@@ -304,6 +304,8 @@ function peopleCard(sales) {
 	const r = regulars(sales);
 	const split = fulfillmentSplit(sales);
 	const total = split.pickup + split.delivery || 1;
+	const from = sourceSplit(sales);
+	const fromTotal = from.website + from.outside || 1;
 	return `
 		<article class="stat-card stat-card--people">
 			<header class="stat-card__head"><div><p class="stat-card__kicker">All time</p><h2>Your people</h2></div></header>
@@ -315,6 +317,14 @@ function peopleCard(sales) {
 				<span class="split__pickup" style="flex-grow: ${split.pickup / total}">${split.pickup ? `${icon('bag')} ${split.pickup} pickup` : ''}</span>
 				<span class="split__delivery" style="flex-grow: ${split.delivery / total}">${split.delivery ? `${icon('truck')} ${split.delivery} delivery` : ''}</span>
 			</div>
+			${
+				from.outside
+					? `<div class="split split--source" role="img" aria-label="${from.website} website orders and ${from.outside} outside sales">
+				<span class="split__pickup" style="flex-grow: ${from.website / fromTotal}">${from.website ? `${icon('monitor')} ${from.website} website` : ''}</span>
+				<span class="split__delivery" style="flex-grow: ${from.outside / fromTotal}">${icon('store')} ${from.outside} outside</span>
+			</div>`
+					: ''
+			}
 			${
 				r.top.length
 					? `<p class="stat-card__kicker regulars__title">Regulars</p><ol class="regulars">${r.top.map(p => `<li><span class="regulars__name">${e(p.name)}</span><span>${plural(p.orders, 'order')} &middot; ${dollars(p.revenue)}</span></li>`).join('')}</ol>`

@@ -38,7 +38,9 @@ Add these under **Site configuration → Environment variables**, then redeploy:
 | `STRIPE_SECRET_KEY_TEST` | Optional | Used instead of the live key when running locally. |
 | `ADMIN_SESSION_SECRET` | Optional | Extra secret for signing admin sessions. |
 
-**Stripe webhook:** in Stripe → Developers → Webhooks, add an endpoint at `https://siponpressed.com/webhook/stripe` (the same address the old site used) listening for `checkout.session.completed` and `checkout.session.async_payment_succeeded`. Copy its signing secret into `STRIPE_WEBHOOK_SECRET`.
+**Stripe webhook:** in Stripe → Developers → Webhooks, add an endpoint at `https://siponpressed.com/webhook/stripe` (the same address the old site used) listening for `checkout.session.completed`, `checkout.session.async_payment_succeeded` and `payment_intent.succeeded`. Copy its signing secret into `STRIPE_WEBHOOK_SECRET`.
+
+**Sales off the website:** Admin → Orders → **Add sale** records cash, Venmo, Zelle, Instagram and wholesale sales; they share the Orders list, To press and Stats, tagged with where they came from. Stripe payments the site didn't start (Tap to Pay, Payment Links, charges in the Stripe app) arrive through `payment_intent.succeeded` and Payment Link checkouts; Hunter adds the juices to a Tap to Pay one. **Check Stripe** catches up on the last 90 days, which needs the restricted key to have **PaymentIntents: Read** (plus Checkout Sessions read, which its Write already covers).
 
 The functions need Node 22, which `netlify.toml` sets.
 
