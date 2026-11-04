@@ -125,3 +125,12 @@ test('Tap to Pay: the juices come from the note Hunter types in the Stripe app',
 	assert.equal(needsJuices(blank), true, 'counts toward the Orders badge even though it\'s done');
 	assert.equal(needsJuices({ ...blank, test: true }), false);
 });
+
+test('QR checkout line items add up to the sale, deal price included', async () => {
+	const { qrLineItems } = await import('../netlify/functions/lib/qr-checkout.js');
+	const items = qrLineItems([{ slug: 'a', name: 'Simply Orange', qty: 2, amount: 1333 }, { slug: 'b', name: 'Simply Green', qty: 1, amount: 667 }]);
+	assert.equal(items.reduce((s, i) => s + i.quantity * i.price_data.unit_amount, 0), 2000);
+	assert.equal(items[0].price_data.product_data.name, '2 × Simply Orange');
+	assert.equal(qrLineItems([{ name: 'Simply Red', qty: 3, amount: 2400 }])[0].quantity, 3);
+	assert.equal(sourceLabel({ source: 'stripe', stripe: { kind: 'qr' } }), 'QR checkout');
+});

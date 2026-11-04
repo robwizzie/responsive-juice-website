@@ -329,7 +329,7 @@ async function addSale() {
 	// Show it where it landed: To do for a pickup or delivery, Done for one already handed over
 	state.orderFilter = isOpen(result.order) ? 'open' : 'done';
 	placeSale(result);
-	toast(`Sale added${result.order.lines.length ? `: ${plural(bottles(result.order), 'bottle')}` : ''}`);
+	toast(result.paidByQr ? `Paid by QR: ${formatMoney(result.order.total)}` : `Sale added${result.order.lines.length ? `: ${plural(bottles(result.order), 'bottle')}` : ''}`);
 }
 
 async function editSale(key) {

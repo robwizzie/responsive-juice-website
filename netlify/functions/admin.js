@@ -8,6 +8,7 @@ import { mailConfigured, ownerEmail, sendMail, testEmail } from './lib/mail.js';
 import { ORDER_STAGES, isTestOrder, orderSource } from '../../assets/js/shared/order-status.js';
 import { cleanSale } from './lib/sales.js';
 import { syncStripePayments } from './lib/stripe-import.js';
+import { startQrCheckout } from './lib/qr-checkout.js';
 import { stripeConfigured } from './lib/stripe.js';
 import { deliveryCenterFor } from './lib/geo.js';
 import { toWebp } from './lib/webp.js';
@@ -138,6 +139,21 @@ export default async (req, context) => {
 		if (problem) return error(problem);
 		await saveOrder(value);
 		return json({ order: value, key: orderKey(value) });
+	}
+
+	// Pay by QR: the customer scans and pays on their phone; the order arrives through the webhook
+	if (action === 'sales-qr' && req.method === 'POST') {
+		if (!stripeConfigured()) return error('Stripe isn\'t set up yet.', 503);
+		const body = await readJSON(req);
+		const { value, error: problem } = cleanSale({ ...body, payment: 'card' }, await getJuices());
+		if (problem) return error(problem);
+		if (value.total < 50) return error('Card payments need to be at least $0.50.');
+		try {
+			return json(await startQrCheckout(value, publicSiteUrl(req)));
+		} catch (err) {
+			console.error('QR checkout failed:', err);
+			return error(`Stripe couldn't make the payment page: ${err.message}`, 502);
+		}
 	}
 
 	// Fix up an outside sale, or add the juices to a Stripe payment. Moving its date moves its key.

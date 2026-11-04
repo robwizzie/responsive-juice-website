@@ -28,6 +28,8 @@ export function openSaleForm(state, { order = null, key = null } = {}) {
 	return new Promise(resolve => {
 		document.getElementById('sale-sheet')?.remove();
 		const stripe = orderSource(order) === 'stripe';
+		// "Pay by QR" makes a Stripe payment page for exactly these bottles; only for a new sale
+		const canQr = !order && Boolean(state.status?.stripe);
 		const counts = new Map((order ? currentLines(order, state.juices) : []).map(l => [l.slug, l.qty]));
 		// Juices on the menu, plus any on this sale that have since been hidden
 		const juices = state.juices.filter(j => j.active !== false || counts.has(j.slug));
@@ -78,7 +80,8 @@ export function openSaleForm(state, { order = null, key = null } = {}) {
 					</section>
 					<section class="sheet__section">
 						<h3>Paid with</h3>
-						${chips('payment', PAYMENT_METHODS, order?.payment || 'cash')}
+						${chips('payment', canQr ? [{ id: 'qr', label: 'QR code' }, ...PAYMENT_METHODS] : PAYMENT_METHODS, order?.payment || 'cash')}
+						<p class="hint" data-qr-hint hidden>They scan it with their phone camera and pay by card or Apple Pay. The juices land on the order by themselves.</p>
 					</section>
 					<section class="sheet__section">
 						<h3>Where they found you</h3>
@@ -157,7 +160,11 @@ export function openSaleForm(state, { order = null, key = null } = {}) {
 			sheet.querySelector('[data-address]').hidden = type !== 'delivery';
 			sheet.querySelector('[data-date-label]').textContent = { handoff: 'Sold on', pickup: 'Pickup day', delivery: 'Delivery day' }[type] || 'Date';
 			const save = sheet.querySelector('[data-save]');
-			save.innerHTML = stripe ? `${icon('check')} Save` : `${icon('check')} Save sale${n ? ` &middot; ${n} bottle${n === 1 ? '' : 's'} &middot; ${formatMoney(total())}` : ''}`;
+			const qr = picked('payment') === 'qr';
+			const qrHint = sheet.querySelector('[data-qr-hint]');
+			if (qrHint) qrHint.hidden = !qr;
+			const counted = n ? ` &middot; ${n} bottle${n === 1 ? '' : 's'} &middot; ${formatMoney(total())}` : '';
+			save.innerHTML = stripe ? `${icon('check')} Save` : qr ? `${icon('receipt')} Show QR code${counted}` : `${icon('check')} Save sale${counted}`;
 		}
 
 		sheet.addEventListener('click', event => {
@@ -201,14 +208,52 @@ export function openSaleForm(state, { order = null, key = null } = {}) {
 			const error = sheet.querySelector('[data-error]');
 			error.hidden = true;
 			// The toast sits under an open dialog, so problems are shown in the form too
-			const data = await guarded(() => api('sales', { method: order ? 'PUT' : 'POST', json: body })).catch(err => {
+			const qr = body.payment === 'qr';
+			const data = await guarded(() => api(qr ? 'sales-qr' : 'sales', { method: order ? 'PUT' : 'POST', json: body })).catch(err => {
 				error.textContent = err.message;
 				error.hidden = false;
 				return null;
 			});
 			save.disabled = false;
+			if (data && qr) return showQr(data);
 			if (data) finish({ order: data.order, key: data.key, previousKey: key });
 		});
+
+		/* The customer scans this; once Stripe says it's paid the order shows up and the sheet closes. */
+		let poll = null;
+		function showQr({ id, url, qr, total: amount }) {
+			sheet.querySelector('#sale-sheet-title').textContent = 'Scan to pay';
+			sheet.querySelector('.sheet__head .muted').textContent = `${formatMoney(amount)} for ${bottles()} bottle${bottles() === 1 ? '' : 's'}. Hold your phone up so they can scan it.`;
+			form.outerHTML = `
+				<div class="sheet__body qr-pay">
+					<div class="qr-pay__code" role="img" aria-label="QR code to pay ${formatMoney(amount)}">${qr}</div>
+					<p class="qr-pay__amount">${formatMoney(amount)}</p>
+					<p class="qr-pay__status" data-qr-status><span class="qr-pay__dot"></span>Waiting for them to pay&hellip;</p>
+					<div class="qr-pay__share">
+						<button type="button" class="btn btn--outline btn--sm" data-copy>${icon('copy')} Copy link</button>
+						<a class="btn btn--outline btn--sm" href="sms:?&body=${encodeURIComponent(`Pay for your SiponPressed juice here: ${url}`)}">${icon('phone')} Text it</a>
+					</div>
+					<p class="hint">The link works for 30 minutes. Closing this doesn't cancel it; the sale still shows up in Orders when they pay.</p>
+				</div>`;
+			sheet.querySelector('[data-copy]').addEventListener('click', async event => {
+				await navigator.clipboard?.writeText(url).catch(() => {});
+				event.currentTarget.innerHTML = `${icon('check')} Copied`;
+			});
+			const started = Date.now();
+			poll = setInterval(async () => {
+				if (!document.body.contains(sheet) || Date.now() - started > 32 * 60 * 1000) return clearInterval(poll);
+				const data = await api('orders').catch(() => null);
+				const paid = data?.orders.find(o => o.id === id);
+				if (!paid) return;
+				clearInterval(poll);
+				state.orders = data.orders;
+				const status = sheet.querySelector('[data-qr-status]');
+				status.classList.add('is-paid');
+				status.innerHTML = `${icon('check')} Paid! Thank you.`;
+				setTimeout(() => finish({ order: paid, key: `${paid.date}/${paid.id}`, previousKey: null, paidByQr: true }), 1400);
+			}, 3000);
+		}
+		sheet.addEventListener('close', () => clearInterval(poll));
 
 		refresh();
 		sheet.showModal();

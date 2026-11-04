@@ -78,7 +78,7 @@ export const HANDOFF_TYPES = ['pickup', 'delivery', 'handoff'];
 export function sourceLabel(order) {
 	const source = orderSource(order);
 	if (source === 'website') return 'Website';
-	if (source === 'stripe') return order.stripe?.kind === 'link' ? 'Payment Link' : order.stripe?.kind === 'tap' ? 'Tap to Pay' : 'Stripe';
+	if (source === 'stripe') return { link: 'Payment Link', tap: 'Tap to Pay', qr: 'QR checkout' }[order.stripe?.kind] || 'Stripe';
 	return SALE_CHANNELS.find(c => c.id === order.channel)?.label || 'Outside sale';
 }
 
