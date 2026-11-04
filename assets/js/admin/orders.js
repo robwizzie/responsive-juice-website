@@ -6,7 +6,7 @@ import { icon } from '../lib/icons.js';
 import { escapeHtml as e } from '../lib/catalog.js';
 import { juiceLoader } from '../lib/components.js';
 import { formatDate, formatMoney, todayISO } from '../shared/order-rules.js';
-import { currentLines, customerName, isOpen, isTestOrder, nextStep, orderSource, orderStage, paymentLabel, sourceLabel, stageLabel } from '../shared/order-status.js';
+import { currentLines, customerName, isOpen, needsJuices, isTestOrder, nextStep, orderSource, orderStage, paymentLabel, sourceLabel, stageLabel } from '../shared/order-status.js';
 import { api, guarded, toast, updateCounts } from './admin.js';
 import { openSaleForm } from './sale-form.js';
 
@@ -160,7 +160,21 @@ function renderList() {
 		all: 'No orders yet.'
 	}[filter.id];
 
+	// Tap to Pay sales are done the moment they're paid, so they'd hide under Done without this
+	const missing = state.orders.filter(needsJuices);
+	const nudge = missing.length
+		? `<div class="juice-nudge">
+				${icon('receipt')}
+				<div>
+					<p><strong>${missing.length === 1 ? `A ${formatMoney(missing[0].total)} Stripe sale needs its juices` : `${missing.length} Stripe sales need their juices`}</strong></p>
+					<p class="juice-nudge__tip">Next time, type them in the note when you charge in the Stripe app, like <em>2 orange 1 green</em>, and they fill in by themselves.</p>
+				</div>
+				<button type="button" class="btn btn--ink btn--sm" data-edit-key="${e(keyOf(missing[0]))}">${icon('plus')} Add juices</button>
+			</div>`
+		: '';
+
 	box.innerHTML = `
+		${nudge}
 		<div class="order-filters" role="tablist" aria-label="Show orders">
 			${FILTERS.filter(f => f.id !== 'canceled' || count(f))
 				.map(f => `<button type="button" role="tab" class="order-filter${f.id === filter.id ? ' is-active' : ''}" aria-selected="${f.id === filter.id}" data-filter="${f.id}">${f.label}<span>${count(f)}</span></button>`)
@@ -367,6 +381,8 @@ export async function renderOrders(adminState) {
 			state.orderFilter = filter.dataset.filter;
 			return renderList();
 		}
+		const nudge = event.target.closest('[data-edit-key]');
+		if (nudge) return editSale(nudge.dataset.editKey);
 		const card = event.target.closest('[data-order]');
 		if (!card) return;
 		if (event.target.closest('[data-edit]')) return editSale(card.dataset.order);

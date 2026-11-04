@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { cleanSale, linesFromStripe, mergeStripeOrders, orderFromLinkSession, orderFromPaymentIntent, spreadTotal, stripeDay } from '../netlify/functions/lib/sales.js';
-import { customerName, isOutsideSale, paymentLabel, sourceLabel, stageLabel } from '../assets/js/shared/order-status.js';
+import { cleanSale, juicesFromNote, linesFromStripe, mergeStripeOrders, orderFromLinkSession, orderFromPaymentIntent, spreadTotal, stripeDay } from '../netlify/functions/lib/sales.js';
+import { customerName, isOutsideSale, needsJuices, paymentLabel, sourceLabel, stageLabel } from '../assets/js/shared/order-status.js';
 import { regulars, salesFrom, sourceSplit } from '../assets/js/admin/stats-data.js';
 
 const juices = [
@@ -100,4 +100,28 @@ test('stats count outside sales, and regulars without an email', () => {
 	assert.equal(sales[0].day, '2026-11-03', 'unpaid sale counts from the day it was made');
 	assert.deepEqual(sourceSplit(sales), { website: 1, outside: 2, websiteRevenue: 800, outsideRevenue: 1600 });
 	assert.equal(regulars(sales).returning, 1, 'matched by phone number');
+});
+
+test('Tap to Pay: the juices come from the note Hunter types in the Stripe app', () => {
+	const menu = [...juices, { slug: 'simply-red', name: 'Simply Red', price: 8 }];
+	const read = (note, total) => juicesFromNote(note, menu, total).map(l => `${l.qty} ${l.slug}`);
+	assert.deepEqual(read('2 orange 1 green', 2400), ['2 simply-orange', '1 simply-green']);
+	assert.deepEqual(read('Simply Red x3', 2400), ['3 simply-red']);
+	assert.deepEqual(read('two reds', 1600), ['2 simply-red']);
+	assert.deepEqual(read('2x orange + red', 2400), ['2 simply-orange', '1 simply-red']);
+	assert.deepEqual(read('green', 1600), ['2 simply-green'], 'one juice, count from the amount');
+	assert.deepEqual(read('Juice', 800), [], 'can\'t tell which');
+	assert.deepEqual(read('', 800), []);
+	assert.equal(juicesFromNote('3 orange', menu, 2000).reduce((s, l) => s + l.amount, 0), 2000, 'adds up to what was charged');
+
+	const created = Math.floor(Date.parse('2026-11-04T18:00:00Z') / 1000);
+	const tap = intent => orderFromPaymentIntent({ id: 'pi_9', amount: 2400, amount_received: 2400, payment_method_types: ['card_present'], ...intent }, { livemode: true, created, juices: menu });
+	const filled = tap({ description: '2 orange 1 red' });
+	assert.equal(filled.needsDetails, false);
+	assert.equal(filled.lines.length, 2);
+	assert.equal(needsJuices(filled), false);
+	const blank = tap({ description: 'Juice' });
+	assert.equal(blank.needsDetails, true);
+	assert.equal(needsJuices(blank), true, 'counts toward the Orders badge even though it\'s done');
+	assert.equal(needsJuices({ ...blank, test: true }), false);
 });

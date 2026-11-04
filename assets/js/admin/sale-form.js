@@ -68,7 +68,7 @@ export function openSaleForm(state, { order = null, key = null } = {}) {
 
 					${
 						stripe
-							? ''
+							? '<p class="hint sale-form__check" data-stripe-check></p>'
 							: `<section class="sheet__section">
 						<h3>Price</h3>
 						<div class="sale-price">
@@ -138,6 +138,20 @@ export function openSaleForm(state, { order = null, key = null } = {}) {
 			if (menuPrice) {
 				field('total').placeholder = (menuTotal() / 100).toFixed(2);
 				menuPrice.textContent = n ? `Menu price is ${formatMoney(menuTotal())}. Type a different amount for a deal or wholesale price.` : 'Add bottles above and the menu price fills in.';
+			}
+			// Tap to Pay only knows the amount, so say whether the bottles picked add up to it
+			const check = sheet.querySelector('[data-stripe-check]');
+			if (check) {
+				const unit = priceOf(juices[0]?.slug);
+				const expected = unit ? order.total / unit : 0;
+				check.classList.toggle('hint--warn', Boolean(n) && menuTotal() !== order.total);
+				check.textContent = !n
+					? Number.isInteger(expected) && expected > 0
+						? `Stripe charged ${formatMoney(order.total)}. At ${formatMoney(unit)} a bottle that's ${expected} bottle${expected === 1 ? '' : 's'}.`
+						: `Stripe charged ${formatMoney(order.total)}.`
+					: menuTotal() === order.total
+						? `${n} bottle${n === 1 ? '' : 's'} matches the ${formatMoney(order.total)} Stripe charged.`
+						: `That's ${formatMoney(menuTotal())} at menu price, but Stripe charged ${formatMoney(order.total)}. Fine for a deal, otherwise check the count.`;
 			}
 			const type = picked('type');
 			sheet.querySelector('[data-address]').hidden = type !== 'delivery';

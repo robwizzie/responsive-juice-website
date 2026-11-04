@@ -91,5 +91,8 @@ export function paymentLabel(order) {
 	return PAYMENT_METHODS.find(p => p.id === order.payment)?.label || 'Paid';
 }
 
+/** A real Stripe payment (like Tap to Pay) still waiting for Hunter to say which juices it was. */
+export const needsJuices = order => Boolean(order?.needsDetails) && !isTestOrder(order) && orderStage(order) !== 'canceled';
+
 /** The name to show for an order; outside sales can leave it blank. */
 export const customerName = order => order?.customer?.name || (orderSource(order) === 'stripe' ? 'Stripe payment' : 'Walk-up sale');
