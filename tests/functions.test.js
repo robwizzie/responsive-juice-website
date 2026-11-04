@@ -253,3 +253,19 @@ test('outside sales: Hunter adds, edits and deletes one, and Tap to Pay payments
 	await fns.store.deleteOrder('2026-11-04/pi_tap1');
 	await fns.store.deleteOrder('2026-11-08/web-1');
 });
+
+test('a QR sale arrives paid and already handed over, with the juices and the name they gave Stripe', async () => {
+	const pending = { id: 'qr-1', source: 'stripe', stripe: { kind: 'qr' }, payment: 'stripe', status: 'pending', type: 'handoff', stage: 'done', date: '2026-11-04', customer: { name: '', email: '', phone: '' }, lines: [{ slug: 'simply-red', name: 'Simply Red', qty: 2, unit: 800, amount: 1600 }], subtotal: 1600, deliveryFee: 0, total: 1600 };
+	await fns.store.savePending(pending);
+	const payload = JSON.stringify({ id: 'evt_qr', object: 'event', type: 'checkout.session.completed', livemode: true, data: { object: { id: 'cs_live_qr', payment_status: 'paid', amount_total: 1600, payment_intent: 'pi_qr', customer_details: { name: 'Dee', email: 'dee@x.co' }, metadata: { order_id: 'qr-1', source: 'qr' } } } });
+	const signature = new Stripe('sk_test_fake').webhooks.generateTestHeaderString({ payload, secret: 'whsec_test' });
+	assert.equal((await fns.webhook(new Request('https://siponpressed.test/webhook/stripe', { method: 'POST', body: payload, headers: { 'stripe-signature': signature } }))).status, 200);
+	const order = await fns.store.getOrder('2026-11-04/qr-1');
+	assert.equal(order.status, 'paid');
+	assert.equal(order.stage, 'done');
+	assert.equal(order.customer.name, 'Dee');
+	assert.equal(order.lines[0].qty, 2);
+	assert.deepEqual(order.emails, { owner: 'off', customer: 'off' });
+	assert.equal(order.stripe.paymentIntent, 'pi_qr');
+	await fns.store.deleteOrder('2026-11-04/qr-1');
+});

@@ -32,7 +32,7 @@ async function lineItems(sessionId) {
 export async function importStripePayment({ intent, session, livemode, created }) {
 	const incoming = session
 		? orderFromLinkSession(session, await lineItems(session.id), await getJuices(), { livemode, created })
-		: orderFromPaymentIntent(intent, { livemode, created: created ?? intent.created });
+		: orderFromPaymentIntent(intent, { livemode, created: created ?? intent.created, juices: (await getJuices()).filter(j => j.active !== false) });
 	const existing = await findStripeOrder(incoming.id, incoming.date);
 	const order = mergeStripeOrders(existing, incoming);
 	if (order !== existing) await saveOrder(order);

@@ -46,11 +46,29 @@ export default async req => {
 		return new Response('OK', { status: 200 });
 	}
 
-	const order = { ...pending, status: 'paid', stage: 'new', test: !event.livemode, paidAt: new Date().toISOString(), stripeSessionId: session.id, total: session.amount_total ?? pending.total };
+	const paidAt = new Date().toISOString();
+	// A QR sale already handed over starts out done, and takes the name and email they gave Stripe
+	const qr = pending.stripe?.kind === 'qr';
+	const stage = pending.stage || 'new';
+	const details = session.customer_details || {};
+	const customer = qr ? { ...pending.customer, name: pending.customer.name || details.name || '', email: pending.customer.email || details.email || '' } : pending.customer;
+	const order = {
+		...pending,
+		customer,
+		status: 'paid',
+		stage,
+		...(qr ? { history: [{ stage, at: paidAt }], soldAt: paidAt, stripe: { ...pending.stripe, session: session.id, paymentIntent: session.payment_intent || null } } : {}),
+		test: !event.livemode,
+		paidAt,
+		stripeSessionId: session.id,
+		total: session.amount_total ?? pending.total
+	};
 	const alreadySaved = await getOrder(orderKey(order));
 	await saveOrder(alreadySaved || order);
 
-	if (!alreadySaved) {
+	// No emails for a sale made face to face; Stripe's own receipt covers the customer
+	if (!alreadySaved && qr) await saveOrder({ ...order, emails: { owner: 'off', customer: 'off' } });
+	else if (!alreadySaved) {
 		const [settings, juices] = await Promise.all([getSettings(), getJuices()]);
 		const siteUrl = publicSiteUrl(req);
 		const images = Object.fromEntries(juices.map(juice => [juice.slug, juice.emailImage || '']));

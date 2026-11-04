@@ -8,7 +8,7 @@ import { escapeHtml as e } from '../lib/catalog.js';
 import { bottleImage, juiceCard, juiceLoader, money } from '../lib/components.js';
 import { BACKDROPS, DEFAULT_BACKDROP, JUICE_STATUSES, SPLASH_STYLES, featuredJuices, ingredientKey, ingredientPhoto, juiceStatus, priceJuice, slugify, splashUrl } from '../shared/catalog.js';
 import { weekdayName } from '../shared/order-rules.js';
-import { isOpen } from '../shared/order-status.js';
+import { isOpen, needsJuices } from '../shared/order-status.js';
 import { prepareBottle, preparePhoto } from './image.js';
 import { leavePages, renderPages, pagesDirty } from './pages.js';
 import { allIngredients, renderIngredients } from './ingredients.js';
@@ -1078,7 +1078,8 @@ export async function updateCounts({ reload = false } = {}) {
 		if (state.tab === 'stats') refreshStats(state);
 		if (state.tab === 'messages') refreshMessages(state);
 	}
-	const counts = { orders: state.orders?.filter(isOpen).length || 0, messages: state.messages?.filter(m => !m.read && !m.archived).length || 0 };
+	// Orders to move along, plus Tap to Pay sales (already handed over) still missing their juices
+	const counts = { orders: state.orders?.filter(o => isOpen(o) || needsJuices(o)).length || 0, messages: state.messages?.filter(m => !m.read && !m.archived).length || 0 };
 	Object.entries(counts).forEach(([tab, n]) => {
 		// The same count shows in the top bar and the phone tab bar
 		document.querySelectorAll(`[data-count="${tab}"]`).forEach(badge => {

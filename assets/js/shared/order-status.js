@@ -78,7 +78,7 @@ export const HANDOFF_TYPES = ['pickup', 'delivery', 'handoff'];
 export function sourceLabel(order) {
 	const source = orderSource(order);
 	if (source === 'website') return 'Website';
-	if (source === 'stripe') return order.stripe?.kind === 'link' ? 'Payment Link' : order.stripe?.kind === 'tap' ? 'Tap to Pay' : 'Stripe';
+	if (source === 'stripe') return { link: 'Payment Link', tap: 'Tap to Pay', qr: 'QR checkout' }[order.stripe?.kind] || 'Stripe';
 	return SALE_CHANNELS.find(c => c.id === order.channel)?.label || 'Outside sale';
 }
 
@@ -90,6 +90,9 @@ export function paymentLabel(order) {
 	if (order.status === 'unpaid') return 'Not paid yet';
 	return PAYMENT_METHODS.find(p => p.id === order.payment)?.label || 'Paid';
 }
+
+/** A real Stripe payment (like Tap to Pay) still waiting for Hunter to say which juices it was. */
+export const needsJuices = order => Boolean(order?.needsDetails) && !isTestOrder(order) && orderStage(order) !== 'canceled';
 
 /** The name to show for an order; outside sales can leave it blank. */
 export const customerName = order => order?.customer?.name || (orderSource(order) === 'stripe' ? 'Stripe payment' : 'Walk-up sale');

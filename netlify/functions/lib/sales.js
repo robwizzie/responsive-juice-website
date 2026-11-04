@@ -134,6 +134,75 @@ export function matchJuice(description, juices) {
 	return juices.find(j => normal(j.name) === text) || juices.find(j => text.includes(normal(j.name))) || null;
 }
 
+const NUMBER_WORDS = { a: 1, an: 1, one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10, eleven: 11, twelve: 12, dozen: 12 };
+
+/**
+ * Words that pick out one juice: its whole name, plus each word of it no other juice shares
+ * ("orange" for Simply Orange, since every juice is "Simply" something).
+ */
+function juiceKeywords(juices) {
+	const words = juices.map(j => normal(j.name).split(' ').filter(Boolean));
+	const count = new Map();
+	words.flat().forEach(w => count.set(w, (count.get(w) || 0) + 1));
+	return juices.map((juice, i) => ({ juice, full: words[i].join(' '), own: words[i].filter(w => count.get(w) === 1 && w.length > 2) }));
+}
+
+const quantityOf = token => {
+	if (/^\d{1,3}$/.test(token)) return Number(token);
+	const x = token.match(/^(?:(\d{1,3})x|x(\d{1,3}))$/);
+	if (x) return Number(x[1] || x[2]);
+	return NUMBER_WORDS[token] ?? null;
+};
+
+/**
+ * Reads the juices out of the note Hunter types on a Tap to Pay charge in the Stripe app:
+ * "2 orange 1 green", "Simply Red x3", "orange, green", or just "green" (the count then comes from
+ * the amount). Returns priced lines that add up to what Stripe charged, or [] if it can't tell.
+ */
+export function juicesFromNote(note, juices, total) {
+	const tokens = normal(note).split(' ').filter(Boolean);
+	if (!tokens.length || !juices.length) return [];
+	const keys = juiceKeywords(juices);
+	const juiceAt = i => {
+		const rest = tokens.slice(i).join(' ');
+		const whole = keys.find(k => rest === k.full || rest.startsWith(`${k.full} `));
+		if (whole) return { juice: whole.juice, span: whole.full.split(' ').length };
+		// "reds", "oranges"
+		const word = tokens[i];
+		const own = word && keys.find(k => k.own.includes(word) || (word.endsWith('s') && k.own.includes(word.slice(0, -1))));
+		return own ? { juice: own.juice, span: 1 } : null;
+	};
+	const found = [];
+	let pending = null;
+	for (let i = 0; i < tokens.length; i++) {
+		const qty = quantityOf(tokens[i]);
+		if (qty !== null) {
+			// "2 orange": the count goes with the juice after it. "orange 2", "orange x2": with the one before.
+			const last = found[found.length - 1];
+			if (!juiceAt(i + 1) && last && last.qty === null) last.qty = qty;
+			else pending = qty;
+			continue;
+		}
+		const match = juiceAt(i);
+		if (!match) continue;
+		i += match.span - 1;
+		const same = found.find(f => f.juice === match.juice);
+		if (same) same.qty = (same.qty || 1) + (pending || 1);
+		else found.push({ juice: match.juice, qty: pending });
+		pending = null;
+	}
+	if (!found.length) return [];
+
+	const price = juice => toCents(juice.price);
+	// One juice and no count: work it out from the amount, if that comes to whole bottles
+	if (found.length === 1 && found[0].qty === null) {
+		const bottles = total / price(found[0].juice);
+		found[0].qty = Number.isInteger(bottles) && bottles > 0 ? bottles : 1;
+	}
+	const lines = found.map(({ juice, qty }) => ({ slug: juice.slug, name: juice.name, qty: Math.min(qty || 1, MAX_BOTTLES), unit: price(juice), amount: price(juice) * (qty || 1) }));
+	return spreadTotal(lines, total);
+}
+
 /** Lines for a Payment Link checkout, from Stripe's list of what was bought. */
 export function linesFromStripe(items, juices) {
 	return (items || []).map(item => {
@@ -177,11 +246,14 @@ export function orderFromLinkSession(session, items, juices, { livemode, created
 }
 
 /** Any other successful Stripe payment (Tap to Pay, a charge made in the Stripe app). No juices yet. */
-export function orderFromPaymentIntent(intent, { livemode, created }) {
+export function orderFromPaymentIntent(intent, { livemode, created, juices = [] }) {
 	const tap = (intent.payment_method_types || []).some(t => t === 'card_present' || t === 'interac_present');
 	const day = stripeDay(created);
 	const at = new Date(created * 1000).toISOString();
 	const stage = tap ? 'done' : 'new';
+	const total = intent.amount_received ?? intent.amount ?? 0;
+	// Stripe's app only takes an amount, so the juices come from the note Hunter typed, if any
+	const lines = juicesFromNote(intent.description, juices, total);
 	return {
 		id: stripeOrderId(intent.id),
 		createdAt: at,
@@ -196,13 +268,13 @@ export function orderFromPaymentIntent(intent, { livemode, created }) {
 		customer: { name: clean(intent.shipping?.name, 80), email: clean(intent.receipt_email), phone: '' },
 		address: null,
 		notes: clean(intent.description, 500),
-		lines: [],
+		lines,
 		subtotal: intent.amount_received ?? intent.amount ?? 0,
 		deliveryFee: 0,
 		total: intent.amount_received ?? intent.amount ?? 0,
 		soldAt: at,
 		paidAt: at,
-		needsDetails: true,
+		needsDetails: !lines.length,
 		stage,
 		history: [{ stage, at }],
 		emails: { owner: 'off', customer: 'off' }

@@ -52,7 +52,15 @@ function receipt(order, juices) {
 
 function nextSteps(order, settings) {
 	const pickup = order.type !== 'delivery';
-	const steps = [
+	// Paid by scanning Hunter's QR code, juice already in hand
+	const handoff = order.type === 'handoff';
+	const steps = handoff
+		? [
+				{ icon: 'check', title: 'Paid', text: 'Thanks for grabbing a bottle from Hunter.', done: true },
+				{ icon: 'snow', title: 'Keep it cold', text: 'Cold-pressed juice is best within a few days. Shake well before you sip.' },
+				{ icon: 'bag', title: 'Want more?', text: 'Order ahead online for pickup or Monday delivery.' }
+			]
+		: [
 		{ icon: 'check', title: 'Order placed', text: 'Hunter has your order and it is on the list.', done: true },
 		{ icon: 'drop', title: `Pressed fresh ${formatDate(order.date)}`, text: 'Your bottles are cold-pressed that morning, never before.' },
 		pickup
@@ -63,7 +71,7 @@ function nextSteps(order, settings) {
 					extra: pickupSpot(settings.pickup)
 				}
 			: { icon: 'truck', title: `Delivered ${formatDate(order.date, { weekday: 'long' })}`, text: 'Hunter brings it right to your door and texts you when he is on the way.' }
-	];
+		];
 	return `
 		<div class="card next-steps">
 			<h2 class="next-steps__title">What happens next</h2>
@@ -93,12 +101,14 @@ function render(order, { settings, juices }) {
 	root.innerHTML = `
 		<header class="confirm__hero">
 			${bottleFan(order, juices)}
-			<p class="confirm__kicker${pending ? ' confirm__kicker--pending' : ''}">${pending ? 'Payment processing' : 'Order confirmed'}</p>
+			<p class="confirm__kicker${pending ? ' confirm__kicker--pending' : ''}">${pending ? 'Payment processing' : order.type === 'handoff' ? 'Payment received' : 'Order confirmed'}</p>
 			<h1 class="confirm__title">Thanks${order.firstName ? `, ${e(order.firstName)}` : ''}!<span>${pending ? 'Almost there.' : "You're all set."}</span></h1>
 			<p class="confirm__lede">${
 				pending
 					? `Your bank is still confirming the payment. We'll email <strong>${e(order.email)}</strong> as soon as it clears.`
-					: `Your juice gets pressed fresh for ${order.type === 'delivery' ? 'delivery' : 'pickup'} on <strong>${formatDate(order.date)}</strong>.`
+					: order.type === 'handoff'
+						? 'Enjoy your juice.'
+						: `Your juice gets pressed fresh for ${order.type === 'delivery' ? 'delivery' : 'pickup'} on <strong>${formatDate(order.date)}</strong>.`
 			}</p>
 		</header>
 		<div class="confirm__grid">
