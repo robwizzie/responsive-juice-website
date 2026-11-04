@@ -4,10 +4,11 @@
  *
  * - A sale is a paid order that wasn't canceled. Stripe test orders count only when asked for.
  * - A sale happens on the day it was paid, in Philadelphia time (not the pickup/delivery day).
+ *   Outside sales still owed count from the day they were made.
  * - Money is in cents. Revenue is what customers paid, delivery fees included.
  * - Juices are matched to today's menu, so a renamed juice keeps its history (see currentLines).
  */
-import { currentLines, isTestOrder, orderStage } from '../shared/order-status.js';
+import { currentLines, isOutsideSale, isTestOrder, orderStage } from '../shared/order-status.js';
 
 export const TIME_ZONE = 'America/New_York';
 const DAY_MS = 86400000;
@@ -38,7 +39,7 @@ export function salesFrom(orders, juices, { includeTest = false } = {}) {
 		.map(order => {
 			const lines = currentLines(order, juices);
 			return {
-				day: localDay(order.paidAt || order.createdAt || `${order.date}T12:00:00Z`),
+				day: localDay(order.paidAt || order.soldAt || order.createdAt || `${order.date}T12:00:00Z`),
 				total: Number(order.total) || 0,
 				bottles: lines.reduce((n, line) => n + line.qty, 0),
 				lines,
@@ -238,9 +239,11 @@ export function booked(sales, today) {
 export function regulars(sales, count = 5) {
 	const people = new Map();
 	for (const sale of sales) {
-		const email = (sale.order.customer?.email || '').toLowerCase();
+		// Outside sales often have only a name or a phone number
+		const c = sale.order.customer || {};
+		const email = (c.email || '').toLowerCase() || (c.phone || '').replace(/\D/g, '').slice(-10) || (c.name || '').trim().toLowerCase();
 		if (!email) continue;
-		const p = people.get(email) || { name: sale.order.customer.name, orders: 0, bottles: 0, revenue: 0 };
+		const p = people.get(email) || { name: c.name || c.email || c.phone, orders: 0, bottles: 0, revenue: 0 };
 		p.orders += 1;
 		p.bottles += sale.bottles;
 		p.revenue += sale.total;
@@ -261,4 +264,11 @@ export function regulars(sales, count = 5) {
 export function fulfillmentSplit(sales) {
 	const delivery = sales.filter(sale => sale.order.type === 'delivery').length;
 	return { pickup: sales.length - delivery, delivery };
+}
+
+/** Website orders vs sales made elsewhere (typed in, or Stripe payments the site didn't start). */
+export function sourceSplit(sales) {
+	const outside = sales.filter(sale => isOutsideSale(sale.order));
+	const revenue = list => list.reduce((sum, sale) => sum + sale.total, 0);
+	return { website: sales.length - outside.length, outside: outside.length, websiteRevenue: revenue(sales) - revenue(outside), outsideRevenue: revenue(outside) };
 }

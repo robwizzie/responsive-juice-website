@@ -5,7 +5,9 @@ import { deleteMessage, deleteOrder, getCopyEdits, getMessage, listMessages, sav
 import { cleanCopy, cleanJuices, cleanSettings } from './lib/validate.js';
 import { clientIp, error, json, publicSiteUrl, readJSON } from './lib/http.js';
 import { mailConfigured, ownerEmail, sendMail, testEmail } from './lib/mail.js';
-import { ORDER_STAGES, isTestOrder } from '../../assets/js/shared/order-status.js';
+import { ORDER_STAGES, isTestOrder, orderSource } from '../../assets/js/shared/order-status.js';
+import { cleanSale } from './lib/sales.js';
+import { syncStripePayments } from './lib/stripe-import.js';
 import { stripeConfigured } from './lib/stripe.js';
 import { deliveryCenterFor } from './lib/geo.js';
 import { toWebp } from './lib/webp.js';
@@ -130,13 +132,47 @@ export default async (req, context) => {
 		return json({ order: updated, key: orderKey(updated) });
 	}
 
-	// Only Stripe test orders can be removed; real ones are kept for the books
+	// A sale made outside the website (cash, Venmo, Instagram…), typed in by Hunter
+	if (action === 'sales' && req.method === 'POST') {
+		const { value, error: problem } = cleanSale(await readJSON(req), await getJuices());
+		if (problem) return error(problem);
+		await saveOrder(value);
+		return json({ order: value, key: orderKey(value) });
+	}
+
+	// Fix up an outside sale, or add the juices to a Stripe payment. Moving its date moves its key.
+	if (action === 'sales' && req.method === 'PUT') {
+		const body = await readJSON(req);
+		if (!ORDER_KEY.test(body?.key || '')) return error('Bad request');
+		const existing = await getOrder(body.key);
+		if (!existing) return error('That order is gone. Refresh the page.', 404);
+		if (orderSource(existing) === 'website') return error('Website orders can\'t be edited here.');
+		const { value, error: problem } = cleanSale(body, await getJuices(), { existing });
+		if (problem) return error(problem);
+		await saveOrder(value);
+		if (orderKey(value) !== body.key) await deleteOrder(body.key);
+		return json({ order: value, key: orderKey(value) });
+	}
+
+	// Catch up on Stripe payments the website didn't start (Tap to Pay, Payment Links)
+	if (action === 'stripe-sync' && req.method === 'POST') {
+		if (!stripeConfigured()) return error('Stripe isn\'t set up yet.', 503);
+		try {
+			const result = await syncStripePayments();
+			return json({ ...result, orders: await listOrders() });
+		} catch (err) {
+			console.error('Stripe sync failed:', err);
+			return error(err.permission ? err.message : `Couldn't reach Stripe: ${err.message}`, err.permission ? 403 : 502);
+		}
+	}
+
+	// Test orders and sales Hunter typed in himself can be removed; real Stripe ones are kept for the books
 	if (action === 'orders' && req.method === 'DELETE') {
 		const body = await readJSON(req);
 		if (!ORDER_KEY.test(body?.key || '')) return error('Bad request');
 		const order = await getOrder(body.key);
 		if (!order) return json({ ok: true });
-		if (!isTestOrder(order)) return error('Real orders can\'t be deleted. Mark it canceled instead.');
+		if (!isTestOrder(order) && orderSource(order) !== 'manual') return error('Real orders can\'t be deleted. Mark it canceled instead.');
 		await deleteOrder(body.key);
 		return json({ ok: true });
 	}
